@@ -34,9 +34,10 @@ const getApiKey = (): string => {
 const API_KEY = getApiKey();
 
 // The folder ID provided by the user
-const TARGET_FOLDER_ID = "0ByPao_qBUjN-YXJZSG5Fancybmc";
-// Resource key is sometimes required for older shared folders
-const RESOURCE_KEY = "0-MKTgAd4XnpTp7S5flJBKuA";
+// The folder ID provided by the user
+const TARGET_FOLDER_ID = "1Tqtn2oN96UAyeARYtmYFGSfzkrSJOG9s";
+// Resource key is sometimes required for older shared folders (cleared for new folder)
+const RESOURCE_KEY = "";
 
 interface DriveItem {
   id: string;
@@ -48,8 +49,9 @@ type LogType = 'info' | 'network';
 
 /**
  * Recursively scans a folder for Spreadsheets and Excel files.
+ * @param recursive If false, skips subfolders.
  */
-const scanFolderRecursive = async (folderId: string, onProgress: (msg: string, type?: LogType) => void): Promise<MatchDetails[]> => {
+const scanFolderRecursive = async (folderId: string, onProgress: (msg: string, type?: LogType) => void, recursive: boolean = true): Promise<MatchDetails[]> => {
   const allMatches: MatchDetails[] = [];
 
   // Query: Inside parent folder, not trashed, and is either Sheet, Excel or Folder
@@ -108,9 +110,13 @@ const scanFolderRecursive = async (folderId: string, onProgress: (msg: string, t
 
   for (const item of items) {
     if (item.mimeType === 'application/vnd.google-apps.folder') {
+      if (!recursive) {
+        onProgress(`Alt Klasör Atlanıyor (Derinlik Taraması Kapalı): ${item.name}`, 'info');
+        continue;
+      }
       // Recursive call for subfolders
       onProgress(`Alt Klasöre Giriliyor: ${item.name}`, 'info');
-      const subMatches = await scanFolderRecursive(item.id, onProgress);
+      const subMatches = await scanFolderRecursive(item.id, onProgress, true);
       allMatches.push(...subMatches);
     } else {
       // Process File
@@ -174,7 +180,8 @@ export const autoScanDriveFolder = async (onProgress: (msg: string, type?: LogTy
 
   try {
     onProgress("Google Drive bağlantısı kuruluyor...", 'info');
-    return await scanFolderRecursive(TARGET_FOLDER_ID, onProgress);
+    // Recursive is explicitly set to FALSE as per user request
+    return await scanFolderRecursive(TARGET_FOLDER_ID, onProgress, false);
   } catch (error: any) {
     console.error("Auto Scan Error:", error);
     throw new Error(error.message || "Otomatik tarama sırasında hata oluştu.");
