@@ -208,12 +208,15 @@ const App: React.FC = () => {
     useEffect(() => {
         if (!isFirebaseActive || !user) return;
 
+        // Log that automatic scanning has started for this user
+        addLog(`👤 ${user.displayName} için maç taraması başlatılıyor...`, 'info');
+
         const unsubscribeData = subscribeToMatches((liveMatches) => {
             const count = liveMatches.length;
             // Filter specifically for the logged in user
             const myMatches = filterForUser(liveMatches, user);
 
-            addLog(`🔥 Veri Güncelleme: Toplam ${count}, Size Ait: ${myMatches.length}`, 'network');
+            addLog(`🔥 Veri Güncelleme: Toplam ${count}, ${user.displayName} için ${myMatches.length} maç bulundu`, 'network');
             setMatches(myMatches);
             setLastUpdated(new Date().toLocaleString('tr-TR'));
             setError(null);
