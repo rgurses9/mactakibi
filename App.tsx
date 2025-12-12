@@ -17,7 +17,7 @@ import {
   Settings, Flame, X, Upload, LogOut, User as UserIcon,
   Sun, Moon, Monitor, ShieldAlert
 } from 'lucide-react';
-import { User } from 'firebase/auth';
+import firebase from 'firebase/app';
 
 // Default configuration provided by user
 const DEFAULT_FIREBASE_CONFIG = {
@@ -35,7 +35,7 @@ type Theme = 'light' | 'dark' | 'system';
 
 const App: React.FC = () => {
   // Auth State
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<firebase.User | null>(null);
   const [authInitialized, setAuthInitialized] = useState(false);
 
   const [matches, setMatches] = useState<MatchDetails[]>([]);
@@ -135,7 +135,7 @@ const App: React.FC = () => {
   /**
    * Dynamically filters matches based on the logged-in user's name.
    */
-  const filterForUser = (list: MatchDetails[], currentUser: User | null) => {
+  const filterForUser = (list: MatchDetails[], currentUser: firebase.User | null) => {
       if (!currentUser || !currentUser.displayName) return [];
 
       // Normalize function for Turkish characters
