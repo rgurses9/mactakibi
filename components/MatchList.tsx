@@ -56,10 +56,10 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
                 <div className={`md:w-32 border-b md:border-b-0 md:border-r border-dashed flex flex-row md:flex-col items-center justify-center p-4 gap-3 md:gap-1 text-center transition-colors
                     ${isGreenMode ? 'bg-green-50/50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-100/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700'}
                 `}>
-                  <div className={`text-lg font-black tracking-tight ${isGreenMode ? 'text-green-800 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'}`}>
+                  <div className={`text-lg font-black tracking-tight ${isGreenMode ? 'text-green-800 dark:text-green-300' : 'text-gray-900 dark:text-white'}`}>
                     {match.time}
                   </div>
-                  <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-2 py-0.5 rounded uppercase">
+                  <div className="text-xs font-semibold text-gray-900 dark:text-white bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-2 py-0.5 rounded uppercase">
                     {match.date}
                   </div>
                 </div>
@@ -69,11 +69,11 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
                   {/* Header: Category & Hall */}
                   <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
                     <div>
-                      <div className={`text-xs font-bold tracking-wide uppercase mb-1 flex items-center gap-1.5 ${isGreenMode ? 'text-green-700 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <div className={`text-xs font-bold tracking-wide uppercase mb-1 flex items-center gap-1.5 ${isGreenMode ? 'text-green-700 dark:text-green-300' : 'text-gray-900 dark:text-white'}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${isGreenMode ? 'bg-green-500' : 'bg-gray-400'}`}></span>
                         {match.category} {match.group ? `• ${match.group}` : ''}
                       </div>
-                      <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 text-sm font-medium">
+                      <div className="flex items-center gap-1.5 text-gray-900 dark:text-white text-sm font-medium">
                         <MapPin size={14} />
                         {match.hall}
                       </div>
@@ -88,9 +88,9 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
 
                   {/* Teams */}
                   <div className="flex items-center gap-2 mb-3">
-                    <span className={`text-sm font-bold flex-1 text-right ${isGreenMode ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>{match.teamA}</span>
-                    <div className="bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 text-[9px] font-black px-1.5 py-0.5 rounded">VS</div>
-                    <span className={`text-sm font-bold flex-1 text-left ${isGreenMode ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'}`}>{match.teamB}</span>
+                    <span className={`text-sm font-bold flex-1 text-right ${isGreenMode ? 'text-gray-900 dark:text-white' : 'text-gray-900 dark:text-white'}`}>{match.teamA}</span>
+                    <div className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-[9px] font-black px-1.5 py-0.5 rounded">VS</div>
+                    <span className={`text-sm font-bold flex-1 text-left ${isGreenMode ? 'text-gray-900 dark:text-white' : 'text-gray-900 dark:text-white'}`}>{match.teamB}</span>
                   </div>
 
                   {/* Duties (Grid) */}
@@ -105,8 +105,8 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
 
                       // Visual logic for duty boxes
                       let boxClass = 'bg-white dark:bg-gray-700 border-gray-100 dark:border-gray-600';
-                      let textClass = 'text-gray-700 dark:text-gray-200';
-                      let labelClass = 'text-gray-400 dark:text-gray-500';
+                      let textClass = 'text-gray-900 dark:text-white';
+                      let labelClass = 'text-gray-700 dark:text-gray-300';
 
                       if (isRifat) {
                         if (isGreenMode) {
