@@ -433,7 +433,7 @@ const App: React.FC = () => {
 
                         <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 font-bold border-l border-r border-gray-200 dark:border-gray-600 px-3 h-8">
                             <UserIcon size={16} className="text-blue-600 dark:text-blue-400" />
-                            <span className="hidden sm:inline">{user.displayName}</span>
+                            <span className="hidden sm:inline">{user.displayName?.toLocaleUpperCase('tr-TR')}</span>
                         </div>
 
                         <button
@@ -459,10 +459,10 @@ const App: React.FC = () => {
                         <div>
                             {/* Updated Welcome Message */}
                             <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
-                                Hoş Geldiniz, {user.displayName}
+                                Hoş Geldiniz, {user.displayName?.toLocaleUpperCase('tr-TR')}
                             </h2>
                             <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">
-                                Hesabınız onaylandı. Sistemde <strong>{user.displayName}</strong> adına tanımlı maçlar listelenmektedir.
+                                Hesabınız onaylandı. Sistemde <strong>{user.displayName?.toLocaleUpperCase('tr-TR')}</strong> adına tanımlı maçlar listelenmektedir.
                             </p>
                         </div>
                     </div>
