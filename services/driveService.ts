@@ -111,29 +111,42 @@ const scanFolderRecursive = async (folderId: string, onProgress: (msg: string, t
 
   onProgress(`${items.length} öğe bulundu. İşleniyor...`, 'info');
 
-  for (const item of items) {
-    if (item.mimeType === 'application/vnd.google-apps.folder') {
-      if (!recursive) {
-        onProgress(`Alt Klasör Atlanıyor (Derinlik Taraması Kapalı): ${item.name}`, 'info');
-        continue;
-      }
-      // Recursive call for subfolders
-      onProgress(`Alt Klasöre Giriliyor: ${item.name}`, 'info');
-      const subMatches = await scanFolderRecursive(item.id, onProgress, true);
-      allMatches.push(...subMatches);
-    } else {
-      // Process File
-      onProgress(`Analiz ediliyor: ${item.name}`, 'info');
-      try {
-        const matches = await processFile(item, onProgress);
-        allMatches.push(...matches);
-        if (matches.length > 0) {
-          onProgress(`${item.name}: ${matches.length} kayıt eşleşti.`, 'info');
-        }
-      } catch (e) {
-        console.error(`Error processing ${item.name}`, e);
-      }
+  // Separate folders and files
+  const folders = items.filter(i => i.mimeType === 'application/vnd.google-apps.folder');
+  const files = items.filter(i => i.mimeType !== 'application/vnd.google-apps.folder');
+
+  // 1. Process Folders (Sequential/Recursive)
+  for (const folder of folders) {
+    if (!recursive) {
+      onProgress(`Alt Klasör Atlanıyor (Derinlik Taraması Kapalı): ${folder.name}`, 'info');
+      continue;
     }
+    onProgress(`Alt Klasöre Giriliyor: ${folder.name}`, 'info');
+    const subMatches = await scanFolderRecursive(folder.id, onProgress, true);
+    allMatches.push(...subMatches);
+  }
+
+  // 2. Process Files (Parallel with Limit)
+  const CONCURRENCY_LIMIT = 5;
+  for (let i = 0; i < files.length; i += CONCURRENCY_LIMIT) {
+    const chunk = files.slice(i, i + CONCURRENCY_LIMIT);
+
+    const promises = chunk.map(async (file) => {
+      onProgress(`Analiz ediliyor: ${file.name}`, 'info');
+      try {
+        const matches = await processFile(file, onProgress);
+        if (matches.length > 0) {
+          onProgress(`${file.name}: ${matches.length} kayıt eşleşti.`, 'info');
+        }
+        return matches;
+      } catch (e) {
+        console.error(`Error processing ${file.name}`, e);
+        return [];
+      }
+    });
+
+    const results = await Promise.all(promises);
+    results.forEach(r => allMatches.push(...r));
   }
 
   return allMatches;
