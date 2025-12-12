@@ -1,0 +1,5 @@
+{
+  "name": "Rifat Gürses Match Finder",
+  "description": "An AI-powered tool to extract match assignments for Rifat Gürses from basketball schedule documents.",
+  "requestFramePermissions": []
+}
