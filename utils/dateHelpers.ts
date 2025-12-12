@@ -9,8 +9,8 @@ export const parseDate = (dateStr: string): Date | null => {
   try {
     const cleanStr = dateStr.trim();
 
-    // Try Turkish format first: "18 Ekim 2025" or "18 EKİM 2025"
-    const turkishMatch = cleanStr.match(/^(\d{1,2})\s+([A-Za-zÇĞİÖŞÜçğıöşü]+)\s+(\d{4})$/i);
+    // Try Turkish format: "18 Ekim 2025" or "6 Aralık 2025 Cumartesi" (with optional weekday)
+    const turkishMatch = cleanStr.match(/^(\d{1,2})\s+([A-Za-zÇĞİÖŞÜçğıöşü]+)\s+(\d{4})(?:\s+[A-Za-zÇĞİÖŞÜçğıöşü]+)?$/i);
     if (turkishMatch) {
       const day = parseInt(turkishMatch[1], 10);
       const monthName = turkishMatch[2].toLowerCase()
