@@ -557,7 +557,7 @@ const App: React.FC = () => {
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-colors duration-300">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs md:text-sm">
             <div className="text-gray-400 font-medium">
-                Sistem v10.4 &copy; 2025
+                Sistem v10.5 &copy; 2025
             </div>
             <div className="text-gray-500 dark:text-gray-400 font-medium hidden md:block">
                {isAnalyzing ? (

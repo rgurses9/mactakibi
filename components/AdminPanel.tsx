@@ -58,6 +58,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, currentUserEma
       if (!dateStr) return "Bilinmiyor";
       const start = new Date(dateStr);
       const now = new Date();
+      // Handle invalid dates
+      if (isNaN(start.getTime())) return "Bilinmiyor";
+
       const diffTime = Math.abs(now.getTime() - start.getTime());
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
@@ -133,7 +136,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, currentUserEma
                                 filteredUsers.map(user => {
                                     const isAdmin = user.role === 'admin' || user.email === 'admin@mactakip.com';
                                     const isMe = currentUserEmail === user.email;
-                                    const joinDate = user.createdAt ? new Date(user.createdAt) : new Date();
+                                    const joinDate = user.createdAt ? new Date(user.createdAt) : null;
 
                                     return (
                                         <tr key={user.uid} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
@@ -158,15 +161,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, currentUserEma
                                             </td>
                                             <td className="p-4">
                                                 <div className="flex flex-col">
-                                                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
-                                                        <Calendar size={12} className="text-gray-400" />
-                                                        {joinDate.toLocaleDateString('tr-TR')} 
-                                                        <span className="text-gray-400 font-normal">{joinDate.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})}</span>
-                                                    </span>
-                                                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 mt-0.5 flex items-center gap-1">
-                                                        <Clock size={10} />
-                                                        {calculateDuration(user.createdAt)}
-                                                    </span>
+                                                    {joinDate ? (
+                                                        <>
+                                                            <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-1.5">
+                                                                <Calendar size={12} className="text-gray-400" />
+                                                                {joinDate.toLocaleDateString('tr-TR')} 
+                                                                <span className="text-gray-400 font-normal">{joinDate.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})}</span>
+                                                            </span>
+                                                            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 mt-0.5 flex items-center gap-1">
+                                                                <Clock size={10} />
+                                                                {calculateDuration(user.createdAt)}
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-xs text-gray-400 italic">Tarih Bilgisi Yok</span>
+                                                    )}
                                                 </div>
                                             </td>
                                             <td className="p-4">
