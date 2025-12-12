@@ -58,6 +58,25 @@ const App: React.FC = () => {
       setIsBotSettingsOpen(false);
   };
 
+  // Helper: Filter matches for RIFAT GÜRSES (client-side filter for Firebase data)
+  const filterForRifat = (list: MatchDetails[]) => {
+      return list.filter(m => {
+          // Normalize function similar to excelService to handle Turkish chars
+          const norm = (str: string) => str ? str.toLocaleUpperCase('tr-TR')
+              .replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ş/g, 'S')
+              .replace(/İ/g, 'I').replace(/Ö/g, 'O').replace(/Ç/g, 'C') : "";
+          
+          const scorer = norm(m.scorer);
+          const timer = norm(m.timer);
+          const shotClock = norm(m.shotClock);
+          
+          // Check for "RIFAT" and "GURSES"
+          const hasRifat = (s: string) => s.includes("RIFAT") && s.includes("GURSES");
+          
+          return hasRifat(scorer) || hasRifat(timer) || hasRifat(shotClock);
+      });
+  };
+
   // Initial Firebase Setup
   useEffect(() => {
     // Check local storage first, otherwise use default config
@@ -81,10 +100,14 @@ const App: React.FC = () => {
         // Subscribe immediately
         const unsubscribe = subscribeToMatches((liveMatches) => {
             const count = liveMatches.length;
-            addLog(`🔥 Firebase Update: ${count} maç alındı.`, 'network');
             
-            // Store ALL matches, do not filter out past ones here
-            setMatches(liveMatches);
+            // Filter live matches to only include Rifat's
+            const myMatches = filterForRifat(liveMatches);
+            
+            addLog(`🔥 Firebase Update: ${count} kayıt alındı, ${myMatches.length} tanesi size ait.`, 'network');
+            
+            // Store filtered matches
+            setMatches(myMatches);
             setLastUpdated(new Date().toLocaleString('tr-TR'));
             
         }, (errMsg) => {
@@ -136,7 +159,7 @@ const App: React.FC = () => {
           
           addLog(`${driveMatches.length} adet ham veri çekildi.`, 'success');
 
-          // Store ALL matches found, separation happens in render
+          // Store ALL matches found (AutoScan already filters for Rifat in excelService)
           setMatches(driveMatches);
           setLastUpdated(new Date().toLocaleString('tr-TR'));
           addLog("Tarama ve analiz tamamlandı.", 'success');
@@ -308,7 +331,7 @@ const App: React.FC = () => {
                         <h3 className="text-lg font-bold text-gray-800">Aktif Maç Bulunamadı</h3>
                         <p className="text-gray-500 text-sm mt-2 max-w-md mx-auto">
                             {isFirebaseActive 
-                                ? "Firebase üzerinde kayıt bulunamadı."
+                                ? "Firebase veritabanında 'RIFAT GÜRSES' adına kayıtlı maç bulunamadı."
                                 : "Google Drive'da 'RIFAT GÜRSES' için tanımlanmış herhangi bir maç bulunamadı."
                             }
                         </p>
@@ -348,7 +371,7 @@ const App: React.FC = () => {
             
             {/* Left: Version & Copyright */}
             <div className="text-gray-400 font-medium">
-                Rıfat Gürses v9.8 &copy; 2025
+                Rıfat Gürses v9.9 &copy; 2025
             </div>
 
             {/* Center: Status Text */}

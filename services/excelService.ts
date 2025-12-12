@@ -2,14 +2,29 @@ import * as XLSX from 'xlsx';
 import { MatchDetails } from '../types';
 
 /**
- * Checks if a cell value contains the target name (Case insensitive).
+ * Normalizes string for loose comparison (Turkish chars -> English chars).
  */
-const containsName = (value: any, name: string): boolean => {
+const normalizeString = (str: string): string => {
+  if (!str) return "";
+  return str.toLocaleUpperCase('tr-TR')
+            .replace(/Ğ/g, 'G')
+            .replace(/Ü/g, 'U')
+            .replace(/Ş/g, 'S')
+            .replace(/İ/g, 'I')
+            .replace(/Ö/g, 'O')
+            .replace(/Ç/g, 'C')
+            .trim();
+};
+
+/**
+ * Checks if a cell value contains the target name (Robust check).
+ */
+const containsName = (value: any, nameParts: string[]): boolean => {
   if (!value) return false;
-  const str = String(value).trim().toLocaleUpperCase('tr-TR');
-  const target = name.toLocaleUpperCase('tr-TR');
+  const val = normalizeString(String(value));
   
-  return str.includes(target);
+  // All parts must be present (e.g. "RIFAT" and "GURSES")
+  return nameParts.every(part => val.includes(normalizeString(part)));
 };
 
 /**
@@ -27,26 +42,22 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string'): MatchDet
 
     rows.forEach((row) => {
       // SÜTUN HARİTASI (Kullanıcı Talebi):
-      // A Sütunu: TARİH
-      // B Sütunu: SALON
-      // C Sütunu: SAAT
-      // D Sütunu: A TAKIMI
-      // E Sütunu: B TAKIMI
-      // F Sütunu: KATEGORİ
-      // G Sütunu: GRUP
-      // J Sütunu: SAYI GÖREVLİSİ
-      // K Sütunu: SAAT GÖREVLİSİ
-      // L Sütunu: ŞUT SAATİ GÖREVLİSİ
+      // A: TARİH, B: SALON, C: SAAT, D: A TAKIMI, E: B TAKIMI
+      // F: KATEGORİ, G: GRUP
+      // J: SAYI GÖREVLİSİ, K: SAAT GÖREVLİSİ, L: ŞUT SAATİ GÖREVLİSİ
 
       const scorer = String(row['J'] || "").trim();
       const timer = String(row['K'] || "").trim();
       const shotClock = String(row['L'] || "").trim();
+      
+      // Target Name Parts
+      const targetParts = ["RIFAT", "GURSES"]; // Check normalized (GÜRSES -> GURSES)
 
       // Check if "RIFAT GÜRSES" exists in any of the duty columns
       if (
-        (containsName(scorer, "RIFAT") && containsName(scorer, "GÜRSES")) ||
-        (containsName(timer, "RIFAT") && containsName(timer, "GÜRSES")) ||
-        (containsName(shotClock, "RIFAT") && containsName(shotClock, "GÜRSES"))
+        containsName(scorer, targetParts) ||
+        containsName(timer, targetParts) ||
+        containsName(shotClock, targetParts)
       ) {
         matches.push({
           date: String(row['A'] || "").trim(),
