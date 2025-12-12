@@ -160,7 +160,7 @@ const App: React.FC = () => {
         });
     };
 
-    // Initialize Firebase and Auth
+    // Initialize Firebase Auth only (no data subscription - using Drive scanning instead)
     useEffect(() => {
         let config = DEFAULT_FIREBASE_CONFIG;
         const savedConfig = localStorage.getItem('firebase_config');
@@ -176,10 +176,11 @@ const App: React.FC = () => {
         try {
             const success = initFirebase(config);
             if (success) {
-                setIsFirebaseActive(true);
-                addLog("Firebase başlatıldı. Veri akışı bekleniyor...", 'success');
+                // Firebase is initialized but we're NOT setting isFirebaseActive to true
+                // This means we'll use Google Drive scanning instead of Firebase data
+                addLog("Firebase Auth başlatıldı. Drive taraması kullanılacak.", 'success');
 
-                // Subscribe to Auth
+                // Subscribe to Auth only
                 const unsubscribeAuth = subscribeToAuthChanges((currentUser) => {
                     setUser(currentUser);
                     setAuthInitialized(true);
@@ -587,9 +588,6 @@ const App: React.FC = () => {
                         <button onClick={() => setIsBotSettingsOpen(true)} className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
                             <Settings size={14} />
                             <span className="hidden sm:inline">Bot Ayarları</span>
-                        </button>
-                        <button onClick={() => setIsFirebaseOpen(true)} className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-                            <Flame size={14} className={isFirebaseActive ? "text-orange-500 fill-orange-500" : ""} />
                         </button>
                         {!isFirebaseActive && (
                             <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
