@@ -23,10 +23,25 @@ const getApiKey = (): string => {
 
 const API_KEY = getApiKey();
 
-// The folder ID provided by the user
-const TARGET_FOLDER_ID = "0ByPao_qBUjN-YXJZSG5Fancybmc";
-// Resource key is required for this specific shared folder
-const RESOURCE_KEY = "0-MKTgAd4XnpTp7S5flJBKuA";
+interface FolderConfig {
+  id: string;
+  resourceKey?: string;
+  name: string;
+}
+
+// Configuration for folders to scan
+const TARGET_FOLDERS: FolderConfig[] = [
+  {
+    id: "0ByPao_qBUjN-YXJZSG5Fancybmc",
+    resourceKey: "0-MKTgAd4XnpTp7S5flJBKuA",
+    name: "Ana Maç Klasörü"
+  },
+  {
+    id: "1Tqtn2oN96UAyeARYtmYFGSfzkrSJOG9s",
+    resourceKey: undefined, // No resource key provided in the link for the second folder
+    name: "Ek Maç Klasörü"
+  }
+];
 
 interface DriveItem {
   id: string;
@@ -34,12 +49,16 @@ interface DriveItem {
   mimeType: string;
 }
 
-type LogType = 'info' | 'network';
+type LogType = 'info' | 'network' | 'success' | 'error' | 'warning';
 
 /**
  * Recursively scans a folder for Spreadsheets and Excel files.
  */
-const scanFolderRecursive = async (folderId: string, onProgress: (msg: string, type?: LogType) => void): Promise<MatchDetails[]> => {
+const scanFolderRecursive = async (
+    folderId: string, 
+    rootConfig: FolderConfig,
+    onProgress: (msg: string, type?: LogType) => void
+): Promise<MatchDetails[]> => {
   const allMatches: MatchDetails[] = [];
 
   // Query: Inside parent folder, not trashed, and is either Sheet, Excel or Folder
@@ -48,14 +67,20 @@ const scanFolderRecursive = async (folderId: string, onProgress: (msg: string, t
   // Corrected URL: Removed deprecated 'includeItemsFromAllDrives'
   const listUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&key=${API_KEY}&fields=files(id,name,mimeType)&supportsAllDrives=true`;
 
-  onProgress(`Drive API İsteği: LIST files...`, 'network');
+  onProgress(`Drive İsteği (${rootConfig.name}): Liste alınıyor...`, 'network');
 
-  const response = await fetch(listUrl, {
-      headers: {
-          'X-Goog-Drive-Resource-Keys': `${TARGET_FOLDER_ID}/${RESOURCE_KEY}`,
-          'Accept': 'application/json'
-      }
-  });
+  // Prepare headers based on the root folder's resource key requirement
+  const headers: HeadersInit = {
+      'Accept': 'application/json'
+  };
+  
+  // If the root folder requires a resource key, we include it. 
+  // It's formatted as "RootFolderID/ResourceKey". This grants access to the tree.
+  if (rootConfig.resourceKey) {
+      headers['X-Goog-Drive-Resource-Keys'] = `${rootConfig.id}/${rootConfig.resourceKey}`;
+  }
+
+  const response = await fetch(listUrl, { headers });
 
   if (!response.ok) {
       const errText = await response.text();
@@ -69,8 +94,7 @@ const scanFolderRecursive = async (folderId: string, onProgress: (msg: string, t
            throw new Error("API Key yapılandırma hatası (Geçersiz Argüman).");
         }
         if (response.status === 403) {
-           // This is the specific error fix
-           throw new Error("Erişim reddedildi (403). API Key'in Google Drive API yetkisi eksik olabilir.");
+           throw new Error("Erişim reddedildi (403). API Key yetkisi eksik veya klasör erişilebilir değil.");
         }
         if (errJson.error?.message) {
             throw new Error(`Drive API: ${errJson.error.message}`);
@@ -79,32 +103,33 @@ const scanFolderRecursive = async (folderId: string, onProgress: (msg: string, t
          if (e.message && (e.message.includes("API Key") || e.message.includes("Drive API") || e.message.includes("403"))) throw e;
       }
       
-      if (folderId === TARGET_FOLDER_ID) {
+      // If the root folder fails, throw. Subfolders failing might be partial errors.
+      if (folderId === rootConfig.id) {
           throw new Error(`Klasör erişim hatası (${response.status}).`);
       }
       return [];
   }
 
-  onProgress(`API Yanıtı: 200 OK - Dosya Listesi Alındı`, 'network');
   const data = await response.json();
   const items: DriveItem[] = data.files || [];
   
-  onProgress(`${items.length} öğe bulundu. İşleniyor...`, 'info');
+  if (items.length > 0) {
+      onProgress(`${rootConfig.name}: ${items.length} öğe inceleniyor...`, 'info');
+  }
 
   for (const item of items) {
       if (item.mimeType === 'application/vnd.google-apps.folder') {
-          // Recursive call for subfolders
-          onProgress(`Alt Klasöre Giriliyor: ${item.name}`, 'info');
-          const subMatches = await scanFolderRecursive(item.id, onProgress);
+          // Recursive call for subfolders. Pass the same rootConfig for headers.
+          const subMatches = await scanFolderRecursive(item.id, rootConfig, onProgress);
           allMatches.push(...subMatches);
       } else {
           // Process File
-          onProgress(`Analiz ediliyor: ${item.name}`, 'info');
+          onProgress(`Analiz: ${item.name}`, 'info');
           try {
-             const matches = await processFile(item, onProgress);
+             const matches = await processFile(item, rootConfig, onProgress);
              allMatches.push(...matches);
              if (matches.length > 0) {
-                 onProgress(`${item.name}: ${matches.length} kayıt eşleşti.`, 'info');
+                 onProgress(`✅ ${item.name}: ${matches.length} maç bulundu.`, 'success');
              }
           } catch (e) {
              console.error(`Error processing ${item.name}`, e);
@@ -115,13 +140,18 @@ const scanFolderRecursive = async (folderId: string, onProgress: (msg: string, t
   return allMatches;
 };
 
-const processFile = async (file: DriveItem, onProgress: (msg: string, type?: LogType) => void): Promise<MatchDetails[]> => {
+const processFile = async (
+    file: DriveItem, 
+    rootConfig: FolderConfig,
+    onProgress: (msg: string, type?: LogType) => void
+): Promise<MatchDetails[]> => {
     let matches: MatchDetails[] = [];
     
-    // Check if we need resource key for this specific file
-    // Usually, providing the folder resource key in the header covers children, 
-    // but explicitly handling headers is safer.
-    const headers = { 'X-Goog-Drive-Resource-Keys': `${TARGET_FOLDER_ID}/${RESOURCE_KEY}` };
+    // Headers for file download/export
+    const headers: HeadersInit = {};
+    if (rootConfig.resourceKey) {
+        headers['X-Goog-Drive-Resource-Keys'] = `${rootConfig.id}/${rootConfig.resourceKey}`;
+    }
             
     if (file.mimeType === 'application/vnd.google-apps.spreadsheet') {
         const exportUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv&key=${API_KEY}`;
@@ -151,12 +181,27 @@ export const autoScanDriveFolder = async (onProgress: (msg: string, type?: LogTy
     throw new Error("API Key bulunamadı veya geçersiz.");
   }
 
+  const allResults: MatchDetails[] = [];
+
   try {
-    onProgress("Google Drive bağlantısı kuruluyor...", 'info');
-    return await scanFolderRecursive(TARGET_FOLDER_ID, onProgress);
+    onProgress("Google Drive taraması başlıyor...", 'info');
+    
+    // Iterate through all configured folders
+    for (const folder of TARGET_FOLDERS) {
+        onProgress(`${folder.name} taranıyor...`, 'info');
+        try {
+            const matches = await scanFolderRecursive(folder.id, folder, onProgress);
+            allResults.push(...matches);
+        } catch (e: any) {
+             // Log error but continue to next folder (partial success)
+             console.error(e);
+             onProgress(`${folder.name} Hatası: ${e.message}`, 'error');
+        }
+    }
+
+    return allResults;
   } catch (error: any) {
     console.error("Auto Scan Error:", error);
-    // Rethrow with clean message
     throw new Error(error.message || "Otomatik tarama sırasında hata oluştu.");
   }
 };
