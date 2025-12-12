@@ -352,7 +352,7 @@ const App: React.FC = () => {
     const isAdmin = user?.email === 'admin@admin.com';
 
     if (!authInitialized) {
-        return <div className="min-h-screen flex items-center justify-center bg-[#f3f4f6] dark:bg-gray-900">
+        return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950">
             <div className="flex flex-col items-center gap-2">
                 <RefreshCw className="animate-spin text-blue-600 dark:text-blue-400" size={32} />
                 <span className="text-gray-500 dark:text-gray-400 font-medium">Yükleniyor...</span>
@@ -366,7 +366,7 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#f3f4f6] dark:bg-gray-900 font-sans pb-24 transition-colors duration-300">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950 font-sans pb-24 transition-colors duration-300">
 
             <FirebaseSettings
                 isOpen={isFirebaseOpen}
