@@ -1,9 +1,11 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getDatabase, ref, onValue, off, Database } from 'firebase/database';
+import { getDatabase, ref, onValue, off, set, get, Database } from 'firebase/database';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, Auth, onAuthStateChanged, User } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 import { MatchDetails } from '../types';
 
 let db: Database | null = null;
+let auth: Auth | null = null;
 
 export const initFirebase = (config: any) => {
   try {
@@ -13,16 +15,17 @@ export const initFirebase = (config: any) => {
     } else {
       app = getApp();
     }
-    
+
     db = getDatabase(app);
-    
+    auth = getAuth(app);
+
     // Initialize Analytics if supported in this environment
     if (typeof window !== 'undefined' && config.measurementId) {
-        try {
-            getAnalytics(app);
-        } catch (analyticsError) {
-            console.warn("Firebase Analytics could not be initialized:", analyticsError);
-        }
+      try {
+        getAnalytics(app);
+      } catch (analyticsError) {
+        console.warn("Firebase Analytics could not be initialized:", analyticsError);
+      }
     }
 
     return true;
@@ -33,16 +36,16 @@ export const initFirebase = (config: any) => {
 };
 
 export const subscribeToMatches = (
-  onData: (matches: MatchDetails[]) => void, 
+  onData: (matches: MatchDetails[]) => void,
   onError: (msg: string) => void
 ) => {
   if (!db) {
     onError("Firebase yapılandırılmadı.");
-    return () => {};
+    return () => { };
   }
 
   const matchesRef = ref(db, 'matches');
-  
+
   const unsubscribe = onValue(matchesRef, (snapshot) => {
     const data = snapshot.val();
     if (data) {
@@ -59,4 +62,44 @@ export const subscribeToMatches = (
 
   // Return cleanup function
   return () => off(matchesRef);
+};
+
+// --- AUTHENTICATION ---
+
+export const getFirebaseAuth = () => auth;
+
+export const registerUser = async (email: string, pass: string, userData: any) => {
+  if (!auth || !db) throw new Error("Firebase init edilmedi.");
+  const cred = await createUserWithEmailAndPassword(auth, email, pass);
+
+  // Save extra data to Realtime DB under 'users/{uid}'
+  await set(ref(db, `users/${cred.user.uid}`), {
+    ...userData,
+    email,
+    role: email === 'admin@mactakip.com' ? 'admin' : 'user',
+    createdAt: new Date().toISOString()
+  });
+
+  return cred.user;
+};
+
+export const loginUser = async (email: string, pass: string) => {
+  if (!auth) throw new Error("Firebase init edilmedi.");
+  return await signInWithEmailAndPassword(auth, email, pass);
+};
+
+export const logoutUser = async () => {
+  if (!auth) return;
+  await signOut(auth);
+};
+
+export const getUserProfile = async (uid: string) => {
+  if (!db) return null;
+  const snapshot = await get(ref(db, `users/${uid}`));
+  return snapshot.val();
+};
+
+export const listenToAuthChanges = (callback: (user: User | null) => void) => {
+  if (!auth) return () => { };
+  return onAuthStateChanged(auth, callback);
 };

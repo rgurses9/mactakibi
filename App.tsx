@@ -28,6 +28,11 @@ const DEFAULT_FIREBASE_CONFIG = {
 };
 
 const App: React.FC = () => {
+    // Auth State
+    const [user, setUser] = useState<any>(null);
+    const [authLoading, setAuthLoading] = useState(true);
+    const [authView, setAuthView] = useState<'login' | 'register'>('login');
+
     const [matches, setMatches] = useState<MatchDetails[]>([]);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [progress, setProgress] = useState<string>("");
@@ -63,6 +68,18 @@ const App: React.FC = () => {
         setIsBotSettingsOpen(false);
     };
 
+    // Listen to Auth State
+    useEffect(() => {
+        // Import dynamically to avoid circular dependency issues during init
+        import('./services/firebaseService').then(({ listenToAuthChanges }) => {
+            const unsubscribe = listenToAuthChanges((u) => {
+                setUser(u);
+                setAuthLoading(false);
+            });
+            return () => unsubscribe();
+        });
+    }, []);
+
     const filterForRifat = (list: MatchDetails[]) => {
         return list.filter(m => {
             const norm = (str: string) => str ? str.toLocaleUpperCase('tr-TR')
@@ -80,6 +97,9 @@ const App: React.FC = () => {
     };
 
     useEffect(() => {
+        // Only run main logic if authenticated
+        if (!user) return;
+
         let config = DEFAULT_FIREBASE_CONFIG;
         const savedConfig = localStorage.getItem('firebase_config');
 
@@ -114,9 +134,11 @@ const App: React.FC = () => {
             console.error(e);
             addLog(`Firebase Init Error: ${e.message}`, 'error');
         }
-    }, []);
+    }, [user]); // Run when user logs in
 
     useEffect(() => {
+        if (!user) return; // Don't auto scan if not logged in
+
         if (!hasAutoScanned && !isFirebaseActive) {
             handleAutoScan();
             setHasAutoScanned(true);
@@ -130,7 +152,7 @@ const App: React.FC = () => {
         }, 5 * 60 * 1000);
 
         return () => clearInterval(interval);
-    }, [autoRefresh, hasAutoScanned, isFirebaseActive]);
+    }, [autoRefresh, hasAutoScanned, isFirebaseActive, user]);
 
     const handleAutoScan = async () => {
         if (isFirebaseActive) {
@@ -204,6 +226,12 @@ const App: React.FC = () => {
         }
     };
 
+    const handleLogout = async () => {
+        const { logoutUser } = await import('./services/firebaseService');
+        await logoutUser();
+        // State update handled by listener
+    };
+
     const { upcomingMatches, pastMatches } = useMemo(() => {
         const upcoming: MatchDetails[] = [];
         const past: MatchDetails[] = [];
@@ -236,6 +264,36 @@ const App: React.FC = () => {
         });
         return sorted[0].date;
     }, [upcomingMatches]);
+
+
+    // --- VIEW LOGIC ---
+
+    if (authLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <RefreshCw className="animate-spin text-blue-600" size={32} />
+            </div>
+        );
+    }
+
+    if (!user) {
+        // Load Authentication Screens dynamically
+        const Login = React.lazy(() => import('./components/Auth/Login'));
+        const Register = React.lazy(() => import('./components/Auth/Register'));
+
+        return (
+            <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center"><RefreshCw className="animate-spin" /></div>}>
+                {authView === 'login' ? (
+                    <Login
+                        onSwitchToRegister={() => setAuthView('register')}
+                        onLoginSuccess={() => { } /* Handled by auth listener */}
+                    />
+                ) : (
+                    <Register onSwitchToLogin={() => setAuthView('login')} />
+                )}
+            </React.Suspense>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#f3f4f6] font-sans pb-24">
@@ -281,6 +339,13 @@ const App: React.FC = () => {
                         </div>
                         <h1 className="font-bold text-gray-900 text-lg leading-tight">Maç Takip Paneli</h1>
                     </div>
+                    {/* Logout Button */}
+                    <button
+                        onClick={handleLogout}
+                        className="text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors"
+                    >
+                        Çıkış Yap
+                    </button>
                 </div>
             </div>
 
@@ -391,7 +456,7 @@ const App: React.FC = () => {
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                 <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs md:text-sm">
                     <div className="text-gray-400 font-medium">
-                        Rıfat Gürses v9.9.1 &copy; 2025
+                        Rıfat Gürses v10.0 &copy; 2025
                     </div>
                     <div className="text-gray-500 font-medium hidden md:block">
                         {isAnalyzing ? (
