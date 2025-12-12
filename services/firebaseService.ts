@@ -1,31 +1,28 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getDatabase, ref, onValue, off, set, get, query, orderByChild, equalTo, Database } from 'firebase/database';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, Auth, onAuthStateChanged, User } from "firebase/auth";
-import { getAnalytics } from "firebase/analytics";
+import firebase from 'firebase/app';
+import 'firebase/database';
+import 'firebase/auth';
+import 'firebase/analytics';
 import { MatchDetails } from '../types';
 
-let db: Database | null = null;
-let auth: Auth | null = null;
+let db: firebase.database.Database | null = null;
+let auth: firebase.auth.Auth | null = null;
 
 export const initFirebase = (config: any) => {
   try {
-    let app;
-    if (!getApps().length) {
-      app = initializeApp(config);
-    } else {
-      app = getApp();
+    if (!firebase.apps.length) {
+      firebase.initializeApp(config);
     }
-
-    db = getDatabase(app);
-    auth = getAuth(app);
-
+    
+    db = firebase.database();
+    auth = firebase.auth();
+    
     // Initialize Analytics if supported in this environment
     if (typeof window !== 'undefined' && config.measurementId) {
-      try {
-        getAnalytics(app);
-      } catch (analyticsError) {
-        console.warn("Firebase Analytics could not be initialized:", analyticsError);
-      }
+        try {
+            firebase.analytics();
+        } catch (analyticsError) {
+            console.warn("Firebase Analytics could not be initialized:", analyticsError);
+        }
     }
 
     return true;
@@ -36,17 +33,17 @@ export const initFirebase = (config: any) => {
 };
 
 export const subscribeToMatches = (
-  onData: (matches: MatchDetails[]) => void,
+  onData: (matches: MatchDetails[]) => void, 
   onError: (msg: string) => void
 ) => {
   if (!db) {
     onError("Firebase yapılandırılmadı.");
-    return () => { };
+    return () => {};
   }
 
-  const matchesRef = ref(db, 'matches');
-
-  const unsubscribe = onValue(matchesRef, (snapshot) => {
+  const matchesRef = db.ref('matches');
+  
+  const listener = matchesRef.on('value', (snapshot) => {
     const data = snapshot.val();
     if (data) {
       // Data might be an object or array depending on how Apps Script pushed it
@@ -56,68 +53,113 @@ export const subscribeToMatches = (
     } else {
       onData([]);
     }
-  }, (error) => {
+  }, (error: any) => {
     onError(error.message);
   });
 
   // Return cleanup function
-  return () => off(matchesRef);
+  return () => matchesRef.off('value', listener);
 };
 
-// --- AUTHENTICATION ---
+// --- AUTHENTICATION FUNCTIONS ---
 
 export const getFirebaseAuth = () => auth;
 
-export const registerUser = async (email: string, pass: string, userData: any) => {
-  if (!auth || !db) throw new Error("Firebase init edilmedi.");
-  const cred = await createUserWithEmailAndPassword(auth, email, pass);
+export const registerUser = async (email: string, password: string, firstName: string, lastName: string) => {
+  if (!auth || !db) throw new Error("Firebase servisleri başlatılamadı.");
+  
+  // 1. Create Auth User
+  const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+  const user = userCredential.user;
 
-  // Save extra data to Realtime DB under 'users/{uid}'
-  await set(ref(db, `users/${cred.user.uid}`), {
-    ...userData,
-    email,
-    role: email === 'admin@mactakip.com' ? 'admin' : 'user',
-    createdAt: new Date().toISOString()
-  });
+  if (user) {
+    // 2. Update Auth Profile
+    const fullName = `${firstName} ${lastName}`.trim();
+    await user.updateProfile({
+      displayName: fullName
+    });
 
-  return cred.user;
+    // 3. Send verification email
+    await user.sendEmailVerification();
+
+    // ADMIN CHECK: If email is the specific admin email, auto-approve and set role
+    const isAdminEmail = email.toLowerCase() === 'admin@mactakip.com';
+
+    // 4. Create User Record in Database
+    await db.ref('users/' + user.uid).set({
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      role: isAdminEmail ? 'admin' : 'user',
+      isApproved: isAdminEmail ? true : false, // Admins auto-approved, others wait
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  return user;
 };
 
-export const loginUser = async (identifier: string, pass: string) => {
-  if (!auth || !db) throw new Error("Firebase init edilmedi.");
+export const loginUser = async (email: string, password: string) => {
+  if (!auth || !db) throw new Error("Firebase servisleri başlatılamadı.");
+  
+  // 1. Perform Auth Login
+  const userCredential = await auth.signInWithEmailAndPassword(email, password);
+  const user = userCredential.user;
 
-  let email = identifier;
-
-  // If identifier is NOT an email, look it up by username
-  if (!identifier.includes('@')) {
-    const usersRef = ref(db, 'users');
-    const q = query(usersRef, orderByChild('username'), equalTo(identifier));
-    const snapshot = await get(q);
+  if (user) {
+    // 2. Check Database for Approval Status
+    const userRef = db.ref('users/' + user.uid);
+    const snapshot = await userRef.once('value');
 
     if (snapshot.exists()) {
-      // Get the first matching user
-      const userId = Object.keys(snapshot.val())[0];
-      email = snapshot.val()[userId].email;
+      const userData = snapshot.val();
+      
+      // Check if account is approved
+      if (userData.isApproved !== true) {
+        // Force logout immediately
+        await auth.signOut();
+        throw new Error("ACCOUNT_PENDING_APPROVAL");
+      }
     } else {
-      throw new Error("Kullanıcı bulunamadı.");
+      // If database record is missing (deleted by admin), deny access
+      await auth.signOut();
+      throw new Error("Kullanıcı kaydı bulunamadı veya silinmiş.");
     }
   }
 
-  return await signInWithEmailAndPassword(auth, email, pass);
+  return user;
 };
 
 export const logoutUser = async () => {
   if (!auth) return;
-  await signOut(auth);
+  await auth.signOut();
 };
 
-export const getUserProfile = async (uid: string) => {
-  if (!db) return null;
-  const snapshot = await get(ref(db, `users/${uid}`));
-  return snapshot.val();
+export const subscribeToAuthChanges = (callback: (user: firebase.User | null) => void) => {
+  if (!auth) return () => {};
+  return auth.onAuthStateChanged(callback);
 };
 
-export const listenToAuthChanges = (callback: (user: User | null) => void) => {
-  if (!auth) return () => { };
-  return onAuthStateChanged(auth, callback);
+// --- USER MANAGEMENT (ADMIN) ---
+
+export const getAllUsers = async () => {
+  if (!db) throw new Error("Veritabanı bağlantısı yok.");
+  const usersRef = db.ref('users');
+  const snapshot = await usersRef.once('value');
+  if (snapshot.exists()) {
+    const data = snapshot.val();
+    // Convert object to array and include UID
+    return Object.keys(data).map(key => ({
+      uid: key,
+      ...data[key]
+    }));
+  }
+  return [];
+};
+
+export const deleteUser = async (uid: string) => {
+  if (!db) throw new Error("Veritabanı bağlantısı yok.");
+  // Removing from Realtime DB effectively bans them from logging in 
+  // because loginUser checks for DB record existence and approval.
+  await db.ref('users/' + uid).remove();
 };

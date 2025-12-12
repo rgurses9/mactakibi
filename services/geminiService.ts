@@ -30,7 +30,7 @@ export const findMatchesInFile = async (file: File): Promise<MatchDetails[]> => 
     const filePart = await fileToPart(file);
 
     const model = "gemini-2.5-flash";
-
+    
     // Updated prompt with strict column mapping provided by the user
     const prompt = `
       Bu görseldeki basketbol maç programını analiz et.
