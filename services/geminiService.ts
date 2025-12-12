@@ -6,7 +6,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 /**
  * Converts a File object to a Base64 string suitable for Gemini.
  */
-const fileToPart = (file: File): Promise<{ mimeType: string; data: string }> => {
+const fileToPart = (file: File): Promise<{ inlineData: { mimeType: string; data: string } }> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -14,8 +14,10 @@ const fileToPart = (file: File): Promise<{ mimeType: string; data: string }> => 
       // Handle potential prefix if it exists (though split usually works fine)
       const base64String = result.includes(',') ? result.split(',')[1] : result;
       resolve({
-        mimeType: file.type,
-        data: base64String,
+        inlineData: {
+          mimeType: file.type,
+          data: base64String,
+        }
       });
     };
     reader.onerror = reject;
@@ -28,7 +30,7 @@ export const findMatchesInFile = async (file: File): Promise<MatchDetails[]> => 
     const filePart = await fileToPart(file);
 
     const model = "gemini-2.5-flash";
-    
+
     // Updated prompt with strict column mapping provided by the user
     const prompt = `
       Bu görseldeki basketbol maç programını analiz et.

@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { MatchDetails } from "../types";
 import { findMatchesInRawData } from "./excelService";
 
