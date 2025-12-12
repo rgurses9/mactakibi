@@ -42,6 +42,7 @@ const Auth: React.FC = () => {
         setIsLogin(true);
       }
     } catch (err: any) {
+      console.error('Registration/Login Error:', err);
       let msg = "Bir hata oluştu.";
 
       if (err.message === "ACCOUNT_PENDING_APPROVAL") {
@@ -56,6 +57,11 @@ const Auth: React.FC = () => {
       if (err.message.includes("auth/email-already-in-use")) msg = "Bu e-posta zaten kullanımda.";
       if (err.message.includes("Şifreler eşleşmiyor")) msg = err.message;
       if (err.message.includes("en az 6 karakter")) msg = err.message;
+
+      // Show actual error message if no specific match found
+      if (msg === "Bir hata oluştu." && err.message) {
+        msg = `Hata: ${err.message}`;
+      }
 
       setError(msg);
     } finally {
