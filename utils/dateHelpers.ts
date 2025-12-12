@@ -24,26 +24,34 @@ export const parseDate = (dateStr: string): Date | null => {
   }
 };
 
+/**
+ * Checks if the match date/time is in the past relative to NOW.
+ * Returns true if match is in the past (Pasif Görev).
+ * Returns false if match is in the future (Aktif Görev).
+ */
 export const isPastDate = (dateStr: string, timeStr?: string): boolean => {
   const date = parseDate(dateStr);
-  if (!date) return false; 
+  if (!date) return false; // If date is invalid, keep it visible (Active)
   
   const now = new Date();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Start of today
-
-  const matchDate = new Date(date);
-  matchDate.setHours(0, 0, 0, 0);
   
-  // 1. If date is strictly in the past (Yesterday or before) -> Past
-  if (matchDate < today) return true;
+  // Create Date objects for comparison at midnight (00:00:00)
+  const todayAtMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const matchDateAtMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   
-  // 2. If date is strictly in the future (Tomorrow or later) -> Active (Not Past)
-  if (matchDate > today) return false;
+  // 1. If match day is strictly before today -> PAST
+  if (matchDateAtMidnight.getTime() < todayAtMidnight.getTime()) {
+    return true;
+  }
+  
+  // 2. If match day is strictly after today -> FUTURE (ACTIVE)
+  if (matchDateAtMidnight.getTime() > todayAtMidnight.getTime()) {
+    return false;
+  }
 
-  // 3. It is TODAY. Check time.
+  // 3. It is TODAY. We must check the time.
   if (!timeStr) {
-    // If no time provided, assume Active (safe default)
+    // If no time provided, assume Active to be safe (or User preference)
     return false;
   }
 
@@ -53,18 +61,21 @@ export const isPastDate = (dateStr: string, timeStr?: string): boolean => {
     const [hours, minutes] = cleanTime.split(':').map(Number);
 
     if (!isNaN(hours) && !isNaN(minutes)) {
-       const matchDateTime = new Date(matchDate);
+       const matchDateTime = new Date(date);
        matchDateTime.setHours(hours, minutes, 0, 0);
 
-       // If match time matches or is before current time, consider it Active? 
-       // Requirement: "maç başlama tarihi ve saati o anki saatten geçmiş ise pasifte görüntüle"
-       // So if matchDateTime < now -> Past.
-       return matchDateTime < now;
+       // STRICT CHECK:
+       // If current time is greater than or equal to match time, consider it started/past.
+       // Example: Match at 14:00. 
+       // If Now is 13:59 -> Active (False)
+       // If Now is 14:00 -> Past (True)
+       return now >= matchDateTime;
     }
   } catch (e) {
     // Time parse error, keep as Active
     return false;
   }
   
+  // Fallback: If time parsing failed logic somehow, keep active
   return false;
 };
