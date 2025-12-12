@@ -61,12 +61,15 @@ const scanFolderRecursive = async (folderId: string, onProgress: (msg: string, t
 
   onProgress(`Drive API İsteği: LIST files (Folder: ...${folderId.substr(-5)})`, 'network');
 
-  const response = await fetch(listUrl, {
-    headers: {
-      'X-Goog-Drive-Resource-Keys': `${TARGET_FOLDER_ID}/${RESOURCE_KEY}`,
-      'Accept': 'application/json'
-    }
-  });
+  const headers: HeadersInit = {
+    'Accept': 'application/json'
+  };
+
+  if (RESOURCE_KEY) {
+    headers['X-Goog-Drive-Resource-Keys'] = `${TARGET_FOLDER_ID}/${RESOURCE_KEY}`;
+  }
+
+  const response = await fetch(listUrl, { headers });
 
   if (!response.ok) {
     const errText = await response.text();
@@ -144,9 +147,10 @@ const processFile = async (file: DriveItem, onProgress: (msg: string, type?: Log
     const exportUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv&key=${API_KEY}`;
     onProgress(`İndiriliyor (CSV): ${file.name}...`, 'network');
 
-    const fileResp = await fetch(exportUrl, {
-      headers: { 'X-Goog-Drive-Resource-Keys': `${TARGET_FOLDER_ID}/${RESOURCE_KEY}` }
-    });
+    const headers: HeadersInit = {};
+    if (RESOURCE_KEY) headers['X-Goog-Drive-Resource-Keys'] = `${TARGET_FOLDER_ID}/${RESOURCE_KEY}`;
+
+    const fileResp = await fetch(exportUrl, { headers });
     if (fileResp.ok) {
       const csvText = await fileResp.text();
       matches = findMatchesInRawData(csvText, false); // false = string/csv
@@ -156,9 +160,10 @@ const processFile = async (file: DriveItem, onProgress: (msg: string, type?: Log
     const downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
     onProgress(`İndiriliyor (XLSX): ${file.name}...`, 'network');
 
-    const fileResp = await fetch(downloadUrl, {
-      headers: { 'X-Goog-Drive-Resource-Keys': `${TARGET_FOLDER_ID}/${RESOURCE_KEY}` }
-    });
+    const headers: HeadersInit = {};
+    if (RESOURCE_KEY) headers['X-Goog-Drive-Resource-Keys'] = `${TARGET_FOLDER_ID}/${RESOURCE_KEY}`;
+
+    const fileResp = await fetch(downloadUrl, { headers });
     if (fileResp.ok) {
       const arrayBuffer = await fileResp.arrayBuffer();
       matches = findMatchesInRawData(new Uint8Array(arrayBuffer), true); // true = binary/excel
