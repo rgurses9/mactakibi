@@ -70,10 +70,10 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
 
                 <div className="text-center mb-8">
                     <div className="bg-green-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg">
-                        <UserPlus size={32} />
+                        <UserPlus size={28} />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-800">Kayıt Ol</h2>
-                    <p className="text-gray-500 mt-2">Bilgileriniz güvenle saklanır</p>
+                    <h2 className="text-xl font-bold text-gray-800">Kayıt Ol</h2>
+                    <p className="text-gray-500 text-sm mt-2">Bilgileriniz güvenle saklanır</p>
                 </div>
 
                 {error && (
@@ -86,7 +86,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Kullanıcı Adı</label>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Kullanıcı Adı</label>
                             <input
                                 name="username"
                                 required
@@ -97,7 +97,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Ad Soyad</label>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Ad Soyad</label>
                             <input
                                 name="fullName"
                                 required
@@ -110,10 +110,10 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Telefon Numarası</label>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Telefon Numarası</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                <Phone size={18} />
+                                <Phone size={16} />
                             </div>
                             <input
                                 name="phone"
@@ -127,10 +127,10 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">E-Posta</label>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">E-Posta</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                <Mail size={18} />
+                                <Mail size={16} />
                             </div>
                             <input
                                 name="email"
@@ -145,10 +145,10 @@ const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Şifre</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                <Lock size={18} />
+                                <Lock size={16} />
                             </div>
                             <input
                                 name="password"

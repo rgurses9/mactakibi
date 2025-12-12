@@ -28,44 +28,15 @@ export const isPastDate = (dateStr: string, timeStr?: string): boolean => {
   const date = parseDate(dateStr);
   if (!date) return false;
 
-  const now = new Date();
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
 
   const matchDate = new Date(date);
   matchDate.setHours(0, 0, 0, 0);
 
-  // 1. If date is strictly in the past (Yesterday or before) -> Past
-  if (matchDate < today) return true;
-
-  // 2. If date is strictly in the future (Tomorrow or later) -> Active (Not Past)
-  if (matchDate > today) return false;
-
-  // 3. It is TODAY. Check time.
-  if (!timeStr) {
-    // If no time provided, assume Active (safe default)
-    return false;
-  }
-
-  try {
-    // Normalize time separator (14.30 or 14:30 -> 14:30)
-    const cleanTime = timeStr.trim().replace('.', ':');
-    const [hours, minutes] = cleanTime.split(':').map(Number);
-
-    if (!isNaN(hours) && !isNaN(minutes)) {
-      const matchDateTime = new Date(matchDate);
-      matchDateTime.setHours(hours, minutes, 0, 0);
-
-      // Requirement: "Active" must be strictly AFTER now.
-      // So if matchDateTime <= now -> Past (Passive).
-      return matchDateTime <= now;
-    }
-  } catch (e) {
-    // Time parse error, keep as Active
-    return false;
-  }
-
-  return false;
+  // If match date is strictly before today, it is Past.
+  // If match date is Today or Future, it is Active.
+  return matchDate < today;
 };
 
 export const isDateBefore = (dateStr: string, limitDateStr: string = "01.08.2025"): boolean => {

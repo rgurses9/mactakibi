@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getDatabase, ref, onValue, off, set, get, Database } from 'firebase/database';
+import { getDatabase, ref, onValue, off, set, get, query, orderByChild, equalTo, Database } from 'firebase/database';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, Auth, onAuthStateChanged, User } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 import { MatchDetails } from '../types';
@@ -83,8 +83,26 @@ export const registerUser = async (email: string, pass: string, userData: any) =
   return cred.user;
 };
 
-export const loginUser = async (email: string, pass: string) => {
-  if (!auth) throw new Error("Firebase init edilmedi.");
+export const loginUser = async (identifier: string, pass: string) => {
+  if (!auth || !db) throw new Error("Firebase init edilmedi.");
+
+  let email = identifier;
+
+  // If identifier is NOT an email, look it up by username
+  if (!identifier.includes('@')) {
+    const usersRef = ref(db, 'users');
+    const q = query(usersRef, orderByChild('username'), equalTo(identifier));
+    const snapshot = await get(q);
+
+    if (snapshot.exists()) {
+      // Get the first matching user
+      const userId = Object.keys(snapshot.val())[0];
+      email = snapshot.val()[userId].email;
+    } else {
+      throw new Error("Kullanıcı bulunamadı.");
+    }
+  }
+
   return await signInWithEmailAndPassword(auth, email, pass);
 };
 

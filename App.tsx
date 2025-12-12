@@ -35,7 +35,7 @@ const App: React.FC = () => {
     // Auth State
     const [user, setUser] = useState<any>(null);
     const [authLoading, setAuthLoading] = useState(true);
-    const [authView, setAuthView] = useState<'login' | 'register'>('login');
+    const [authView, setAuthView] = useState<'login' | 'register'>('register');
 
     const [matches, setMatches] = useState<MatchDetails[]>([]);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -337,7 +337,7 @@ const App: React.FC = () => {
                         <div className="bg-blue-600 text-white p-2 rounded-lg">
                             <Shield size={20} />
                         </div>
-                        <h1 className="font-bold text-gray-900 text-lg leading-tight">Maç Takip Paneli</h1>
+                        <h1 className="font-bold text-gray-900 text-base leading-tight">Maç Takip Paneli</h1>
                     </div>
                     {/* Logout Button */}
                     <button
@@ -358,8 +358,8 @@ const App: React.FC = () => {
                             </div>
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-gray-800">Hoş Geldiniz, Rıfat Bey</h2>
-                            <p className="text-gray-500 text-sm mt-0.5">Bugün (saati gelmeyen) ve sonraki maçlar aktif, saati geçenler pasif listelenir.</p>
+                            <h2 className="text-xl font-bold text-gray-800">Hoş Geldiniz, Rıfat Bey</h2>
+                            <p className="text-gray-500 text-xs mt-0.5">Bugün (saati gelmeyen) ve sonraki maçlar aktif, saati geçenler pasif listelenir.</p>
                         </div>
                     </div>
                 </div>
@@ -372,8 +372,8 @@ const App: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
                             <div>
-                                <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Aktif Görevler</div>
-                                <div className="text-3xl font-extrabold text-blue-600">{activeMatchCount}</div>
+                                <div className="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Aktif Görevler</div>
+                                <div className="text-2xl font-extrabold text-blue-600">{activeMatchCount}</div>
                             </div>
                             <div className="bg-blue-50 text-blue-600 p-3 rounded-lg">
                                 <Briefcase size={24} />
@@ -381,8 +381,8 @@ const App: React.FC = () => {
                         </div>
                         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
                             <div>
-                                <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Sıradaki</div>
-                                <div className="text-xl font-extrabold text-gray-900 truncate">{nextMatchDate}</div>
+                                <div className="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-1">Sıradaki</div>
+                                <div className="text-lg font-extrabold text-gray-900 truncate">{nextMatchDate}</div>
                             </div>
                             <div className="bg-green-50 text-green-600 p-3 rounded-lg">
                                 <Calendar size={24} />

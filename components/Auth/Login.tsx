@@ -38,10 +38,10 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister, onLoginSuccess }) => 
 
                 <div className="text-center mb-8">
                     <div className="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg">
-                        <Shield size={32} />
+                        <Shield size={28} />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-800">Maç Takip Sistemi</h2>
-                    <p className="text-gray-500 mt-2">Devam etmek için giriş yapın</p>
+                    <h2 className="text-xl font-bold text-gray-800">Maç Takip Sistemi</h2>
+                    <p className="text-gray-500 text-sm mt-2">Devam etmek için giriş yapın</p>
                 </div>
 
                 {error && (
@@ -52,27 +52,27 @@ const Login: React.FC<LoginProps> = ({ onSwitchToRegister, onLoginSuccess }) => 
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">E-Posta Adresi</label>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Kullanıcı Adı veya E-Posta</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                <Mail size={18} />
+                                <Mail size={16} />
                             </div>
                             <input
-                                type="email"
+                                type="text"
                                 required
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                placeholder="ornek@email.com"
+                                placeholder="kullaniciadi veya ornek@email.com"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Şifre</label>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Şifre</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                <Lock size={18} />
+                                <Lock size={16} />
                             </div>
                             <input
                                 type="password"
