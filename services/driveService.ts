@@ -76,11 +76,21 @@ const scanFolderRecursive = async (folderId: string, onProgress: (msg: string, t
         console.error("API Key Invalid Argument:", errJson);
         throw new Error("API Key geçersiz veya yapılandırılmamış.");
       }
+
+      // Check for API Key Restrictions
+      const errorDetails = errJson.error?.details || [];
+      const isKeyBlocked = errorDetails.some((d: any) => d.reason === 'API_KEY_SERVICE_BLOCKED');
+
+      if (isKeyBlocked) {
+        console.error("🚨 API KEY BLOCKED: This API key is restricted and does not allow calling Google Drive API.");
+        throw new Error("API Anahtarı kısıtlanmış! Google Cloud Console'da API Key ayarlarına gidip 'Google Drive API' erişimine izin veriniz.");
+      }
+
       if (response.status === 403) {
-        throw new Error("Erişim reddedildi (403).");
+        throw new Error("Erişim reddedildi (403). API etkinleştirilmemiş olabilir.");
       }
     } catch (e: any) {
-      if (e.message && (e.message.includes("API Key") || e.message.includes("403"))) throw e;
+      if (e.message && (e.message.includes("API Key") || e.message.includes("403") || e.message.includes("kısıtlanmış"))) throw e;
     }
 
     if (folderId === TARGET_FOLDER_ID) {
