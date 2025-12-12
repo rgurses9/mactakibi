@@ -7,7 +7,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, (process as any).cwd(), '');
 
   // Use the correct API Key associated with the project (mactakibi-50e0b)
-  const apiKey = env.API_KEY || env.VITE_API_KEY || "AIzaSyCILoR2i6TtjpMl6pW0OOBhc3naQHAd12Q";
+  let apiKey = env.API_KEY || env.VITE_API_KEY || "AIzaSyCILoR2i6TtjpMl6pW0OOBhc3naQHAd12Q";
+  // Clean apiKey of quotes just in case
+  apiKey = apiKey.replace(/["']/g, "").trim();
+
   const clientId = env.CLIENT_ID || "406619892352-hj8fduiu6vvji54tqj0v50pm3m18fc03.apps.googleusercontent.com";
 
   return {
