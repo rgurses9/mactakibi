@@ -56,10 +56,9 @@ export const isPastDate = (dateStr: string, timeStr?: string): boolean => {
       const matchDateTime = new Date(matchDate);
       matchDateTime.setHours(hours, minutes, 0, 0);
 
-      // If match time matches or is before current time, consider it Active? 
-      // Requirement: "maç başlama tarihi ve saati o anki saatten geçmiş ise pasifte görüntüle"
-      // So if matchDateTime < now -> Past.
-      return matchDateTime < now;
+      // Requirement: "Active" must be strictly AFTER now.
+      // So if matchDateTime <= now -> Past (Passive).
+      return matchDateTime <= now;
     }
   } catch (e) {
     // Time parse error, keep as Active
