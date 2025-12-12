@@ -5,10 +5,11 @@ import ScriptGenerator from './components/ScriptGenerator';
 import NotificationPanel from './components/NotificationPanel';
 import { autoScanDriveFolder } from './services/driveService';
 import { MatchDetails } from './types';
-import { isPastDate } from './utils/dateHelpers';
+import { isPastDate, parseDate } from './utils/dateHelpers';
 import { 
   RefreshCw, Bot, Folder, User, 
-  Calendar, CheckCircle, Briefcase, Clock, Shield
+  Calendar, CheckCircle, Briefcase, Clock, Shield, FileText,
+  Activity, Settings
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -44,11 +45,16 @@ const App: React.FC = () => {
   const handleAutoScan = async () => {
       setIsAnalyzing(true);
       setError(null);
-      setProgress("Veriler güncelleniyor...");
+      setProgress("Arka planda taranıyor...");
       
       try {
           const driveMatches = await autoScanDriveFolder((msg) => setProgress(msg));
-          setMatches(driveMatches);
+          
+          // Filter: Only keep matches where date/time has NOT passed
+          // isPastDate checks both date AND time now
+          const activeMatches = driveMatches.filter(m => !isPastDate(m.date, m.time));
+          
+          setMatches(activeMatches);
           setLastUpdated(new Date().toLocaleString('tr-TR'));
       } catch (err: any) {
           console.error(err);
@@ -63,10 +69,25 @@ const App: React.FC = () => {
      handleAutoScan();
   };
 
-  // Stats
-  const totalMatches = matches.length;
-  const pastMatches = matches.filter(m => isPastDate(m.date)).length;
-  const futureMatches = totalMatches - pastMatches;
+  // Stats Calculations
+  const activeMatchCount = matches.length;
+  
+  const nextMatchDate = useMemo(() => {
+      if (matches.length === 0) return "-";
+      // Sort to find the earliest date
+      const sorted = [...matches].sort((a, b) => {
+          const da = parseDate(a.date);
+          const db = parseDate(b.date);
+          if (!da || !db) return 0;
+          return da.getTime() - db.getTime();
+      });
+      return sorted[0].date;
+  }, [matches]);
+
+  const activeFilesCount = useMemo(() => {
+      const uniqueFiles = new Set(matches.map(m => m.sourceFile));
+      return uniqueFiles.size;
+  }, [matches]);
 
   // Generate notifications from matches
   const notifications = useMemo(() => {
@@ -86,29 +107,19 @@ const App: React.FC = () => {
   }, [matches, lastUpdated]);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 font-sans pb-12">
+    <div className="min-h-screen bg-[#f3f4f6] font-sans pb-24">
       
-      {/* --- TOP NAVIGATION BAR --- */}
+      {/* --- TOP HEADER (Simplified) --- */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <div className="bg-blue-600 text-white p-2 rounded-lg">
                     <Shield size={20} />
                 </div>
-                <div>
-                    <h1 className="font-bold text-gray-900 text-lg leading-tight">Maç Takip Paneli</h1>
-                    <div className="text-[10px] text-gray-500 font-medium tracking-wider uppercase">Rıfat Gürses v9.0</div>
-                </div>
+                <h1 className="font-bold text-gray-900 text-lg leading-tight">Maç Takip Paneli</h1>
             </div>
 
             <div className="flex items-center gap-4">
-                 <div className="hidden md:flex items-center gap-2 text-xs text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
-                    <Clock size={12} />
-                    Son Güncelleme: <span className="font-semibold text-gray-700">{lastUpdated}</span>
-                </div>
-                
-                <div className="h-6 w-px bg-gray-200 hidden md:block"></div>
-
                 <div className="flex bg-gray-100 p-1 rounded-lg">
                     <button 
                         onClick={() => setActiveTab('dashboard')}
@@ -120,49 +131,26 @@ const App: React.FC = () => {
                         onClick={() => setActiveTab('automation')}
                         className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${activeTab === 'automation' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                     >
-                        Bot Ayarları
+                        Bot
                     </button>
                 </div>
             </div>
         </div>
       </div>
 
-      {/* --- HERO / CONTROLS --- */}
+      {/* --- HERO (Clean) --- */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex items-center gap-4">
-                     <div className="relative">
-                        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg border-4 border-white">
-                            RG
-                        </div>
-                        <div className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></div>
-                     </div>
-                     <div>
-                        <h2 className="text-2xl font-bold text-gray-800">Hoş Geldiniz, Rifat Bey</h2>
-                        <p className="text-gray-500 text-sm">Güncel maç programınız ve görevleriniz aşağıdadır.</p>
-                     </div>
-                </div>
-
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <label className="flex items-center gap-2 text-xs font-medium cursor-pointer bg-white px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm select-none">
-                        <input 
-                        type="checkbox" 
-                        checked={autoRefresh}
-                        onChange={(e) => setAutoRefresh(e.target.checked)}
-                        className="rounded text-blue-600 focus:ring-blue-500 border-gray-300" 
-                        />
-                        <span className={autoRefresh ? "text-blue-600" : "text-gray-500"}>Otomatik Yenile</span>
-                    </label>
-                    <button 
-                        onClick={handleRefresh}
-                        disabled={isAnalyzing}
-                        className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-70 shadow-md active:scale-95 transform duration-150"
-                    >
-                        <RefreshCw size={16} className={isAnalyzing ? "animate-spin" : ""} />
-                        {isAnalyzing ? "Taranıyor..." : "Programı Yenile"}
-                    </button>
-                </div>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="flex items-center gap-4">
+                    <div className="relative">
+                    <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-md ring-4 ring-blue-50">
+                        RG
+                    </div>
+                    </div>
+                    <div>
+                    <h2 className="text-2xl font-bold text-gray-800">Hoş Geldiniz, Rıfat Bey</h2>
+                    <p className="text-gray-500 text-sm mt-0.5">Sadece güncel ve saati gelmemiş müsabakalar listelenir.</p>
+                    </div>
             </div>
         </div>
       </div>
@@ -177,48 +165,37 @@ const App: React.FC = () => {
                 <div className="lg:col-span-8 space-y-6">
                     {/* KPI Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between group hover:border-blue-300 transition-colors">
+                        
+                        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
                             <div>
-                                <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Toplam Görev</div>
-                                <div className="text-3xl font-extrabold text-gray-900">{totalMatches}</div>
+                                <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Aktif Görevler</div>
+                                <div className="text-3xl font-extrabold text-blue-600">{activeMatchCount}</div>
                             </div>
-                            <div className="bg-blue-50 text-blue-600 p-3 rounded-lg group-hover:bg-blue-100 transition-colors">
+                            <div className="bg-blue-50 text-blue-600 p-3 rounded-lg">
                                 <Briefcase size={24} />
                             </div>
                         </div>
                         
-                        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between relative overflow-hidden group hover:border-green-300 transition-colors">
-                            <div className="absolute top-0 right-0 w-16 h-16 bg-green-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
-                            <div className="relative z-10">
-                                <div className="text-green-600 text-xs font-bold uppercase tracking-wider mb-1">Gelecek Maçlar</div>
-                                <div className="text-3xl font-extrabold text-gray-900">{futureMatches}</div>
+                        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Sıradaki</div>
+                                <div className="text-xl font-extrabold text-gray-900 truncate">{nextMatchDate}</div>
                             </div>
-                            <div className="bg-green-50 text-green-600 p-3 rounded-lg relative z-10 group-hover:bg-green-100 transition-colors">
+                            <div className="bg-green-50 text-green-600 p-3 rounded-lg">
                                 <Calendar size={24} />
                             </div>
                         </div>
 
-                        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between group hover:border-gray-300 transition-colors">
+                        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
                             <div>
-                                <div className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Tamamlanan</div>
-                                <div className="text-3xl font-extrabold text-gray-900">{pastMatches}</div>
+                                <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Kaynaklar</div>
+                                <div className="text-3xl font-extrabold text-gray-900">{activeFilesCount}</div>
                             </div>
-                            <div className="bg-gray-100 text-gray-500 p-3 rounded-lg group-hover:bg-gray-200 transition-colors">
-                                <CheckCircle size={24} />
+                            <div className="bg-purple-50 text-purple-500 p-3 rounded-lg">
+                                <FileText size={24} />
                             </div>
                         </div>
                     </div>
-
-                    {/* Scanning Indicator */}
-                    {isAnalyzing && (
-                        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center gap-4 animate-pulse">
-                            <div className="animate-spin text-blue-600 bg-white p-2 rounded-full shadow-sm"><RefreshCw size={20} /></div>
-                            <div>
-                                <div className="text-blue-900 font-bold text-sm">{progress}</div>
-                                <div className="text-xs text-blue-600">Google Drive verileri çekiliyor...</div>
-                            </div>
-                        </div>
-                    )}
 
                     {/* Error Message */}
                     {error && (
@@ -237,9 +214,10 @@ const App: React.FC = () => {
                             <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
                                 <Folder size={32} className="text-gray-300" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-800">Maç Bulunamadı</h3>
+                            <h3 className="text-lg font-bold text-gray-800">Aktif Maç Bulunamadı</h3>
                             <p className="text-gray-500 text-sm mt-2 max-w-md mx-auto">
-                                Google Drive klasöründe "RIFAT GÜRSES" ismine sahip herhangi bir maç ataması bulunamadı.
+                                Google Drive'da "RIFAT GÜRSES" için tanımlanmış güncel veya gelecek tarihli maç bulunamadı.
+                                <br/><span className="text-xs text-gray-400 opacity-75">(Saati geçen maçlar otomatik olarak gizlenir)</span>
                             </p>
                         </div>
                     )}
@@ -257,36 +235,29 @@ const App: React.FC = () => {
 
                 {/* Right Column: Notifications & Info (Span 4) */}
                 <div className="lg:col-span-4 space-y-6">
-                    <div className="sticky top-24 space-y-6">
-                        <NotificationPanel notifications={notifications} />
-                        
-                        {/* Additional Info Card */}
-                        <div className="bg-gradient-to-br from-indigo-900 to-blue-900 rounded-xl p-6 text-white shadow-lg overflow-hidden relative">
-                             <div className="absolute top-0 right-0 opacity-10 transform translate-x-1/4 -translate-y-1/4">
-                                <Bot size={120} />
-                             </div>
-                            <h4 className="font-bold text-white mb-2 flex items-center gap-2 relative z-10">
-                                <Bot size={18} className="text-blue-300" />
-                                Sistem Durumu
-                            </h4>
-                            <div className="space-y-4 relative z-10">
-                                <div className="flex items-center justify-between text-sm border-b border-white/10 pb-2">
-                                    <span className="text-blue-200">Bot Durumu</span>
-                                    <span className="flex items-center gap-1.5 text-green-400 font-bold">
-                                        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                                        Aktif
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between text-sm border-b border-white/10 pb-2">
-                                    <span className="text-blue-200">Tarama Aralığı</span>
-                                    <span className="text-white">5 Dakika</span>
-                                </div>
-                                <div>
-                                    <div className="text-[10px] uppercase font-bold text-blue-400 mb-1">İzlenen Klasör</div>
-                                    <div className="text-xs text-blue-100 bg-black/20 px-2 py-1.5 rounded font-mono break-all border border-white/10">
-                                        0ByPao_qBUjN-YXJZSG5Fancybmc
-                                    </div>
-                                </div>
+                    <NotificationPanel notifications={notifications} />
+                    
+                    {/* System Status - Moved to background/subtle */}
+                    <div className="bg-white border border-gray-200 rounded-xl p-6 text-gray-500 shadow-sm opacity-80 hover:opacity-100 transition-opacity">
+                        <h4 className="font-bold text-gray-700 mb-4 flex items-center gap-2 text-sm">
+                            <Activity size={16} className="text-gray-400" />
+                            Sistem Durumu
+                        </h4>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between text-xs border-b border-gray-100 pb-2">
+                                <span>Bot Servisi</span>
+                                <span className="flex items-center gap-1.5 text-green-600 font-bold">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                    Çalışıyor
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between text-xs border-b border-gray-100 pb-2">
+                                <span>Filtreleme</span>
+                                <span className="text-gray-700">Geçmiş & Tamamlanan Gizli</span>
+                            </div>
+                            <div className="flex items-center justify-between text-xs pb-2">
+                                <span>Son Kontrol</span>
+                                <span className="font-mono text-gray-600">{lastUpdated.split(' ')[1]}</span>
                             </div>
                         </div>
                     </div>
@@ -299,6 +270,51 @@ const App: React.FC = () => {
            <ScriptGenerator />
         )}
       </main>
+
+      {/* --- BOTTOM FOOTER (Fixed) --- */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs md:text-sm">
+            
+            {/* Left: Version & Copyright */}
+            <div className="text-gray-400 font-medium">
+                Rıfat Gürses v9.2 &copy; 2025
+            </div>
+
+            {/* Center: Status Text */}
+            <div className="text-gray-500 font-medium hidden md:block">
+               {isAnalyzing ? (
+                   <span className="flex items-center gap-2 text-blue-600">
+                       <RefreshCw size={12} className="animate-spin" />
+                       {progress}
+                   </span>
+               ) : (
+                   <span className="opacity-50">Sistem hazır.</span>
+               )}
+            </div>
+
+            {/* Right: Controls (Background) */}
+            <div className="flex items-center gap-4">
+                 <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 hover:text-gray-900 transition-colors">
+                    <input 
+                    type="checkbox" 
+                    checked={autoRefresh}
+                    onChange={(e) => setAutoRefresh(e.target.checked)}
+                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 w-3.5 h-3.5" 
+                    />
+                    Otomatik Yenile
+                </label>
+                
+                <button 
+                    onClick={handleRefresh}
+                    disabled={isAnalyzing}
+                    className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded border border-gray-200 flex items-center gap-2 hover:bg-gray-200 transition-colors disabled:opacity-50"
+                >
+                    <RefreshCw size={12} className={isAnalyzing ? "animate-spin" : ""} />
+                    {isAnalyzing ? "Taranıyor" : "Yenile"}
+                </button>
+            </div>
+        </div>
+      </div>
     </div>
   );
 };

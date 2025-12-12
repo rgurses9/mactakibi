@@ -24,13 +24,39 @@ export const parseDate = (dateStr: string): Date | null => {
   }
 };
 
-export const isPastDate = (dateStr: string): boolean => {
+export const isPastDate = (dateStr: string, timeStr?: string): boolean => {
   const date = parseDate(dateStr);
-  if (!date) return false; // Default to upcoming if parsing fails to ensure visibility
+  if (!date) return false; 
   
+  const now = new Date();
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Start of today
+  today.setHours(0, 0, 0, 0);
   
   // If date is strictly before today (yesterday or earlier), it's past
-  return date < today;
+  if (date < today) return true;
+
+  // If date is strictly after today, it's NOT past
+  if (date > today) return false;
+
+  // If date is TODAY, check the time
+  if (timeStr) {
+      try {
+          // Normalize time (replace . with :) e.g. "14.00" -> "14:00"
+          const cleanTime = timeStr.trim().replace('.', ':');
+          const [hours, minutes] = cleanTime.split(':').map(Number);
+          
+          if (!isNaN(hours) && !isNaN(minutes)) {
+              const matchDate = new Date(date);
+              matchDate.setHours(hours, minutes, 0, 0);
+              
+              // If match time is before now, it is past
+              return matchDate < now;
+          }
+      } catch (e) {
+          // If time parsing fails, assume it's NOT past (keep it visible for today)
+          return false;
+      }
+  }
+
+  return false;
 };
