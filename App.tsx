@@ -27,6 +27,10 @@ const DEFAULT_FIREBASE_CONFIG = {
     databaseURL: "https://mactakibi-50e0b.firebaseio.com"
 };
 
+// Lazy load Auth components
+const Login = React.lazy(() => import('./components/Auth/Login'));
+const Register = React.lazy(() => import('./components/Auth/Register'));
+
 const App: React.FC = () => {
     // Auth State
     const [user, setUser] = useState<any>(null);
@@ -277,10 +281,6 @@ const App: React.FC = () => {
     }
 
     if (!user) {
-        // Load Authentication Screens dynamically
-        const Login = React.lazy(() => import('./components/Auth/Login'));
-        const Register = React.lazy(() => import('./components/Auth/Register'));
-
         return (
             <React.Suspense fallback={<div className="min-h-screen flex items-center justify-center"><RefreshCw className="animate-spin" /></div>}>
                 {authView === 'login' ? (
