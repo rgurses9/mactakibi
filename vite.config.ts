@@ -6,7 +6,8 @@ export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   const env = loadEnv(mode, (process as any).cwd(), '');
 
-  const apiKey = env.API_KEY || env.VITE_API_KEY || "AIzaSyC9FzUEt9-stjGR-e15uKij_ciqUnZBft8";
+  // Use the correct API Key associated with the project (mactakibi-50e0b)
+  const apiKey = env.API_KEY || env.VITE_API_KEY || "AIzaSyCILoR2i6TtjpMl6pW0OOBhc3naQHAd12Q";
   const clientId = env.CLIENT_ID || "406619892352-hj8fduiu6vvji54tqj0v50pm3m18fc03.apps.googleusercontent.com";
 
   return {

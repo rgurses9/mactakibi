@@ -29,7 +29,7 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
   const isGreenMode = variant === 'active';
 
   return (
-    <div className={`space-y-4 ${variant === 'past' ? 'opacity-70 grayscale-[0.5]' : ''}`}>
+    <div className={`space-y-4 ${variant === 'past' ? 'opacity-70 grayscale-[0.8]' : ''}`}>
       <div className="flex items-center justify-between mb-2 mt-6">
         <h2 className={`text-lg font-bold flex items-center gap-2 ${isGreenMode ? 'text-green-700' : 'text-gray-600'}`}>
             {isGreenMode ? <CheckCircle2 className="text-green-600" size={20} /> : <History className="text-gray-500" size={20} />}
@@ -46,8 +46,8 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
           return (
             <div 
               key={index} 
-              className={`group bg-white rounded-xl border shadow-sm overflow-hidden hover:shadow-md transition-all 
-                ${isGreenMode ? 'border-green-200 ring-1 ring-green-50' : 'border-gray-200 bg-gray-50'}
+              className={`group bg-white rounded-xl border-2 shadow-sm overflow-hidden hover:shadow-md transition-all 
+                ${isGreenMode ? 'border-green-400 ring-2 ring-green-50 shadow-green-100' : 'border-gray-200 bg-gray-50'}
               `}
             >
               <div className="flex flex-col md:flex-row">

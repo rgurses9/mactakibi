@@ -1,18 +1,30 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getDatabase, ref, onValue, off, Database } from 'firebase/database';
+import { getAnalytics } from "firebase/analytics";
 import { MatchDetails } from '../types';
 
 let db: Database | null = null;
 
 export const initFirebase = (config: any) => {
   try {
+    let app;
     if (!getApps().length) {
-      const app = initializeApp(config);
-      db = getDatabase(app);
+      app = initializeApp(config);
     } else {
-      const app = getApp();
-      db = getDatabase(app);
+      app = getApp();
     }
+    
+    db = getDatabase(app);
+    
+    // Initialize Analytics if supported in this environment
+    if (typeof window !== 'undefined' && config.measurementId) {
+        try {
+            getAnalytics(app);
+        } catch (analyticsError) {
+            console.warn("Firebase Analytics could not be initialized:", analyticsError);
+        }
+    }
+
     return true;
   } catch (error) {
     console.error("Firebase Init Error:", error);

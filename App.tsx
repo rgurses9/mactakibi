@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import MatchList from './components/MatchList';
 import WhatsAppSender from './components/WhatsAppSender';
 import ScriptGenerator from './components/ScriptGenerator';
-import NotificationPanel from './components/NotificationPanel';
 import FirebaseSettings from './components/FirebaseSettings';
 import { autoScanDriveFolder } from './services/driveService';
 import { initFirebase, subscribeToMatches } from './services/firebaseService';
@@ -10,7 +9,7 @@ import { MatchDetails } from './types';
 import { isPastDate, parseDate } from './utils/dateHelpers';
 import { 
   RefreshCw, Bot, Folder, 
-  Calendar, Briefcase, Shield, FileText,
+  Calendar, Briefcase, Shield,
   Settings, Flame, X
 } from 'lucide-react';
 
@@ -40,13 +39,23 @@ const App: React.FC = () => {
   const [isFirebaseOpen, setIsFirebaseOpen] = useState(false);
   const [isFirebaseActive, setIsFirebaseActive] = useState(false);
   
-  // Bot/Script Generator Modal State
+  // Bot Settings State
   const [isBotSettingsOpen, setIsBotSettingsOpen] = useState(false);
+  const [botConfig, setBotConfig] = useState<{phone: string, apiKey: string}>(() => {
+    const saved = localStorage.getItem('bot_config');
+    return saved ? JSON.parse(saved) : { phone: '905307853007', apiKey: '7933007' };
+  });
   
   // Internal logging (console only now)
   const addLog = (message: string, type: string = 'info') => {
     const timestamp = new Date().toLocaleTimeString();
     console.log(`[${timestamp}] [${type.toUpperCase()}] ${message}`);
+  };
+
+  const handleBotConfigSave = (newConfig: {phone: string, apiKey: string}) => {
+      setBotConfig(newConfig);
+      localStorage.setItem('bot_config', JSON.stringify(newConfig));
+      setIsBotSettingsOpen(false);
   };
 
   // Initial Firebase Setup
@@ -155,6 +164,7 @@ const App: React.FC = () => {
       const past: MatchDetails[] = [];
       
       matches.forEach(m => {
+          // Changed: Passed m.time to isPastDate to check time for today's matches
           if (isPastDate(m.date, m.time)) {
               past.push(m);
           } else {
@@ -179,27 +189,7 @@ const App: React.FC = () => {
       return sorted[0].date;
   }, [upcomingMatches]);
 
-  const activeFilesCount = useMemo(() => {
-      const uniqueFiles = new Set(matches.map(m => m.sourceFile));
-      return uniqueFiles.size;
-  }, [matches]);
-
-  // Generate notifications from matches
-  const notifications = useMemo(() => {
-    const grouped = matches.reduce((acc, match) => {
-      const file = match.sourceFile || 'Dosya';
-      if (!acc[file]) acc[file] = 0;
-      acc[file]++;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return Object.entries(grouped).map(([file, count], index) => ({
-      id: `notif-${index}`,
-      file,
-      count,
-      time: lastUpdated
-    }));
-  }, [matches, lastUpdated]);
+  // Notifications logic removed as per user request
 
   return (
     <div className="min-h-screen bg-[#f3f4f6] font-sans pb-24">
@@ -216,21 +206,24 @@ const App: React.FC = () => {
         }}
       />
 
-      {/* Script Generator Modal */}
+      {/* Bot Settings Modal */}
       {isBotSettingsOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
-                <div className="bg-blue-600 p-4 flex items-center justify-between text-white sticky top-0 z-10">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                <div className="bg-green-600 p-4 flex items-center justify-between text-white">
                     <h3 className="font-bold flex items-center gap-2">
                         <Settings size={20} className="text-white" />
-                        Bot & Otomasyon Ayarları
+                        Bot Ayarları
                     </h3>
-                    <button onClick={() => setIsBotSettingsOpen(false)} className="hover:bg-blue-700 p-1 rounded-full transition-colors">
+                    <button onClick={() => setIsBotSettingsOpen(false)} className="hover:bg-green-700 p-1 rounded-full transition-colors">
                         <X size={20} />
                     </button>
                 </div>
                 <div className="p-6">
-                    <ScriptGenerator />
+                    <ScriptGenerator 
+                        initialConfig={botConfig}
+                        onSave={handleBotConfigSave}
+                    />
                 </div>
             </div>
         </div>
@@ -238,7 +231,7 @@ const App: React.FC = () => {
 
       {/* --- TOP HEADER --- */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
                 <div className="bg-blue-600 text-white p-2 rounded-lg">
                     <Shield size={20} />
@@ -250,7 +243,7 @@ const App: React.FC = () => {
 
       {/* --- HERO --- */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="max-w-5xl mx-auto px-4 py-8">
             <div className="flex items-center gap-4">
                     <div className="relative">
                     <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-md ring-4 ring-blue-50">
@@ -259,21 +252,19 @@ const App: React.FC = () => {
                     </div>
                     <div>
                     <h2 className="text-2xl font-bold text-gray-800">Hoş Geldiniz, Rıfat Bey</h2>
-                    <p className="text-gray-500 text-sm mt-0.5">Sadece güncel ve saati gelmemiş müsabakalar aktif olarak işaretlenir.</p>
+                    <p className="text-gray-500 text-sm mt-0.5">Bugün (saati gelmeyen) ve sonraki maçlar aktif, saati geçenler pasif listelenir.</p>
                     </div>
             </div>
         </div>
       </div>
 
       {/* --- MAIN CONTENT --- */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-5xl mx-auto px-4 py-8">
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="space-y-6">
             
-            {/* Left Column: Stats & Matches (Span 8) */}
-            <div className="lg:col-span-8 space-y-6">
                 {/* KPI Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     
                     <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
                         <div>
@@ -295,15 +286,6 @@ const App: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
-                        <div>
-                            <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Kaynaklar</div>
-                            <div className="text-3xl font-extrabold text-gray-900">{activeFilesCount}</div>
-                        </div>
-                        <div className="bg-purple-50 text-purple-500 p-3 rounded-lg">
-                            <FileText size={24} />
-                        </div>
-                    </div>
                 </div>
 
                 {/* Error Message */}
@@ -353,19 +335,8 @@ const App: React.FC = () => {
 
                 {/* Actions */}
                 {upcomingMatches.length > 0 && (
-                    <WhatsAppSender matches={upcomingMatches} />
+                    <WhatsAppSender matches={upcomingMatches} config={botConfig} />
                 )}
-            </div>
-
-            {/* Right Column: Notifications Only (Span 4) */}
-            <div className="lg:col-span-4 space-y-6">
-                <NotificationPanel notifications={notifications} />
-                
-                {/* Simple status text */}
-                <div className="text-xs text-gray-400 text-center">
-                   Son kontrol: <span className="font-mono text-gray-500">{lastUpdated || '-'}</span>
-                </div>
-            </div>
 
         </div>
 
@@ -373,11 +344,11 @@ const App: React.FC = () => {
 
       {/* --- BOTTOM FOOTER (Fixed) --- */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs md:text-sm">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs md:text-sm">
             
             {/* Left: Version & Copyright */}
             <div className="text-gray-400 font-medium">
-                Rıfat Gürses v9.4 &copy; 2025
+                Rıfat Gürses v9.8 &copy; 2025
             </div>
 
             {/* Center: Status Text */}
@@ -389,7 +360,9 @@ const App: React.FC = () => {
                    </span>
                ) : (
                    <span className="opacity-50">
-                       {isFirebaseActive ? "Canlı Veri Modu" : "Sistem Hazır"}
+                       {isFirebaseActive 
+                        ? "Canlı Veri Modu" 
+                        : (lastUpdated ? `Son Güncelleme: ${lastUpdated}` : "Sistem Hazır")}
                    </span>
                )}
             </div>
@@ -398,7 +371,7 @@ const App: React.FC = () => {
             <div className="flex items-center gap-4">
                  <button
                     onClick={() => setIsBotSettingsOpen(true)}
-                    className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors"
+                    className="flex items-center gap-1 text-gray-500 hover:text-green-600 transition-colors"
                     title="Bot Ayarları"
                  >
                     <Settings size={14} />

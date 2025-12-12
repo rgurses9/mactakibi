@@ -30,33 +30,41 @@ export const isPastDate = (dateStr: string, timeStr?: string): boolean => {
   
   const now = new Date();
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0); // Start of today
+
+  const matchDate = new Date(date);
+  matchDate.setHours(0, 0, 0, 0);
   
-  // If date is strictly before today (yesterday or earlier), it's past
-  if (date < today) return true;
+  // 1. If date is strictly in the past (Yesterday or before) -> Past
+  if (matchDate < today) return true;
+  
+  // 2. If date is strictly in the future (Tomorrow or later) -> Active (Not Past)
+  if (matchDate > today) return false;
 
-  // If date is strictly after today, it's NOT past
-  if (date > today) return false;
-
-  // If date is TODAY, check the time
-  if (timeStr) {
-      try {
-          // Normalize time (replace . with :) e.g. "14.00" -> "14:00"
-          const cleanTime = timeStr.trim().replace('.', ':');
-          const [hours, minutes] = cleanTime.split(':').map(Number);
-          
-          if (!isNaN(hours) && !isNaN(minutes)) {
-              const matchDate = new Date(date);
-              matchDate.setHours(hours, minutes, 0, 0);
-              
-              // If match time is before now, it is past
-              return matchDate < now;
-          }
-      } catch (e) {
-          // If time parsing fails, assume it's NOT past (keep it visible for today)
-          return false;
-      }
+  // 3. It is TODAY. Check time.
+  if (!timeStr) {
+    // If no time provided, assume Active (safe default)
+    return false;
   }
 
+  try {
+    // Normalize time separator (14.30 or 14:30 -> 14:30)
+    const cleanTime = timeStr.trim().replace('.', ':');
+    const [hours, minutes] = cleanTime.split(':').map(Number);
+
+    if (!isNaN(hours) && !isNaN(minutes)) {
+       const matchDateTime = new Date(matchDate);
+       matchDateTime.setHours(hours, minutes, 0, 0);
+
+       // If match time matches or is before current time, consider it Active? 
+       // Requirement: "maç başlama tarihi ve saati o anki saatten geçmiş ise pasifte görüntüle"
+       // So if matchDateTime < now -> Past.
+       return matchDateTime < now;
+    }
+  } catch (e) {
+    // Time parse error, keep as Active
+    return false;
+  }
+  
   return false;
 };

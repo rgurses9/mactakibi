@@ -1,9 +1,25 @@
 import { MatchDetails } from "../types";
 import { findMatchesInRawData } from "./excelService";
 
+// Fallback key if process.env replacement fails or is empty
+const DEFAULT_API_KEY = "AIzaSyCILoR2i6TtjpMl6pW0OOBhc3naQHAd12Q";
+
 // Ensure API Key is clean (trim whitespace/quotes) to prevent INVALID_ARGUMENT errors
-const rawKey = process.env.API_KEY || "";
-const API_KEY = rawKey.replace(/["']/g, "").trim();
+const getApiKey = (): string => {
+  try {
+    // Try to get from process.env (replaced by Vite)
+    const envKey = process.env.API_KEY;
+    if (envKey && envKey.length > 10) {
+      // Remove any surrounding quotes that might have been added by JSON.stringify doubling or misconfiguration
+      return String(envKey).replace(/["']/g, "").trim();
+    }
+  } catch (e) {
+    // Ignore ReferenceError if process is not defined
+  }
+  return DEFAULT_API_KEY;
+};
+
+const API_KEY = getApiKey();
 
 // The folder ID provided by the user
 const TARGET_FOLDER_ID = "0ByPao_qBUjN-YXJZSG5Fancybmc";
@@ -46,6 +62,7 @@ const scanFolderRecursive = async (folderId: string, onProgress: (msg: string, t
       try {
         const errJson = JSON.parse(errText);
         if (response.status === 400 && errJson.error?.status === 'INVALID_ARGUMENT') {
+           console.error("API Key Invalid Argument:", errJson);
            throw new Error("API Key geçersiz veya yapılandırılmamış.");
         }
         if (response.status === 403) {
