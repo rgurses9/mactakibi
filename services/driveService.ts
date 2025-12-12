@@ -16,7 +16,7 @@ const getApiKey = (): string => {
   } catch (e) {
     // Ignore errors accessing process
   }
-  
+
   // CRITICAL: Remove any surrounding quotes
   return key.replace(/["']/g, "").trim();
 };
@@ -72,17 +72,19 @@ async function processInBatches<T, R>(
 
 /**
  * Recursively scans a folder for Spreadsheets and Excel files with Parallel Processing.
+ * @param targetNameParts - Optional name parts to filter by (e.g., ["RIFAT", "GURSES"])
  */
 const scanFolderRecursive = async (
-    folderId: string, 
-    rootConfig: FolderConfig,
-    onProgress: (msg: string, type?: LogType) => void
+  folderId: string,
+  rootConfig: FolderConfig,
+  onProgress: (msg: string, type?: LogType) => void,
+  targetNameParts?: string[]
 ): Promise<MatchDetails[]> => {
   const allMatches: MatchDetails[] = [];
 
   // Query: Inside parent folder, not trashed, and is either Sheet, Excel or Folder
   const q = `'${folderId}' in parents and trashed=false and (mimeType='application/vnd.google-apps.spreadsheet' or mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or mimeType='application/vnd.google-apps.folder')`;
-  
+
   const listUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&key=${API_KEY}&fields=files(id,name,mimeType)&supportsAllDrives=true`;
 
   // Only show network log for root folders to reduce noise
@@ -93,45 +95,45 @@ const scanFolderRecursive = async (
   // Prepare headers based on the root folder's resource key requirement
   const headers: HeadersInit = { 'Accept': 'application/json' };
   if (rootConfig.resourceKey) {
-      headers['X-Goog-Drive-Resource-Keys'] = `${rootConfig.id}/${rootConfig.resourceKey}`;
+    headers['X-Goog-Drive-Resource-Keys'] = `${rootConfig.id}/${rootConfig.resourceKey}`;
   }
 
   try {
     const response = await fetch(listUrl, { headers });
 
     if (!response.ok) {
-        // Error handling logic
-        const errText = await response.text();
-        console.error(`Drive API Error (${response.status}):`, errText);
-        // If strict error handling is needed, throw here. 
-        // Returning empty allows other folders to continue.
-        return [];
+      // Error handling logic
+      const errText = await response.text();
+      console.error(`Drive API Error (${response.status}):`, errText);
+      // If strict error handling is needed, throw here. 
+      // Returning empty allows other folders to continue.
+      return [];
     }
 
     const data = await response.json();
     const items: DriveItem[] = data.files || [];
-    
+
     // Separate folders and files
     const subFolders = items.filter(i => i.mimeType === 'application/vnd.google-apps.folder');
     const files = items.filter(i => i.mimeType !== 'application/vnd.google-apps.folder');
 
     if (files.length > 0) {
-        onProgress(`${files.length} dosya taranıyor...`, 'info');
+      onProgress(`${files.length} dosya taranıyor...`, 'info');
     }
 
     // 1. Process Files in Parallel Batches (Concurrency Limit: 6)
     // This prevents browser network blocking while significantly speeding up downloads
     const fileResults = await processInBatches(files, 6, async (file) => {
-        try {
-            const matches = await processFile(file, rootConfig, onProgress);
-            if (matches.length > 0) {
-                 onProgress(`✅ ${file.name}: ${matches.length} maç bulundu.`, 'success');
-            }
-            return matches;
-        } catch (e) {
-            console.error(`Error processing ${file.name}`, e);
-            return [];
+      try {
+        const matches = await processFile(file, rootConfig, onProgress, targetNameParts);
+        if (matches.length > 0) {
+          onProgress(`✅ ${file.name}: ${matches.length} maç bulundu.`, 'success');
         }
+        return matches;
+      } catch (e) {
+        console.error(`Error processing ${file.name}`, e);
+        return [];
+      }
     });
 
     // Flatten file results
@@ -139,63 +141,72 @@ const scanFolderRecursive = async (
 
     // 2. Process Subfolders in Parallel
     // We start all subfolder scans simultaneously using Promise.all
-    const folderPromises = subFolders.map(folder => 
-        scanFolderRecursive(folder.id, rootConfig, onProgress)
+    const folderPromises = subFolders.map(folder =>
+      scanFolderRecursive(folder.id, rootConfig, onProgress, targetNameParts)
     );
-    
+
     const folderResults = await Promise.all(folderPromises);
-    
+
     // Flatten folder results
     folderResults.forEach(r => allMatches.push(...r));
 
   } catch (error) {
-      console.error(`Error scanning folder ${folderId}:`, error);
+    console.error(`Error scanning folder ${folderId}:`, error);
   }
 
   return allMatches;
 };
 
 const processFile = async (
-    file: DriveItem, 
-    rootConfig: FolderConfig,
-    onProgress: (msg: string, type?: LogType) => void
+  file: DriveItem,
+  rootConfig: FolderConfig,
+  onProgress: (msg: string, type?: LogType) => void,
+  targetNameParts?: string[]
 ): Promise<MatchDetails[]> => {
-    let matches: MatchDetails[] = [];
-    
-    const headers: HeadersInit = {};
-    if (rootConfig.resourceKey) {
-        headers['X-Goog-Drive-Resource-Keys'] = `${rootConfig.id}/${rootConfig.resourceKey}`;
-    }
-            
-    try {
-        if (file.mimeType === 'application/vnd.google-apps.spreadsheet') {
-            const exportUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv&key=${API_KEY}`;
-            // Reduced logging for speed - uncomment if detailed logging needed
-            // onProgress(`İndiriliyor: ${file.name}`, 'network');
-            
-            const fileResp = await fetch(exportUrl, { headers });
-            if(fileResp.ok) {
-                const csvText = await fileResp.text();
-                matches = findMatchesInRawData(csvText, false); 
-            }
-        } else if (file.mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-            const downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
-            
-            const fileResp = await fetch(downloadUrl, { headers });
-            if(fileResp.ok) {
-                const arrayBuffer = await fileResp.arrayBuffer();
-                matches = findMatchesInRawData(new Uint8Array(arrayBuffer), true); 
-            }
-        }
-    } catch (e) {
-        // Fail silently for individual files to keep speed up
-        console.warn(`Failed to process file ${file.name}`);
-    }
+  let matches: MatchDetails[] = [];
 
-    return matches.map(m => ({ ...m, sourceFile: file.name }));
+  const headers: HeadersInit = {};
+  if (rootConfig.resourceKey) {
+    headers['X-Goog-Drive-Resource-Keys'] = `${rootConfig.id}/${rootConfig.resourceKey}`;
+  }
+
+  try {
+    if (file.mimeType === 'application/vnd.google-apps.spreadsheet') {
+      const exportUrl = `https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text/csv&key=${API_KEY}`;
+      // Reduced logging for speed - uncomment if detailed logging needed
+      // onProgress(`İndiriliyor: ${file.name}`, 'network');
+
+      const fileResp = await fetch(exportUrl, { headers });
+      if (fileResp.ok) {
+        const csvText = await fileResp.text();
+        matches = findMatchesInRawData(csvText, false, targetNameParts);
+      }
+    } else if (file.mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+      const downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
+
+      const fileResp = await fetch(downloadUrl, { headers });
+      if (fileResp.ok) {
+        const arrayBuffer = await fileResp.arrayBuffer();
+        matches = findMatchesInRawData(new Uint8Array(arrayBuffer), true, targetNameParts);
+      }
+    }
+  } catch (e) {
+    // Fail silently for individual files to keep speed up
+    console.warn(`Failed to process file ${file.name}`);
+  }
+
+  return matches.map(m => ({ ...m, sourceFile: file.name }));
 };
 
-export const autoScanDriveFolder = async (onProgress: (msg: string, type?: LogType) => void): Promise<MatchDetails[]> => {
+/**
+ * Automatically scans configured Google Drive folders for match data.
+ * @param onProgress - Callback for progress updates
+ * @param targetNameParts - Optional name parts to filter by (e.g., ["RIFAT", "GURSES"])
+ */
+export const autoScanDriveFolder = async (
+  onProgress: (msg: string, type?: LogType) => void,
+  targetNameParts?: string[]
+): Promise<MatchDetails[]> => {
   if (!API_KEY || API_KEY.length < 10) {
     throw new Error("API Key bulunamadı veya geçersiz.");
   }
@@ -203,15 +214,16 @@ export const autoScanDriveFolder = async (onProgress: (msg: string, type?: LogTy
   const allResults: MatchDetails[] = [];
 
   try {
-    onProgress("Hızlı tarama başlatılıyor...", 'info');
-    
+    const nameInfo = targetNameParts ? targetNameParts.join(' ') : 'Tüm kullanıcılar';
+    onProgress(`Hızlı tarama başlatılıyor: ${nameInfo}`, 'info');
+
     // Scan all target root folders in parallel
-    const rootFolderPromises = TARGET_FOLDERS.map(folder => 
-        scanFolderRecursive(folder.id, folder, onProgress)
-            .catch(e => {
-                onProgress(`${folder.name} erişilemedi: ${e.message}`, 'error');
-                return [];
-            })
+    const rootFolderPromises = TARGET_FOLDERS.map(folder =>
+      scanFolderRecursive(folder.id, folder, onProgress, targetNameParts)
+        .catch(e => {
+          onProgress(`${folder.name} erişilemedi: ${e.message}`, 'error');
+          return [];
+        })
     );
 
     const results = await Promise.all(rootFolderPromises);

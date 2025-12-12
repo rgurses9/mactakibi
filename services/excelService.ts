@@ -7,13 +7,13 @@ import { MatchDetails } from '../types';
 const normalizeString = (str: string): string => {
   if (!str) return "";
   return str.toLocaleUpperCase('tr-TR')
-            .replace(/Ğ/g, 'G')
-            .replace(/Ü/g, 'U')
-            .replace(/Ş/g, 'S')
-            .replace(/İ/g, 'I')
-            .replace(/Ö/g, 'O')
-            .replace(/Ç/g, 'C')
-            .trim();
+    .replace(/Ğ/g, 'G')
+    .replace(/Ü/g, 'U')
+    .replace(/Ş/g, 'S')
+    .replace(/İ/g, 'I')
+    .replace(/Ö/g, 'O')
+    .replace(/Ç/g, 'C')
+    .trim();
 };
 
 /**
@@ -22,7 +22,7 @@ const normalizeString = (str: string): string => {
 const containsName = (value: any, nameParts: string[]): boolean => {
   if (!value) return false;
   const val = normalizeString(String(value));
-  
+
   // All parts must be present (e.g. "RIFAT" and "GURSES")
   return nameParts.every(part => val.includes(normalizeString(part)));
 };
@@ -30,8 +30,12 @@ const containsName = (value: any, nameParts: string[]): boolean => {
 /**
  * Common parsing logic for both Excel files and Google Sheets CSV data.
  * It expects an array buffer or string data and processes it.
+ * @param data - The raw data to parse
+ * @param type - 'array' for binary or 'string' for CSV
+ * @param targetNameParts - Optional array of name parts to filter by (e.g., ["RIFAT", "GURSES"])
+ *                          If not provided, returns ALL matches without filtering
  */
-export const parseWorkbookData = (data: any, type: 'array' | 'string'): MatchDetails[] => {
+export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNameParts?: string[]): MatchDetails[] => {
   const workbook = XLSX.read(data, { type: type });
   const matches: MatchDetails[] = [];
 
@@ -49,16 +53,23 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string'): MatchDet
       const scorer = String(row['J'] || "").trim();
       const timer = String(row['K'] || "").trim();
       const shotClock = String(row['L'] || "").trim();
-      
-      // Target Name Parts
-      const targetParts = ["RIFAT", "GURSES"]; // Check normalized (GÜRSES -> GURSES)
 
-      // Check if "RIFAT GÜRSES" exists in any of the duty columns
-      if (
-        containsName(scorer, targetParts) ||
-        containsName(timer, targetParts) ||
-        containsName(shotClock, targetParts)
-      ) {
+      // If no target name specified, include all rows that have valid match data
+      // Otherwise, filter by the target name parts
+      let shouldInclude = false;
+
+      if (!targetNameParts || targetNameParts.length === 0) {
+        // No filter - include if at least one duty column has data
+        shouldInclude = scorer !== "" || timer !== "" || shotClock !== "";
+      } else {
+        // Filter by user name - check if name exists in any duty column
+        shouldInclude =
+          containsName(scorer, targetNameParts) ||
+          containsName(timer, targetNameParts) ||
+          containsName(shotClock, targetNameParts);
+      }
+
+      if (shouldInclude) {
         matches.push({
           date: String(row['A'] || "").trim(),
           hall: String(row['B'] || "").trim(),
@@ -80,14 +91,17 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string'): MatchDet
 
 /**
  * Parses raw data (ArrayBuffer for Excel or String for CSV) directly.
+ * @param data - Raw data to parse
+ * @param isBinary - true for Excel binary, false for CSV string
+ * @param targetNameParts - Optional name parts to filter by (e.g., ["RIFAT", "GURSES"])
  */
-export const findMatchesInRawData = (data: any, isBinary: boolean): MatchDetails[] => {
-    try {
-        return parseWorkbookData(data, isBinary ? 'array' : 'string');
-    } catch (error) {
-        console.error("Raw data parsing error:", error);
-        return [];
-    }
+export const findMatchesInRawData = (data: any, isBinary: boolean, targetNameParts?: string[]): MatchDetails[] => {
+  try {
+    return parseWorkbookData(data, isBinary ? 'array' : 'string', targetNameParts);
+  } catch (error) {
+    console.error("Raw data parsing error:", error);
+    return [];
+  }
 }
 
 /**
@@ -119,7 +133,7 @@ export const findMatchesInExcel = async (file: File): Promise<MatchDetails[]> =>
 export const findMatchesInGoogleSheet = async (url: string): Promise<MatchDetails[]> => {
   try {
     const idMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-    
+
     if (!idMatch) {
       throw new Error("Geçersiz Google Sheets bağlantısı. Lütfen linkin doğru olduğundan emin olun.");
     }

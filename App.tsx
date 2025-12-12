@@ -254,19 +254,26 @@ const App: React.FC = () => {
         setIsAnalyzing(true);
         setError(null);
         setProgress("Arka planda taranıyor...");
-        addLog("Otomatik Drive taraması başlatıldı.", 'info');
+
+        // Extract user name parts for filtering
+        const userNameParts = user?.displayName
+            ? user.displayName.toLocaleUpperCase('tr-TR')
+                .replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ş/g, 'S')
+                .replace(/İ/g, 'I').replace(/Ö/g, 'O').replace(/Ç/g, 'C')
+                .split(' ').filter(p => p.length > 1)
+            : undefined;
+
+        addLog(`Otomatik Drive taraması başlatıldı: ${user?.displayName?.toLocaleUpperCase('tr-TR') || 'Kullanıcı belirsiz'}`, 'info');
 
         try {
+            // Pass user name parts directly to Drive scanner for efficient filtering
             const driveMatches = await autoScanDriveFolder((msg, type) => {
                 setProgress(msg);
                 addLog(msg, type);
-            });
+            }, userNameParts);
 
-            // Filter results for the user locally after scan
-            const myMatches = filterForUser(driveMatches, user);
-
-            addLog(`Tarama bitti. ${driveMatches.length} ham veri bulundu, ${myMatches.length} eşleşme var.`, 'success');
-            setMatches(myMatches);
+            addLog(`Tarama bitti. ${driveMatches.length} maç bulundu.`, 'success');
+            setMatches(driveMatches);
             setLastUpdated(new Date().toLocaleString('tr-TR'));
             setShowManualUpload(false);
         } catch (err: any) {
