@@ -1,7 +1,7 @@
-import firebase from 'firebase/app';
-import 'firebase/database';
-import 'firebase/auth';
-import 'firebase/analytics';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
+import 'firebase/compat/auth';
+import 'firebase/compat/analytics';
 import { MatchDetails } from '../types';
 
 let db: firebase.database.Database | null = null;
@@ -12,17 +12,17 @@ export const initFirebase = (config: any) => {
     if (!firebase.apps.length) {
       firebase.initializeApp(config);
     }
-    
+
     db = firebase.database();
     auth = firebase.auth();
-    
+
     // Initialize Analytics if supported in this environment
     if (typeof window !== 'undefined' && config.measurementId) {
-        try {
-            firebase.analytics();
-        } catch (analyticsError) {
-            console.warn("Firebase Analytics could not be initialized:", analyticsError);
-        }
+      try {
+        firebase.analytics();
+      } catch (analyticsError) {
+        console.warn("Firebase Analytics could not be initialized:", analyticsError);
+      }
     }
 
     return true;
@@ -33,16 +33,16 @@ export const initFirebase = (config: any) => {
 };
 
 export const subscribeToMatches = (
-  onData: (matches: MatchDetails[]) => void, 
+  onData: (matches: MatchDetails[]) => void,
   onError: (msg: string) => void
 ) => {
   if (!db) {
     onError("Firebase yapılandırılmadı.");
-    return () => {};
+    return () => { };
   }
 
   const matchesRef = db.ref('matches');
-  
+
   const listener = matchesRef.on('value', (snapshot) => {
     const data = snapshot.val();
     if (data) {
@@ -67,7 +67,7 @@ export const getFirebaseAuth = () => auth;
 
 export const registerUser = async (email: string, password: string, firstName: string, lastName: string) => {
   if (!auth || !db) throw new Error("Firebase servisleri başlatılamadı.");
-  
+
   // 1. Create Auth User
   const userCredential = await auth.createUserWithEmailAndPassword(email, password);
   const user = userCredential.user;
@@ -101,7 +101,7 @@ export const registerUser = async (email: string, password: string, firstName: s
 
 export const loginUser = async (email: string, password: string) => {
   if (!auth || !db) throw new Error("Firebase servisleri başlatılamadı.");
-  
+
   // 1. Perform Auth Login
   const userCredential = await auth.signInWithEmailAndPassword(email, password);
   const user = userCredential.user;
@@ -113,7 +113,7 @@ export const loginUser = async (email: string, password: string) => {
 
     if (snapshot.exists()) {
       const userData = snapshot.val();
-      
+
       // Check if account is approved
       if (userData.isApproved !== true) {
         // Force logout immediately
@@ -136,7 +136,7 @@ export const logoutUser = async () => {
 };
 
 export const subscribeToAuthChanges = (callback: (user: firebase.User | null) => void) => {
-  if (!auth) return () => {};
+  if (!auth) return () => { };
   return auth.onAuthStateChanged(callback);
 };
 
