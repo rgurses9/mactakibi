@@ -1,7 +1,7 @@
 {
   "name": "rifat-gurses-tracker",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "*",
+    "firebase": "^10.12.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "lucide-react": "^0.378.0",

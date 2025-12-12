@@ -3,14 +3,29 @@ import MatchList from './components/MatchList';
 import WhatsAppSender from './components/WhatsAppSender';
 import ScriptGenerator from './components/ScriptGenerator';
 import NotificationPanel from './components/NotificationPanel';
+import TrafficLogger, { LogEntry } from './components/TrafficLogger';
+import FirebaseSettings from './components/FirebaseSettings';
 import { autoScanDriveFolder } from './services/driveService';
+import { initFirebase, subscribeToMatches } from './services/firebaseService';
 import { MatchDetails } from './types';
 import { isPastDate, parseDate } from './utils/dateHelpers';
 import { 
   RefreshCw, Bot, Folder, User, 
   Calendar, CheckCircle, Briefcase, Clock, Shield, FileText,
-  Activity, Settings
+  Activity, Settings, Flame
 } from 'lucide-react';
+
+// Default configuration provided by user
+const DEFAULT_FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCILoR2i6TtjpMl6pW0OOBhc3naQHAd12Q",
+  authDomain: "mactakibi-50e0b.firebaseapp.com",
+  projectId: "mactakibi-50e0b",
+  storageBucket: "mactakibi-50e0b.firebasestorage.app",
+  messagingSenderId: "529275453572",
+  appId: "1:529275453572:web:4d6102920b55724e5902d1",
+  measurementId: "G-V793VBMXF7",
+  databaseURL: "https://mactakibi-50e0b.firebaseio.com"
+};
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'automation'>('dashboard');
@@ -23,42 +38,126 @@ const App: React.FC = () => {
   
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [hasAutoScanned, setHasAutoScanned] = useState(false);
+  
+  // Firebase State
+  const [isFirebaseOpen, setIsFirebaseOpen] = useState(false);
+  const [isFirebaseActive, setIsFirebaseActive] = useState(false);
+  
+  // Real-time Traffic Logs
+  const [trafficLogs, setTrafficLogs] = useState<LogEntry[]>([]);
 
-  // Auto-scan on mount
+  const addLog = (message: string, type: LogEntry['type'] = 'info') => {
+    const now = new Date();
+    const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}`;
+    
+    setTrafficLogs(prev => {
+      const newLog: LogEntry = {
+        id: Math.random().toString(36).substr(2, 9),
+        timestamp,
+        message,
+        type
+      };
+      // Keep last 100 logs to prevent memory issues
+      return [...prev.slice(-99), newLog];
+    });
+  };
+
+  // Initial Firebase Setup
   useEffect(() => {
-    if (!hasAutoScanned) {
+    // Check local storage first, otherwise use default config
+    let config = DEFAULT_FIREBASE_CONFIG;
+    const savedConfig = localStorage.getItem('firebase_config');
+    
+    if (savedConfig) {
+      try {
+        config = JSON.parse(savedConfig);
+      } catch (e) {
+        console.error("Local config parse error, using default", e);
+      }
+    }
+
+    try {
+      const success = initFirebase(config);
+      if (success) {
+        setIsFirebaseActive(true);
+        addLog("Firebase başlatıldı. Canlı veri dinleniyor...", 'success');
+        
+        // Subscribe immediately
+        const unsubscribe = subscribeToMatches((liveMatches) => {
+            const count = liveMatches.length;
+            addLog(`🔥 Firebase Update: ${count} maç alındı.`, 'network');
+            
+            // Filter past dates
+            const activeMatches = liveMatches.filter(m => !isPastDate(m.date, m.time));
+            setMatches(activeMatches);
+            setLastUpdated(new Date().toLocaleString('tr-TR'));
+            
+        }, (errMsg) => {
+            addLog(`Firebase Hatası: ${errMsg}`, 'error');
+        });
+
+        return () => unsubscribe();
+      }
+    } catch (e: any) {
+      console.error(e);
+      addLog(`Firebase Init Error: ${e.message}`, 'error');
+    }
+  }, []);
+
+  // Auto-scan on mount (Only if Firebase NOT active)
+  useEffect(() => {
+    if (!hasAutoScanned && !isFirebaseActive) {
         handleAutoScan();
         setHasAutoScanned(true);
     }
-    setLastUpdated(new Date().toLocaleString('tr-TR'));
+    if (!lastUpdated) setLastUpdated(new Date().toLocaleString('tr-TR'));
     
-    // Auto refresh interval if enabled
+    // Auto refresh interval if enabled (only for Drive scan)
     const interval = setInterval(() => {
-        if (autoRefresh && !isAnalyzing) {
+        if (autoRefresh && !isAnalyzing && !isFirebaseActive) {
             handleAutoScan();
         }
     }, 5 * 60 * 1000); // 5 minutes
 
     return () => clearInterval(interval);
-  }, [autoRefresh, hasAutoScanned]);
+  }, [autoRefresh, hasAutoScanned, isFirebaseActive]);
 
   const handleAutoScan = async () => {
+      if (isFirebaseActive) {
+         addLog("Firebase aktif. Manuel tarama devre dışı.", 'warning');
+         return;
+      }
+
       setIsAnalyzing(true);
       setError(null);
       setProgress("Arka planda taranıyor...");
+      addLog("Otomatik Drive taraması başlatıldı.", 'info');
       
       try {
-          const driveMatches = await autoScanDriveFolder((msg) => setProgress(msg));
+          const driveMatches = await autoScanDriveFolder((msg, type) => {
+              setProgress(msg);
+              // Map basic progress to traffic logs
+              const logType = type === 'network' ? 'network' : 'info';
+              addLog(msg, logType);
+          });
           
+          addLog(`${driveMatches.length} adet ham veri çekildi.`, 'success');
+
           // Filter: Only keep matches where date/time has NOT passed
           // isPastDate checks both date AND time now
           const activeMatches = driveMatches.filter(m => !isPastDate(m.date, m.time));
           
+          if (driveMatches.length > activeMatches.length) {
+              addLog(`${driveMatches.length - activeMatches.length} geçmiş maç filtrelendi.`, 'warning');
+          }
+
           setMatches(activeMatches);
           setLastUpdated(new Date().toLocaleString('tr-TR'));
+          addLog("Tarama ve analiz tamamlandı.", 'success');
       } catch (err: any) {
           console.error(err);
           setError(`Hata: ${err.message}`);
+          addLog(`HATA: ${err.message}`, 'error');
       } finally {
           setIsAnalyzing(false);
           setProgress("");
@@ -66,7 +165,12 @@ const App: React.FC = () => {
   };
 
   const handleRefresh = () => {
-     handleAutoScan();
+     if (isFirebaseActive) {
+       // Just trigger a dummy log to show it's live
+       addLog("Veri canlı (Firebase). Manuel yenilemeye gerek yok.", 'success');
+     } else {
+       handleAutoScan();
+     }
   };
 
   // Stats Calculations
@@ -108,7 +212,17 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#f3f4f6] font-sans pb-24">
-      
+      <FirebaseSettings 
+        isOpen={isFirebaseOpen} 
+        onClose={() => setIsFirebaseOpen(false)} 
+        onSave={(config) => {
+            if(initFirebase(config)) {
+                setIsFirebaseActive(true);
+                window.location.reload(); // Reload to start fresh subscription
+            }
+        }}
+      />
+
       {/* --- TOP HEADER (Simplified) --- */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -216,7 +330,10 @@ const App: React.FC = () => {
                             </div>
                             <h3 className="text-lg font-bold text-gray-800">Aktif Maç Bulunamadı</h3>
                             <p className="text-gray-500 text-sm mt-2 max-w-md mx-auto">
-                                Google Drive'da "RIFAT GÜRSES" için tanımlanmış güncel veya gelecek tarihli maç bulunamadı.
+                                {isFirebaseActive 
+                                  ? "Firebase üzerinde güncel kayıt bulunamadı."
+                                  : "Google Drive'da 'RIFAT GÜRSES' için tanımlanmış güncel veya gelecek tarihli maç bulunamadı."
+                                }
                                 <br/><span className="text-xs text-gray-400 opacity-75">(Saati geçen maçlar otomatik olarak gizlenir)</span>
                             </p>
                         </div>
@@ -237,6 +354,9 @@ const App: React.FC = () => {
                 <div className="lg:col-span-4 space-y-6">
                     <NotificationPanel notifications={notifications} />
                     
+                    {/* Real-time Traffic Logger */}
+                    <TrafficLogger logs={trafficLogs} />
+
                     {/* System Status - Moved to background/subtle */}
                     <div className="bg-white border border-gray-200 rounded-xl p-6 text-gray-500 shadow-sm opacity-80 hover:opacity-100 transition-opacity">
                         <h4 className="font-bold text-gray-700 mb-4 flex items-center gap-2 text-sm">
@@ -247,8 +367,8 @@ const App: React.FC = () => {
                             <div className="flex items-center justify-between text-xs border-b border-gray-100 pb-2">
                                 <span>Bot Servisi</span>
                                 <span className="flex items-center gap-1.5 text-green-600 font-bold">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                                    Çalışıyor
+                                    <span className={`w-1.5 h-1.5 rounded-full ${isFirebaseActive ? 'bg-orange-500 animate-pulse' : 'bg-green-500'}`}></span>
+                                    {isFirebaseActive ? 'Firebase Live' : 'Drive Polling'}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between text-xs border-b border-gray-100 pb-2">
@@ -294,15 +414,25 @@ const App: React.FC = () => {
 
             {/* Right: Controls (Background) */}
             <div className="flex items-center gap-4">
-                 <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 hover:text-gray-900 transition-colors">
-                    <input 
-                    type="checkbox" 
-                    checked={autoRefresh}
-                    onChange={(e) => setAutoRefresh(e.target.checked)}
-                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 w-3.5 h-3.5" 
-                    />
-                    Otomatik Yenile
-                </label>
+                 <button
+                    onClick={() => setIsFirebaseOpen(true)}
+                    className="flex items-center gap-1 text-gray-500 hover:text-orange-600 transition-colors"
+                    title="Firebase Ayarları"
+                 >
+                    <Flame size={14} className={isFirebaseActive ? "text-orange-500 fill-orange-500" : ""} />
+                 </button>
+
+                 {!isFirebaseActive && (
+                    <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 hover:text-gray-900 transition-colors">
+                        <input 
+                        type="checkbox" 
+                        checked={autoRefresh}
+                        onChange={(e) => setAutoRefresh(e.target.checked)}
+                        className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 w-3.5 h-3.5" 
+                        />
+                        Otomatik Yenile
+                    </label>
+                 )}
                 
                 <button 
                     onClick={handleRefresh}
