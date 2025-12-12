@@ -3,14 +3,16 @@ import MatchList from './components/MatchList';
 import WhatsAppSender from './components/WhatsAppSender';
 import ScriptGenerator from './components/ScriptGenerator';
 import FirebaseSettings from './components/FirebaseSettings';
+import FileUpload from './components/FileUpload';
 import { autoScanDriveFolder } from './services/driveService';
+import { findMatchesInExcel, findMatchesInRawData } from './services/excelService';
 import { initFirebase, subscribeToMatches } from './services/firebaseService';
 import { MatchDetails } from './types';
 import { isPastDate, parseDate } from './utils/dateHelpers';
 import { 
   RefreshCw, Bot, Folder, 
   Calendar, Briefcase, Shield,
-  Settings, Flame, X
+  Settings, Flame, X, Upload
 } from 'lucide-react';
 
 // Default configuration provided by user
@@ -46,7 +48,10 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : { phone: '905307853007', apiKey: '7933007' };
   });
   
-  // Internal logging (console only now)
+  // Manual Upload Mode
+  const [showManualUpload, setShowManualUpload] = useState(false);
+
+  // Internal logging
   const addLog = (message: string, type: string = 'info') => {
     const timestamp = new Date().toLocaleTimeString();
     console.log(`[${timestamp}] [${type.toUpperCase()}] ${message}`);
@@ -58,10 +63,8 @@ const App: React.FC = () => {
       setIsBotSettingsOpen(false);
   };
 
-  // Helper: Filter matches for RIFAT GÜRSES (client-side filter for Firebase data)
   const filterForRifat = (list: MatchDetails[]) => {
       return list.filter(m => {
-          // Normalize function similar to excelService to handle Turkish chars
           const norm = (str: string) => str ? str.toLocaleUpperCase('tr-TR')
               .replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ş/g, 'S')
               .replace(/İ/g, 'I').replace(/Ö/g, 'O').replace(/Ç/g, 'C') : "";
@@ -70,16 +73,13 @@ const App: React.FC = () => {
           const timer = norm(m.timer);
           const shotClock = norm(m.shotClock);
           
-          // Check for "RIFAT" and "GURSES"
           const hasRifat = (s: string) => s.includes("RIFAT") && s.includes("GURSES");
           
           return hasRifat(scorer) || hasRifat(timer) || hasRifat(shotClock);
       });
   };
 
-  // Initial Firebase Setup
   useEffect(() => {
-    // Check local storage first, otherwise use default config
     let config = DEFAULT_FIREBASE_CONFIG;
     const savedConfig = localStorage.getItem('firebase_config');
     
@@ -97,19 +97,13 @@ const App: React.FC = () => {
         setIsFirebaseActive(true);
         addLog("Firebase başlatıldı. Canlı veri dinleniyor...", 'success');
         
-        // Subscribe immediately
         const unsubscribe = subscribeToMatches((liveMatches) => {
             const count = liveMatches.length;
-            
-            // Filter live matches to only include Rifat's
             const myMatches = filterForRifat(liveMatches);
-            
             addLog(`🔥 Firebase Update: ${count} kayıt alındı, ${myMatches.length} tanesi size ait.`, 'network');
-            
-            // Store filtered matches
             setMatches(myMatches);
             setLastUpdated(new Date().toLocaleString('tr-TR'));
-            
+            setError(null); 
         }, (errMsg) => {
             addLog(`Firebase Hatası: ${errMsg}`, 'error');
         });
@@ -122,7 +116,6 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Auto-scan on mount (Only if Firebase NOT active)
   useEffect(() => {
     if (!hasAutoScanned && !isFirebaseActive) {
         handleAutoScan();
@@ -130,12 +123,11 @@ const App: React.FC = () => {
     }
     if (!lastUpdated) setLastUpdated(new Date().toLocaleString('tr-TR'));
     
-    // Auto refresh interval if enabled (only for Drive scan)
     const interval = setInterval(() => {
         if (autoRefresh && !isAnalyzing && !isFirebaseActive) {
             handleAutoScan();
         }
-    }, 5 * 60 * 1000); // 5 minutes
+    }, 5 * 60 * 1000); 
 
     return () => clearInterval(interval);
   }, [autoRefresh, hasAutoScanned, isFirebaseActive]);
@@ -158,19 +150,50 @@ const App: React.FC = () => {
           });
           
           addLog(`${driveMatches.length} adet ham veri çekildi.`, 'success');
-
-          // Store ALL matches found (AutoScan already filters for Rifat in excelService)
           setMatches(driveMatches);
           setLastUpdated(new Date().toLocaleString('tr-TR'));
           addLog("Tarama ve analiz tamamlandı.", 'success');
+          setShowManualUpload(false); // Hide upload if scan works
       } catch (err: any) {
           console.error(err);
-          setError(`Hata: ${err.message}`);
+          // Only show fatal error if we have no matches
+          if (matches.length === 0) {
+            setError(`Drive Bağlantı Hatası: ${err.message}`);
+            // If scan fails, suggest manual upload
+            setShowManualUpload(true);
+          }
           addLog(`HATA: ${err.message}`, 'error');
       } finally {
           setIsAnalyzing(false);
           setProgress("");
       }
+  };
+
+  const handleManualFiles = async (files: File[]) => {
+    setIsAnalyzing(true);
+    setError(null);
+    const newMatches: MatchDetails[] = [];
+    
+    try {
+        for (const file of files) {
+            setProgress(`${file.name} analiz ediliyor...`);
+            let found: MatchDetails[] = [];
+            
+            if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                found = await findMatchesInExcel(file);
+            } 
+            // Add other handlers if needed
+            
+            newMatches.push(...found);
+        }
+        setMatches(prev => [...prev, ...newMatches]);
+        addLog(`Manuel yükleme: ${newMatches.length} maç eklendi.`, 'success');
+    } catch (e: any) {
+        setError("Dosya işleme hatası: " + e.message);
+    } finally {
+        setIsAnalyzing(false);
+        setProgress("");
+    }
   };
 
   const handleRefresh = () => {
@@ -181,13 +204,11 @@ const App: React.FC = () => {
      }
   };
 
-  // Split matches into Active and Past
   const { upcomingMatches, pastMatches } = useMemo(() => {
       const upcoming: MatchDetails[] = [];
       const past: MatchDetails[] = [];
       
       matches.forEach(m => {
-          // Changed: Passed m.time to isPastDate to check time for today's matches
           if (isPastDate(m.date, m.time)) {
               past.push(m);
           } else {
@@ -202,7 +223,6 @@ const App: React.FC = () => {
 
   const nextMatchDate = useMemo(() => {
       if (upcomingMatches.length === 0) return "-";
-      // Sort to find the earliest date
       const sorted = [...upcomingMatches].sort((a, b) => {
           const da = parseDate(a.date);
           const db = parseDate(b.date);
@@ -212,12 +232,9 @@ const App: React.FC = () => {
       return sorted[0].date;
   }, [upcomingMatches]);
 
-  // Notifications logic removed as per user request
-
   return (
     <div className="min-h-screen bg-[#f3f4f6] font-sans pb-24">
       
-      {/* --- MODALS --- */}
       <FirebaseSettings 
         isOpen={isFirebaseOpen} 
         onClose={() => setIsFirebaseOpen(false)} 
@@ -229,7 +246,6 @@ const App: React.FC = () => {
         }}
       />
 
-      {/* Bot Settings Modal */}
       {isBotSettingsOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-xl shadow-2xl max-w-md w-full animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
@@ -252,7 +268,6 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* --- TOP HEADER --- */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -264,7 +279,6 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      {/* --- HERO --- */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-8">
             <div className="flex items-center gap-4">
@@ -281,14 +295,11 @@ const App: React.FC = () => {
         </div>
       </div>
 
-      {/* --- MAIN CONTENT --- */}
       <main className="max-w-5xl mx-auto px-4 py-8">
         
         <div className="space-y-6">
             
-                {/* KPI Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    
                     <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
                         <div>
                             <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Aktif Görevler</div>
@@ -298,7 +309,6 @@ const App: React.FC = () => {
                             <Briefcase size={24} />
                         </div>
                     </div>
-                    
                     <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
                         <div>
                             <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Sıradaki</div>
@@ -308,22 +318,33 @@ const App: React.FC = () => {
                             <Calendar size={24} />
                         </div>
                     </div>
-
                 </div>
 
-                {/* Error Message */}
                 {error && (
                     <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-red-700 text-sm flex items-start gap-3">
                             <div className="bg-red-100 p-1.5 rounded-full mt-0.5"><Bot size={16} /></div>
                             <div>
                             <strong>Bağlantı Hatası:</strong> 
                             <p className="mt-1 opacity-90">{error}</p>
+                            <p className="mt-2 text-xs opacity-75">
+                                Not: Google Drive API kotası dolmuş veya yetki eksik olabilir. Manuel yükleme alanını kullanabilirsiniz.
+                            </p>
                             </div>
                     </div>
                 )}
+
+                {/* Manual Upload Fallback */}
+                {showManualUpload && !isFirebaseActive && (
+                    <div className="bg-white p-6 rounded-xl border border-orange-200 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4 text-orange-700">
+                            <Upload size={20} />
+                            <h3 className="font-bold">Manuel Dosya Yükle</h3>
+                        </div>
+                        <FileUpload onFilesSelect={handleManualFiles} isAnalyzing={isAnalyzing} />
+                    </div>
+                )}
                 
-                {/* Empty State */}
-                {!isAnalyzing && matches.length === 0 && !error && (
+                {!isAnalyzing && matches.length === 0 && !error && !showManualUpload && (
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
                         <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
                             <Folder size={32} className="text-gray-300" />
@@ -338,7 +359,6 @@ const App: React.FC = () => {
                     </div>
                 )}
 
-                {/* Active Matches List */}
                 {upcomingMatches.length > 0 && (
                     <MatchList 
                         matches={upcomingMatches} 
@@ -347,7 +367,6 @@ const App: React.FC = () => {
                     />
                 )}
 
-                {/* Past Matches List */}
                 {pastMatches.length > 0 && (
                     <MatchList 
                         matches={pastMatches} 
@@ -356,7 +375,6 @@ const App: React.FC = () => {
                     />
                 )}
 
-                {/* Actions */}
                 {upcomingMatches.length > 0 && (
                     <WhatsAppSender matches={upcomingMatches} config={botConfig} />
                 )}
@@ -365,16 +383,11 @@ const App: React.FC = () => {
 
       </main>
 
-      {/* --- BOTTOM FOOTER (Fixed) --- */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs md:text-sm">
-            
-            {/* Left: Version & Copyright */}
             <div className="text-gray-400 font-medium">
-                Rıfat Gürses v9.9 &copy; 2025
+                Rıfat Gürses v9.9.1 &copy; 2025
             </div>
-
-            {/* Center: Status Text */}
             <div className="text-gray-500 font-medium hidden md:block">
                {isAnalyzing ? (
                    <span className="flex items-center gap-2 text-blue-600">
@@ -389,43 +402,21 @@ const App: React.FC = () => {
                    </span>
                )}
             </div>
-
-            {/* Right: Controls (Background) */}
             <div className="flex items-center gap-4">
-                 <button
-                    onClick={() => setIsBotSettingsOpen(true)}
-                    className="flex items-center gap-1 text-gray-500 hover:text-green-600 transition-colors"
-                    title="Bot Ayarları"
-                 >
+                 <button onClick={() => setIsBotSettingsOpen(true)} className="flex items-center gap-1 text-gray-500 hover:text-green-600 transition-colors">
                     <Settings size={14} />
                     <span className="hidden sm:inline">Bot Ayarları</span>
                  </button>
-
-                 <button
-                    onClick={() => setIsFirebaseOpen(true)}
-                    className="flex items-center gap-1 text-gray-500 hover:text-orange-600 transition-colors"
-                    title="Firebase Ayarları"
-                 >
+                 <button onClick={() => setIsFirebaseOpen(true)} className="flex items-center gap-1 text-gray-500 hover:text-orange-600 transition-colors">
                     <Flame size={14} className={isFirebaseActive ? "text-orange-500 fill-orange-500" : ""} />
                  </button>
-
                  {!isFirebaseActive && (
                     <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 hover:text-gray-900 transition-colors">
-                        <input 
-                        type="checkbox" 
-                        checked={autoRefresh}
-                        onChange={(e) => setAutoRefresh(e.target.checked)}
-                        className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 w-3.5 h-3.5" 
-                        />
+                        <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 w-3.5 h-3.5" />
                         <span className="hidden sm:inline">Oto. Yenile</span>
                     </label>
                  )}
-                
-                <button 
-                    onClick={handleRefresh}
-                    disabled={isAnalyzing}
-                    className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded border border-gray-200 flex items-center gap-2 hover:bg-gray-200 transition-colors disabled:opacity-50"
-                >
+                <button onClick={handleRefresh} disabled={isAnalyzing} className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded border border-gray-200 flex items-center gap-2 hover:bg-gray-200 transition-colors disabled:opacity-50">
                     <RefreshCw size={12} className={isAnalyzing ? "animate-spin" : ""} />
                     {isAnalyzing ? "Taranıyor" : "Yenile"}
                 </button>
