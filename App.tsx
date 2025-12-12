@@ -338,7 +338,7 @@ const App: React.FC = () => {
     const pastMatchCount = pastMatches.length;
 
     // Check if logged in user is admin
-    const isAdmin = user?.email === 'admin@mactakip.com';
+    const isAdmin = user?.email === 'admin@admin.com';
 
     if (!authInitialized) {
         return <div className="min-h-screen flex items-center justify-center bg-[#f3f4f6] dark:bg-gray-900">

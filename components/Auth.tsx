@@ -15,6 +15,7 @@ const Auth: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,19 +35,19 @@ const Auth: React.FC = () => {
         if (password.length < 6) {
           throw new Error("Şifre en az 6 karakter olmalıdır.");
         }
-        
-        await registerUser(email, password, firstName, lastName);
+
+        await registerUser(email, password, firstName, lastName, username);
         setVerificationSent(true);
         // Switch to login view is handled by changing component state, but since verificationSent is true, it shows that screen first.
-        setIsLogin(true); 
+        setIsLogin(true);
       }
     } catch (err: any) {
       let msg = "Bir hata oluştu.";
-      
+
       if (err.message === "ACCOUNT_PENDING_APPROVAL") {
-          setPendingApproval(true);
-          setLoading(false);
-          return;
+        setPendingApproval(true);
+        setLoading(false);
+        return;
       }
 
       if (err.message.includes("auth/invalid-email")) msg = "Geçersiz e-posta adresi.";
@@ -55,7 +56,7 @@ const Auth: React.FC = () => {
       if (err.message.includes("auth/email-already-in-use")) msg = "Bu e-posta zaten kullanımda.";
       if (err.message.includes("Şifreler eşleşmiyor")) msg = err.message;
       if (err.message.includes("en az 6 karakter")) msg = err.message;
-      
+
       setError(msg);
     } finally {
       setLoading(false);
@@ -66,19 +67,19 @@ const Auth: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4 transition-colors duration-300">
         <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
-            <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock size={32} />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Hesap Onayı Bekleniyor</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Hesabınız başarıyla oluşturuldu ancak henüz yönetici onayı almadı. Yöneticiniz kaydınızı onayladığında sistem erişiminize açılacaktır.
-            </p>
-            <button 
-                onClick={() => setPendingApproval(false)}
-                className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
-            >
-                Giriş Ekranına Dön
-            </button>
+          <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Clock size={32} />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Hesap Onayı Bekleniyor</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            Hesabınız başarıyla oluşturuldu ancak henüz yönetici onayı almadı. Yöneticiniz kaydınızı onayladığında sistem erişiminize açılacaktır.
+          </p>
+          <button
+            onClick={() => setPendingApproval(false)}
+            className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+          >
+            Giriş Ekranına Dön
+          </button>
         </div>
       </div>
     );
@@ -88,19 +89,19 @@ const Auth: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4 transition-colors duration-300">
         <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail size={32} />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Doğrulama E-postası Gönderildi</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Lütfen <strong>{email}</strong> adresini kontrol edin. Gelen kutusundaki bağlantıya tıklayarak hesabınızı doğrulayın. Ardından yönetici onayı için beklemeniz gerekecektir.
-            </p>
-            <button 
-                onClick={() => setVerificationSent(false)}
-                className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
-            >
-                Giriş Ekranına Dön
-            </button>
+          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Mail size={32} />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Doğrulama E-postası Gönderildi</h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            Lütfen <strong>{email}</strong> adresini kontrol edin. Gelen kutusundaki bağlantıya tıklayarak hesabınızı doğrulayın. Ardından yönetici onayı için beklemeniz gerekecektir.
+          </p>
+          <button
+            onClick={() => setVerificationSent(false)}
+            className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+          >
+            Giriş Ekranına Dön
+          </button>
         </div>
       </div>
     );
@@ -108,167 +109,182 @@ const Auth: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#f3f4f6] dark:bg-gray-900 p-4 transition-colors duration-300">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden flex flex-col md:flex-row min-h-[600px]">
-        
-        {/* Left Side - Banner */}
-        <div className="bg-blue-600 dark:bg-blue-800 md:w-1/2 p-12 text-white flex flex-col justify-between relative overflow-hidden transition-colors duration-300">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+
+        {/* Header Banner */}
+        <div className="bg-blue-600 dark:bg-blue-800 p-8 text-white text-center relative overflow-hidden transition-colors duration-300">
           <div className="relative z-10">
-             <div className="bg-white/20 w-12 h-12 rounded-lg flex items-center justify-center mb-6 backdrop-blur-sm">
-                <ShieldCheck size={28} />
-             </div>
-             <h1 className="text-4xl font-bold mb-4">Maç Takip Sistemi</h1>
-             <p className="text-blue-100 dark:text-blue-200 text-lg leading-relaxed">
-               Basketbol müsabaka ve görev takip platformu. 
-               Kişiselleştirilmiş görev listesi ve anlık bildirimler.
-             </p>
-          </div>
-          
-          <div className="relative z-10 text-sm opacity-70">
-            &copy; 2025 Güvenli Veri Altyapısı
+            <div className="bg-white/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+              <ShieldCheck size={28} />
+            </div>
+            <h1 className="text-3xl font-bold mb-2">Maç Takip Sistemi</h1>
+            <p className="text-blue-100 dark:text-blue-200 text-sm leading-relaxed">
+              Basketbol müsabaka ve görev takip platformu
+            </p>
           </div>
 
           {/* Decorative Circles */}
           <div className="absolute top-[-50px] left-[-50px] w-48 h-48 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
           <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-          <div className="absolute -bottom-8 left-20 w-48 h-48 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
         </div>
 
-        {/* Right Side - Form */}
-        <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white dark:bg-gray-800 transition-colors duration-300">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {isLogin ? 'Tekrar Hoş Geldiniz' : 'Hesap Oluştur'}
+        {/* Form Section */}
+        <div className="p-8 bg-white dark:bg-gray-800 transition-colors duration-300">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center">
+              {isLogin ? 'Tekrar Hoş Geldiniz' : 'Hesap Oluştur'}
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
-                {isLogin ? 'Devam etmek için lütfen giriş yapın.' : 'Görevlerinize erişmek için kayıt olun.'}
+            <p className="text-gray-500 dark:text-gray-400 text-sm text-center">
+              {isLogin ? 'Devam etmek için lütfen giriş yapın.' : 'Görevlerinize erişmek için kayıt olun.'}
             </p>
           </div>
 
           {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm flex items-center gap-2 mb-6">
-                  <AlertCircle size={16} />
-                  {error}
-              </div>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm flex items-center gap-2 mb-6">
+              <AlertCircle size={16} />
+              {error}
+            </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            
-            {!isLogin && (
-                <div className="flex gap-4">
-                    <div className="flex-1">
-                        <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Ad</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                <User size={16} />
-                            </div>
-                            <input 
-                                type="text" 
-                                required
-                                value={firstName}
-                                onChange={(e) => setFirstName(e.target.value)}
-                                className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                                placeholder="Adınız"
-                            />
-                        </div>
-                    </div>
-                    <div className="flex-1">
-                        <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Soyad</label>
-                        <div className="relative">
-                            <input 
-                                type="text" 
-                                required
-                                value={lastName}
-                                onChange={(e) => setLastName(e.target.value)}
-                                className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                                placeholder="Soyadınız"
-                            />
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">E-Posta Adresi</label>
-                <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                        <Mail size={16} />
-                    </div>
-                    <input 
-                        type="email" 
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                        placeholder="ornek@email.com"
-                    />
-                </div>
-            </div>
-
-            <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Şifre</label>
-                <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                        <Lock size={16} />
-                    </div>
-                    <input 
-                        type="password" 
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                        placeholder="••••••••"
-                    />
-                </div>
-            </div>
 
             {!isLogin && (
+              <div className="space-y-4">
                 <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Şifre Doğrula</label>
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                            <Lock size={16} />
-                        </div>
-                        <input 
-                            type="password" 
-                            required
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                            placeholder="••••••••"
-                        />
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Ad</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                      <User size={16} />
                     </div>
+                    <input
+                      type="text"
+                      required
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      placeholder="Adınız"
+                    />
+                  </div>
                 </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Soyad</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      placeholder="Soyadınız"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Kullanıcı Adı</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                      <User size={16} />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      placeholder="kullaniciadi"
+                    />
+                  </div>
+                </div>
+              </div>
             )}
 
-            <button 
-                type="submit" 
-                disabled={loading}
-                className="w-full bg-blue-600 dark:bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200 dark:shadow-none mt-4 disabled:opacity-70"
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">E-Posta Adresi</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <Mail size={16} />
+                </div>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="ornek@email.com"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Şifre</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <Lock size={16} />
+                </div>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            {!isLogin && (
+              <div>
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Şifre Doğrula</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <Lock size={16} />
+                  </div>
+                  <input
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 dark:bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200 dark:shadow-none mt-4 disabled:opacity-70"
             >
-                {loading ? 'İşleniyor...' : (isLogin ? 'Giriş Yap' : 'Kayıt Ol')}
-                {!loading && <ArrowRight size={18} />}
+              {loading ? 'İşleniyor...' : (isLogin ? 'Giriş Yap' : 'Kayıt Ol')}
+              {!loading && <ArrowRight size={18} />}
             </button>
 
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-                {isLogin ? "Hesabınız yok mu?" : "Zaten hesabınız var mı?"}
-                <button 
-                    onClick={() => {
-                        setIsLogin(!isLogin);
-                        setError(null);
-                        setFirstName('');
-                        setLastName('');
-                        setEmail('');
-                        setPassword('');
-                        setConfirmPassword('');
-                    }}
-                    className="ml-2 font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-                >
-                    {isLogin ? "Kayıt Ol" : "Giriş Yap"}
-                </button>
+              {isLogin ? "Hesabınız yok mu?" : "Zaten hesabınız var mı?"}
+              <button
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError(null);
+                  setFirstName('');
+                  setLastName('');
+                  setUsername('');
+                  setEmail('');
+                  setPassword('');
+                  setConfirmPassword('');
+                }}
+                className="ml-2 font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+              >
+                {isLogin ? "Kayıt Ol" : "Giriş Yap"}
+              </button>
             </p>
+          </div>
+
+          <div className="mt-4 text-center text-xs text-gray-400">
+            © 2025 Güvenli Veri Altyapısı
           </div>
         </div>
       </div>

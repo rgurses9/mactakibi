@@ -65,7 +65,7 @@ export const subscribeToMatches = (
 
 export const getFirebaseAuth = () => auth;
 
-export const registerUser = async (email: string, password: string, firstName: string, lastName: string) => {
+export const registerUser = async (email: string, password: string, firstName: string, lastName: string, username: string) => {
   if (!auth || !db) throw new Error("Firebase servisleri başlatılamadı.");
 
   // 1. Create Auth User
@@ -83,12 +83,13 @@ export const registerUser = async (email: string, password: string, firstName: s
     await user.sendEmailVerification();
 
     // ADMIN CHECK: If email is the specific admin email, auto-approve and set role
-    const isAdminEmail = email.toLowerCase() === 'admin@mactakip.com';
+    const isAdminEmail = email.toLowerCase() === 'admin@admin.com';
 
     // 4. Create User Record in Database
     await db.ref('users/' + user.uid).set({
       firstName: firstName,
       lastName: lastName,
+      username: username,
       email: email,
       role: isAdminEmail ? 'admin' : 'user',
       isApproved: isAdminEmail ? true : false, // Admins auto-approved, others wait
