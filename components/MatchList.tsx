@@ -14,11 +14,21 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
 
   // Sorting logic:
   // Both active and past matches: Ascending (Earliest date first)
+  // Invalid dates are placed at the end
   const sortedMatches = [...matches].sort((a, b) => {
     const dateA = parseDate(a.date);
     const dateB = parseDate(b.date);
-    if (!dateA || !dateB) return 0;
 
+    // If both dates are invalid, maintain original order
+    if (!dateA && !dateB) return 0;
+
+    // If only dateA is invalid, push it to the end
+    if (!dateA) return 1;
+
+    // If only dateB is invalid, push it to the end
+    if (!dateB) return -1;
+
+    // Both dates are valid, sort chronologically (earliest first)
     return dateA.getTime() - dateB.getTime();
   });
 
