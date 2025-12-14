@@ -13,9 +13,8 @@ export const parseDate = (dateStr: string): Date | null => {
     const turkishMatch = cleanStr.match(/^(\d{1,2})\s+([A-Za-zÇĞİÖŞÜçğıöşü]+)\s+(\d{4})(?:\s+[A-Za-zÇĞİÖŞÜçğıöşü]+)?$/i);
     if (turkishMatch) {
       const day = parseInt(turkishMatch[1], 10);
-      const monthName = turkishMatch[2].toLowerCase()
-        .replace(/i̇/g, 'i') // Normalize Turkish İ
-        .replace(/ı/g, 'i'); // Normalize Turkish ı
+      // Use Turkish locale for proper lowercase conversion (keeps ı as ı, İ as i)
+      const monthName = turkishMatch[2].toLocaleLowerCase('tr-TR');
       const year = parseInt(turkishMatch[3], 10);
 
       // Find month number
