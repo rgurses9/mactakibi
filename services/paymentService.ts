@@ -1,66 +1,79 @@
-import { MatchDetails } from '../types';
 
 export interface PaymentStatus {
     gsbPaid: boolean;
     ekPaid: boolean;
+    customFee?: number; // For special leagues
+    isCustomFeeSet?: boolean; // To check if fee has been entered
 }
 
-const STORAGE_KEY_PREFIX = 'payment_status_';
+export enum PaymentType {
+    STANDARD = 'STANDARD', // Generic HAFTA matches (GSB + Ek)
+    GSB_ONLY = 'GSB_ONLY', // OKUL matches (Only GSB)
+    CUSTOM_FEE = 'CUSTOM_FEE', // ÖZEL LİG matches (Custom fee input)
+    NONE = 'NONE' // Not eligible
+}
 
 export const PAYMENT_RATES = {
     GSB: 348.4,
     EK: 300
 };
 
-export const getMatchId = (match: MatchDetails): string => {
+export const getMatchId = (match: any): string => {
     // Create a unique ID based on immutable match properties
-    // Sanitizing to ensure safe key
-    const safeDate = match.date.replace(/\s/g, '');
-    const safeTime = match.time.replace(/\s/g, '');
-    const safeTeamA = match.teamA.replace(/\s/g, '').substring(0, 10);
-    const safeTeamB = match.teamB.replace(/\s/g, '').substring(0, 10);
-    return `${safeDate}_${safeTime}_${safeTeamA}_${safeTeamB}`;
+    // Using date, time, teams, and hall to ensure uniqueness
+    const str = `${match.date}_${match.time}_${match.teamA}_${match.teamB}_${match.hall}`;
+    return btoa(unescape(encodeURIComponent(str))).replace(/[^a-zA-Z0-9]/g, '');
 };
 
 export const getPaymentStatus = (userEmail: string, matchId: string): PaymentStatus => {
     try {
-        const key = `${STORAGE_KEY_PREFIX}${userEmail}`;
-        const stored = localStorage.getItem(key);
-        if (!stored) return { gsbPaid: false, ekPaid: false };
-
-        const allStatuses = JSON.parse(stored);
-        return allStatuses[matchId] || { gsbPaid: false, ekPaid: false };
+        const key = `payment_${userEmail}_${matchId}`;
+        const saved = localStorage.getItem(key);
+        return saved ? JSON.parse(saved) : { gsbPaid: false, ekPaid: false };
     } catch (e) {
-        console.error('Error reading payment status', e);
         return { gsbPaid: false, ekPaid: false };
     }
 };
 
 export const savePaymentStatus = (userEmail: string, matchId: string, status: PaymentStatus) => {
-    try {
-        const key = `${STORAGE_KEY_PREFIX}${userEmail}`;
-        const stored = localStorage.getItem(key);
-        const allStatuses = stored ? JSON.parse(stored) : {};
-
-        allStatuses[matchId] = status;
-        localStorage.setItem(key, JSON.stringify(allStatuses));
-    } catch (e) {
-        console.error('Error saving payment status', e);
-    }
+    const key = `payment_${userEmail}_${matchId}`;
+    localStorage.setItem(key, JSON.stringify(status));
 };
 
 export const getAllPaymentStatuses = (userEmail: string): Record<string, PaymentStatus> => {
-    try {
-        const key = `${STORAGE_KEY_PREFIX}${userEmail}`;
-        const stored = localStorage.getItem(key);
-        return stored ? JSON.parse(stored) : {};
-    } catch (e) {
-        return {};
+    const statuses: Record<string, PaymentStatus> = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith(`payment_${userEmail}_`)) {
+            const matchId = key.replace(`payment_${userEmail}_`, '');
+            try {
+                statuses[matchId] = JSON.parse(localStorage.getItem(key) || '{}');
+            } catch (e) {
+                // ignore error
+            }
+        }
     }
+    return statuses;
 };
 
-export const isMatchEligibleForPayment = (match: MatchDetails): boolean => {
-    if (!match.sourceFile) return false;
-    const fileNameUpper = match.sourceFile.toLocaleUpperCase('tr-TR');
-    return fileNameUpper.includes('HAFTA');
+export const getPaymentType = (match: any): PaymentType => {
+    const source = match.sourceFile?.toLocaleUpperCase('tr-TR') || '';
+
+    if (source.includes('OKUL İL VE İLÇE')) {
+        return PaymentType.GSB_ONLY;
+    }
+
+    if (source.includes('ÖZEL LİG') || source.includes('ÜNİVERSİTE')) {
+        return PaymentType.CUSTOM_FEE;
+    }
+
+    if (source.includes('HAFTA')) {
+        return PaymentType.STANDARD;
+    }
+
+    return PaymentType.NONE;
+};
+
+export const isMatchEligibleForPayment = (match: any): boolean => {
+    return getPaymentType(match) !== PaymentType.NONE;
 };

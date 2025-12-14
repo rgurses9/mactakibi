@@ -1,15 +1,32 @@
 import React from 'react';
 import { PAYMENT_RATES } from '../services/paymentService';
 
+interface PaymentStatus {
+    gsbPaid: boolean;
+    ekPaid: boolean;
+    customFee?: number;
+}
+
 interface FeeTableProps {
     eligibleCount: number;
     paidGsbCount: number;
     paidEkCount: number;
+    paymentStatuses: Record<string, PaymentStatus>;
 }
 
-const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, paidGsbCount, paidEkCount }) => {
-    const totalGsbPayable = eligibleCount * PAYMENT_RATES.GSB;
-    const totalEkPayable = eligibleCount * PAYMENT_RATES.EK;
+const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, paidGsbCount, paidEkCount, paymentStatuses }) => {
+    // Calculate totals
+    const totalGsbPayable = Object.values(paymentStatuses).filter(s => s.gsbPaid).length * PAYMENT_RATES.GSB;
+
+    // Calculate total Ek including custom fees
+    const totalEkPayable = Object.values(paymentStatuses).reduce((acc, curr) => {
+        if (curr.ekPaid) {
+            // If it has a custom fee, use that, otherwise use standard rate
+            return acc + (curr.customFee || PAYMENT_RATES.EK);
+        }
+        return acc;
+    }, 0);
+
     const totalPayable = totalGsbPayable + totalEkPayable;
 
     const totalGsbPaid = paidGsbCount * PAYMENT_RATES.GSB;

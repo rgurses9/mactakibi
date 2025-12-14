@@ -283,18 +283,30 @@ const App: React.FC = () => {
         setPaymentStats({ eligible, paidGsb: gsb, paidEk: ek });
     }, [matches, paymentStatuses]);
 
-    const handleTogglePayment = (matchId: string, type: 'gsb' | 'ek') => {
-        if (!user?.email) return;
+    // Toggle payment status handler
+    const togglePaymentStatus = (matchId: string, type: 'gsb' | 'ek', customFee?: number) => {
+        if (!user || !user.email) return;
 
-        const currentStatus = paymentStatuses[matchId] || { gsbPaid: false, ekPaid: false };
-        const newStatus = {
-            ...currentStatus,
-            [type === 'gsb' ? 'gsbPaid' : 'ekPaid']: !currentStatus[type === 'gsb' ? 'gsbPaid' : 'ekPaid']
-        };
+        setPaymentStatuses(prev => {
+            const currentStatus = prev[matchId] || { gsbPaid: false, ekPaid: false };
+            let newStatus: PaymentStatus;
 
-        const newStatuses = { ...paymentStatuses, [matchId]: newStatus };
-        setPaymentStatuses(newStatuses);
-        savePaymentStatus(user.email, matchId, newStatus);
+            if (type === 'gsb') {
+                newStatus = { ...currentStatus, gsbPaid: !currentStatus.gsbPaid };
+            } else {
+                newStatus = {
+                    ...currentStatus,
+                    ekPaid: !currentStatus.ekPaid,
+                    // If custom fee is provided, update it. If unchecking, keep it or handle as needed. 
+                    // For now resetting if unpaying? No, keep it. 
+                    customFee: customFee !== undefined ? customFee : currentStatus.customFee,
+                    isCustomFeeSet: customFee !== undefined ? true : currentStatus.isCustomFeeSet
+                };
+            }
+
+            savePaymentStatus(user.email!, matchId, newStatus);
+            return { ...prev, [matchId]: newStatus };
+        });
     };
 
     const handleAutoScan = async (forceRefresh = false) => {
@@ -700,6 +712,9 @@ const App: React.FC = () => {
                             matches={activeMatches}
                             title="Aktif Müsabakalar"
                             variant="active"
+                            paymentStatuses={paymentStatuses}
+                            onTogglePayment={togglePaymentStatus}
+                            userEmail={user.email}
                         />
                     )}
 
@@ -708,6 +723,9 @@ const App: React.FC = () => {
                             matches={pastMatches}
                             title="Geçmiş Müsabakalar"
                             variant="past"
+                            paymentStatuses={paymentStatuses}
+                            onTogglePayment={togglePaymentStatus}
+                            userEmail={user.email}
                         />
                     )}
 
