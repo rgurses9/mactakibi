@@ -26,10 +26,13 @@
   --color-surface-tertiary: #f3f4f6;
   --color-surface-elevated: #ffffff;
 
-  /* Content/Text Colors */
+  /* Content/Text Colors - Darker for better visibility on white */
   --color-content: #111827;
-  --color-content-secondary: #4b5563;
-  --color-content-tertiary: #9ca3af;
+  /* gray-900 - Main text */
+  --color-content-secondary: #374151;
+  /* gray-700 - Secondary text */
+  --color-content-tertiary: #6b7280;
+  /* gray-500 - Tertiary text */
   --color-content-inverse: #ffffff;
 
   /* Border Colors */
