@@ -1,15 +1,17 @@
-import React from 'react';
 import { MatchDetails } from '../types';
 import { MapPin, FileText, Trophy, History, CheckCircle2 } from 'lucide-react';
 import { parseDate, isPastDate, formatDate } from '../utils/dateHelpers';
+import { isMatchEligibleForPayment, getMatchId, PaymentStatus, PAYMENT_RATES } from '../services/paymentService';
 
 interface MatchListProps {
   matches: MatchDetails[];
   title?: string;
   variant?: 'active' | 'past';
+  paymentStatuses?: Record<string, PaymentStatus>;
+  onTogglePayment?: (matchId: string, type: 'gsb' | 'ek') => void;
 }
 
-const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı", variant = 'active' }) => {
+const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı", variant = 'active', paymentStatuses, onTogglePayment }) => {
   if (matches.length === 0) return null;
 
   // Sorting logic:
@@ -70,6 +72,9 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
 
       <div className="grid grid-cols-1 gap-4">
         {sortedMatches.map((match, index) => {
+          const isEligibleForPayment = isMatchEligibleForPayment(match);
+          const matchId = getMatchId(match);
+          const status = paymentStatuses?.[matchId] || { gsbPaid: false, ekPaid: false };
 
           return (
             <div
@@ -78,8 +83,8 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
                 ${isGreenMode ? 'border-green-400 dark:border-green-800 ring-2 ring-green-50 dark:ring-green-900/20 shadow-green-100 dark:shadow-none' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'}
               `}
             >
-              {/* Top: Time & Date Header */}
-              <div className={`border-b border-dashed flex items-center justify-between px-4 py-3 transition-colors
+              {/* Top: Time, Date & Payment Header */}
+              <div className={`border-b border-dashed px-4 py-3 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3
                   ${isGreenMode ? 'bg-green-50/50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-100/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700'}
               `}>
                 <div className="flex items-center gap-3">
@@ -90,12 +95,40 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
                     {formatDate(match.date)}
                   </div>
                 </div>
-                {match.sourceFile && (
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <FileText size={12} />
-                    <span className="truncate max-w-[200px]">{match.sourceFile}</span>
-                  </div>
-                )}
+
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  {/* Payment Checkboxes */}
+                  {isEligibleForPayment && onTogglePayment && (
+                    <div className="flex items-center gap-2 bg-white dark:bg-gray-700 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm">
+                      <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={status.gsbPaid}
+                          onChange={() => onTogglePayment(matchId, 'gsb')}
+                          className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
+                        />
+                        <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300">GSB ({PAYMENT_RATES.GSB}₺)</span>
+                      </label>
+                      <div className="w-px h-3 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+                      <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={status.ekPaid}
+                          onChange={() => onTogglePayment(matchId, 'ek')}
+                          className="w-3.5 h-3.5 rounded text-orange-600 focus:ring-orange-500 border-gray-300"
+                        />
+                        <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300">Ek ({PAYMENT_RATES.EK}₺)</span>
+                      </label>
+                    </div>
+                  )}
+
+                  {match.sourceFile && (
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 ml-auto sm:ml-0">
+                      <FileText size={12} />
+                      <span className="truncate max-w-[150px]">{match.sourceFile}</span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Bottom: Match Details */}

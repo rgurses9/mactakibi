@@ -6,11 +6,13 @@ import FirebaseSettings from './components/FirebaseSettings';
 import FileUpload from './components/FileUpload';
 import Auth from './components/Auth';
 import AdminPanel from './components/AdminPanel'; // Import Admin Panel
+import { MatchDetails, AnalysisResult } from './types';
+import { getMatchId, getAllPaymentStatuses, savePaymentStatus, isMatchEligibleForPayment, PaymentStatus } from './services/paymentService';
 import { autoScanDriveFolder } from './services/driveService';
 import { findMatchesInExcel, findMatchesInRawData } from './services/excelService';
 import { initFirebase, subscribeToMatches, subscribeToAuthChanges, logoutUser } from './services/firebaseService';
-import { MatchDetails } from './types';
 import { isPastDate, parseDate } from './utils/dateHelpers';
+import FeeTable from './components/FeeTable';
 import {
     RefreshCw, Bot, Folder,
     Calendar, Briefcase, Shield,
@@ -24,7 +26,7 @@ const DEFAULT_FIREBASE_CONFIG = {
     apiKey: "AIzaSyCILoR2i6TtjpMl6pW0OOBhc3naQHAd12Q",
     authDomain: "mactakibi-50e0b.firebaseapp.com",
     projectId: "mactakibi-50e0b",
-    storageBucket: "mactakibi-50e0b.firebasestorage.app",
+    storageBucket: "mactakibi-50e0b.firebaseapp.com",
     messagingSenderId: "529275453572",
     appId: "1:529275453572:web:4d6102920b55724e5902d1",
     measurementId: "G-V793VBMXF7",
@@ -63,6 +65,10 @@ const App: React.FC = () => {
 
     // Admin Panel State
     const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
+
+    // Payment State
+    const [paymentStatuses, setPaymentStatuses] = useState<Record<string, PaymentStatus>>({});
+    const [paymentStats, setPaymentStats] = useState({ eligible: 0, paidGsb: 0, paidEk: 0 });
 
     // Theme State
     const [theme, setTheme] = useState<Theme>(() => {
@@ -274,6 +280,13 @@ const App: React.FC = () => {
                 setMatches(cached);
                 setLastUpdated(new Date(parseInt(lastScanTime)).toLocaleString('tr-TR'));
                 addLog(`📦 Önbellekten ${cached.length} maç yüklendi. Yenilemek için 'Yenile' butonunu kullanabilirsiniz.`, 'info');
+
+                // Initialize payment statuses
+                if (user?.email) {
+                    const statuses = getAllPaymentStatuses(user.email);
+                    setPaymentStatuses(statuses);
+                }
+
                 setIsAnalyzing(false);
                 return; // Don't scan again, use cached data
             } catch (e) {
@@ -304,6 +317,13 @@ const App: React.FC = () => {
 
             addLog(`Tarama bitti. ${driveMatches.length} maç bulundu.`, 'success');
             setMatches(driveMatches);
+
+            // Initialize payment statuses
+            if (user?.email) {
+                const statuses = getAllPaymentStatuses(user.email);
+                setPaymentStatuses(statuses);
+            }
+
             setLastUpdated(new Date().toLocaleString('tr-TR'));
 
             // Cache the results
@@ -436,6 +456,38 @@ const App: React.FC = () => {
         return <Auth />;
     }
 
+    // Calculate Payment Stats whenever matches or statuses change
+    useEffect(() => {
+        let eligible = 0;
+        let gsb = 0;
+        let ek = 0;
+
+        matches.forEach(match => {
+            if (isMatchEligibleForPayment(match)) {
+                eligible++;
+                const id = getMatchId(match);
+                if (paymentStatuses[id]?.gsbPaid) gsb++;
+                if (paymentStatuses[id]?.ekPaid) ek++;
+            }
+        });
+
+        setPaymentStats({ eligible, paidGsb: gsb, paidEk: ek });
+    }, [matches, paymentStatuses]);
+
+    const handleTogglePayment = (matchId: string, type: 'gsb' | 'ek') => {
+        if (!user?.email) return;
+
+        const currentStatus = paymentStatuses[matchId] || { gsbPaid: false, ekPaid: false };
+        const newStatus = {
+            ...currentStatus,
+            [type === 'gsb' ? 'gsbPaid' : 'ekPaid']: !currentStatus[type === 'gsb' ? 'gsbPaid' : 'ekPaid']
+        };
+
+        const newStatuses = { ...paymentStatuses, [matchId]: newStatus };
+        setPaymentStatuses(newStatuses);
+        savePaymentStatus(user.email, matchId, newStatus);
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950 font-sans pb-24 transition-colors duration-300">
 
@@ -549,6 +601,15 @@ const App: React.FC = () => {
             </div>
 
             <main className="max-w-5xl mx-auto px-4 py-8">
+
+                {/* Show Fee Table if there are eligible matches */}
+                {paymentStats.eligible > 0 && (
+                    <FeeTable
+                        eligibleCount={paymentStats.eligible}
+                        paidGsbCount={paymentStats.paidGsb}
+                        paidEkCount={paymentStats.paidEk}
+                    />
+                )}
 
                 <div className="space-y-6">
 
