@@ -88,6 +88,11 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNam
       }
 
       if (shouldInclude) {
+        // Collect all non-empty duty columns
+        const allDuties = [colH, colI, colJ, colK, colL].filter(col => col !== "");
+
+        // For display, we'll use the first 3 non-empty columns
+        // or distribute them across scorer/timer/shotClock
         matches.push({
           date: String(row['A'] || "").trim(),
           hall: String(row['B'] || "").trim(),
@@ -96,10 +101,10 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNam
           teamB: String(row['E'] || "").trim(),
           category: String(row['F'] || "").trim(),
           group: String(row['G'] || "").trim(),
-          // Store all duty columns - use J, K, L as primary for backward compatibility
-          scorer: colJ,
-          timer: colK,
-          shotClock: colL
+          // Distribute all duties across the three display fields
+          scorer: allDuties[0] || colJ,
+          timer: allDuties[1] || colK,
+          shotClock: allDuties[2] || colL
         });
       }
     });
