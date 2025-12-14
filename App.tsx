@@ -262,6 +262,38 @@ const App: React.FC = () => {
         return () => clearInterval(interval);
     }, [autoRefresh, hasAutoScanned, isFirebaseActive, user]);
 
+    // Calculate Payment Stats whenever matches or statuses change
+    useEffect(() => {
+        let eligible = 0;
+        let gsb = 0;
+        let ek = 0;
+
+        matches.forEach(match => {
+            if (isMatchEligibleForPayment(match)) {
+                eligible++;
+                const id = getMatchId(match);
+                if (paymentStatuses[id]?.gsbPaid) gsb++;
+                if (paymentStatuses[id]?.ekPaid) ek++;
+            }
+        });
+
+        setPaymentStats({ eligible, paidGsb: gsb, paidEk: ek });
+    }, [matches, paymentStatuses]);
+
+    const handleTogglePayment = (matchId: string, type: 'gsb' | 'ek') => {
+        if (!user?.email) return;
+
+        const currentStatus = paymentStatuses[matchId] || { gsbPaid: false, ekPaid: false };
+        const newStatus = {
+            ...currentStatus,
+            [type === 'gsb' ? 'gsbPaid' : 'ekPaid']: !currentStatus[type === 'gsb' ? 'gsbPaid' : 'ekPaid']
+        };
+
+        const newStatuses = { ...paymentStatuses, [matchId]: newStatus };
+        setPaymentStatuses(newStatuses);
+        savePaymentStatus(user.email, matchId, newStatus);
+    };
+
     const handleAutoScan = async (forceRefresh = false) => {
         if (isFirebaseActive) {
             return;
@@ -455,38 +487,6 @@ const App: React.FC = () => {
     if (!user) {
         return <Auth />;
     }
-
-    // Calculate Payment Stats whenever matches or statuses change
-    useEffect(() => {
-        let eligible = 0;
-        let gsb = 0;
-        let ek = 0;
-
-        matches.forEach(match => {
-            if (isMatchEligibleForPayment(match)) {
-                eligible++;
-                const id = getMatchId(match);
-                if (paymentStatuses[id]?.gsbPaid) gsb++;
-                if (paymentStatuses[id]?.ekPaid) ek++;
-            }
-        });
-
-        setPaymentStats({ eligible, paidGsb: gsb, paidEk: ek });
-    }, [matches, paymentStatuses]);
-
-    const handleTogglePayment = (matchId: string, type: 'gsb' | 'ek') => {
-        if (!user?.email) return;
-
-        const currentStatus = paymentStatuses[matchId] || { gsbPaid: false, ekPaid: false };
-        const newStatus = {
-            ...currentStatus,
-            [type === 'gsb' ? 'gsbPaid' : 'ekPaid']: !currentStatus[type === 'gsb' ? 'gsbPaid' : 'ekPaid']
-        };
-
-        const newStatuses = { ...paymentStatuses, [matchId]: newStatus };
-        setPaymentStatuses(newStatuses);
-        savePaymentStatus(user.email, matchId, newStatus);
-    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950 font-sans pb-24 transition-colors duration-300">
