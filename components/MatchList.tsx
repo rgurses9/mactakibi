@@ -136,14 +136,15 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
 
                     if (isRifat) {
                       if (isGreenMode) {
-                        // Basketball orange background with black text - using Tailwind orange-500
-                        boxClass = 'bg-orange-500 border-orange-600 dark:bg-orange-500 dark:border-orange-600 shadow-xl transform scale-110 z-10 ring-2 ring-orange-400';
-                        textClass = 'text-white dark:text-white font-black';
-                        labelClass = 'text-orange-100 dark:text-orange-100';
+                        // Red background with black text for active matches
+                        boxClass = 'bg-red-600 border-red-700 dark:bg-red-600 dark:border-red-700 shadow-xl transform scale-110 z-10 ring-2 ring-red-400';
+                        textClass = 'text-black dark:text-black font-black';
+                        labelClass = 'text-red-900 dark:text-red-900 font-bold';
                       } else {
-                        boxClass = 'bg-orange-400 border-orange-500 dark:bg-orange-500 dark:border-orange-600 shadow-lg';
-                        textClass = 'text-white dark:text-white font-black';
-                        labelClass = 'text-orange-100 dark:text-orange-100';
+                        // Red background with black text for past matches
+                        boxClass = 'bg-red-500 border-red-600 dark:bg-red-600 dark:border-red-700 shadow-lg';
+                        textClass = 'text-black dark:text-black font-black';
+                        labelClass = 'text-red-900 dark:text-red-900 font-bold';
                       }
                     }
 
