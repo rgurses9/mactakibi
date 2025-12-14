@@ -13,8 +13,9 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
   if (matches.length === 0) return null;
 
   // Sorting logic:
-  // Both active and past matches: Descending (Newest date first)
-  // Invalid dates are placed at the end
+  // 1. Sort by date descending (newest date first)
+  // 2. For same-day matches, sort by time descending (latest time first)
+  // 3. Invalid dates are placed at the end
   const sortedMatches = [...matches].sort((a, b) => {
     const dateA = parseDate(a.date);
     const dateB = parseDate(b.date);
@@ -29,7 +30,28 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
     if (!dateB) return -1;
 
     // Both dates are valid, sort reverse chronologically (newest first)
-    return dateB.getTime() - dateA.getTime();
+    const dateDiff = dateB.getTime() - dateA.getTime();
+
+    // If dates are different, use date sorting
+    if (dateDiff !== 0) return dateDiff;
+
+    // Same date - sort by time (latest time first)
+    const timeA = a.time || '';
+    const timeB = b.time || '';
+
+    // Parse time strings (e.g., "14:00" or "14.00")
+    const parseTime = (timeStr: string): number => {
+      const cleaned = timeStr.replace(/[.:]/g, '');
+      const hours = parseInt(cleaned.substring(0, 2)) || 0;
+      const minutes = parseInt(cleaned.substring(2, 4)) || 0;
+      return hours * 60 + minutes; // Convert to minutes for comparison
+    };
+
+    const minutesA = parseTime(timeA);
+    const minutesB = parseTime(timeB);
+
+    // Sort by time descending (later times first)
+    return minutesB - minutesA;
   });
 
   const isGreenMode = variant === 'active';
