@@ -27,6 +27,7 @@ interface FolderConfig {
   id: string;
   resourceKey?: string;
   name: string;
+  recursive?: boolean; // If false, only scan this folder, not subfolders
 }
 
 // Configuration for folders to scan
@@ -34,17 +35,20 @@ const TARGET_FOLDERS: FolderConfig[] = [
   {
     id: "0ByPao_qBUjN-YXJZSG5Fancybmc",
     resourceKey: "0-MKTgAd4XnpTp7S5flJBKuA",
-    name: "Ana Maç Klasörü"
+    name: "Ana Maç Klasörü",
+    recursive: false // Only scan this folder, not subfolders
   },
   {
     id: "1Tqtn2oN96UAyeARYtmYFGSfzkrSJOG9s",
-    resourceKey: undefined, // No resource key provided in the link for the second folder
-    name: "Ek Maç Klasörü"
+    resourceKey: undefined,
+    name: "Ek Maç Klasörü",
+    recursive: true // Scan subfolders
   },
   {
     id: "1gBZ_nHumGI-VjgqYjKTLTe_moSi4Pbl6",
     resourceKey: undefined,
-    name: "Yeni Maç Klasörü"
+    name: "Yeni Maç Klasörü",
+    recursive: true // Scan subfolders
   }
 ];
 
@@ -152,16 +156,20 @@ const scanFolderRecursive = async (
     // Flatten file results
     fileResults.forEach(r => allMatches.push(...r));
 
-    // 2. Process Subfolders in Parallel
-    // We start all subfolder scans simultaneously using Promise.all
-    const folderPromises = subFolders.map(folder =>
-      scanFolderRecursive(folder.id, rootConfig, onProgress, targetNameParts)
-    );
+    // 2. Process Subfolders in Parallel (only if recursive is enabled)
+    // Check if we should scan subfolders (default to true if not specified)
+    const shouldScanSubfolders = rootConfig.recursive !== false;
 
-    const folderResults = await Promise.all(folderPromises);
+    if (shouldScanSubfolders && subFolders.length > 0) {
+      const folderPromises = subFolders.map(folder =>
+        scanFolderRecursive(folder.id, rootConfig, onProgress, targetNameParts)
+      );
 
-    // Flatten folder results
-    folderResults.forEach(r => allMatches.push(...r));
+      const folderResults = await Promise.all(folderPromises);
+
+      // Flatten folder results
+      folderResults.forEach(r => allMatches.push(...r));
+    }
 
   } catch (error) {
     console.error(`Error scanning folder ${folderId}:`, error);
