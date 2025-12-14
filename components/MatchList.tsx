@@ -107,9 +107,9 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
                       </div>
                     </div>
                     {match.sourceFile && (
-                      <div className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded border border-gray-100 dark:border-gray-600 max-w-[150px] truncate">
-                        <FileText size={10} />
-                        {match.sourceFile}
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <FileText size={12} />
+                        <span className="truncate">{match.sourceFile}</span>
                       </div>
                     )}
                   </div>
