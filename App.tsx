@@ -66,6 +66,9 @@ const App: React.FC = () => {
     // Admin Panel State
     const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
 
+    // Fee List Modal State
+    const [isFeeListOpen, setIsFeeListOpen] = useState(false);
+
     // Payment State
     const [paymentStatuses, setPaymentStatuses] = useState<Record<string, PaymentStatus>>({});
     const [paymentStats, setPaymentStats] = useState({ eligible: 0, paidGsb: 0, paidEk: 0 });
@@ -531,6 +534,30 @@ const App: React.FC = () => {
                 </div>
             )}
 
+            {/* Fee List Modal */}
+            {isFeeListOpen && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setIsFeeListOpen(false)}>
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full animate-in fade-in zoom-in-95 duration-200 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-green-600 p-4 flex items-center justify-between text-white">
+                            <h3 className="font-bold flex items-center gap-2">
+                                <span className="text-xl">💰</span>
+                                Ücret Listesi
+                            </h3>
+                            <button onClick={() => setIsFeeListOpen(false)} className="hover:bg-green-700 p-1 rounded-full transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            <FeeTable
+                                eligibleCount={paymentStats.eligible}
+                                paidGsbCount={paymentStats.paidGsb}
+                                paidEkCount={paymentStats.paidEk}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* HEADER SECTION - Theme Toggle Moved Here */}
             <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30 shadow-sm transition-colors duration-300">
                 <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -542,6 +569,17 @@ const App: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-3 md:gap-4">
+                        {/* Fee List Button - Only visible when eligible matches exist */}
+                        {paymentStats.eligible > 0 && (
+                            <button
+                                onClick={() => setIsFeeListOpen(true)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-colors shadow-md shadow-green-200 dark:shadow-none"
+                            >
+                                <span className="text-lg">💰</span>
+                                <span className="hidden sm:inline">Ücret Listesi</span>
+                            </button>
+                        )}
+
                         {/* Admin Button - Only visible to admin */}
                         {isAdmin && (
                             <button
@@ -603,13 +641,7 @@ const App: React.FC = () => {
             <main className="max-w-5xl mx-auto px-4 py-8">
 
                 {/* Show Fee Table if there are eligible matches */}
-                {paymentStats.eligible > 0 && (
-                    <FeeTable
-                        eligibleCount={paymentStats.eligible}
-                        paidGsbCount={paymentStats.paidGsb}
-                        paidEkCount={paymentStats.paidEk}
-                    />
-                )}
+                {/* Removed FeeTable from here, moved to modal */}
 
                 <div className="space-y-6">
 

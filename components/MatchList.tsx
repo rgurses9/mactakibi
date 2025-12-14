@@ -83,8 +83,8 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
                 ${isGreenMode ? 'border-green-400 dark:border-green-800 ring-2 ring-green-50 dark:ring-green-900/20 shadow-green-100 dark:shadow-none' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'}
               `}
             >
-              {/* Top: Time, Date & Payment Header */}
-              <div className={`border-b border-dashed px-4 py-3 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3
+              {/* Top: Time & Date Header */}
+              <div className={`border-b border-dashed px-4 py-3 transition-colors flex items-center justify-between
                   ${isGreenMode ? 'bg-green-50/50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-100/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700'}
               `}>
                 <div className="flex items-center gap-3">
@@ -96,39 +96,12 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                  {/* Payment Checkboxes */}
-                  {isEligibleForPayment && onTogglePayment && (
-                    <div className="flex items-center gap-2 bg-white dark:bg-gray-700 px-2 py-1 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm">
-                      <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={status.gsbPaid}
-                          onChange={() => onTogglePayment(matchId, 'gsb')}
-                          className="w-3.5 h-3.5 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
-                        />
-                        <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300">GSB ({PAYMENT_RATES.GSB}₺)</span>
-                      </label>
-                      <div className="w-px h-3 bg-gray-300 dark:bg-gray-600 mx-1"></div>
-                      <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={status.ekPaid}
-                          onChange={() => onTogglePayment(matchId, 'ek')}
-                          className="w-3.5 h-3.5 rounded text-orange-600 focus:ring-orange-500 border-gray-300"
-                        />
-                        <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300">Ek ({PAYMENT_RATES.EK}₺)</span>
-                      </label>
-                    </div>
-                  )}
-
-                  {match.sourceFile && (
-                    <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 ml-auto sm:ml-0">
-                      <FileText size={12} />
-                      <span className="truncate max-w-[150px]">{match.sourceFile}</span>
-                    </div>
-                  )}
-                </div>
+                {match.sourceFile && (
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <FileText size={12} />
+                    <span className="truncate max-w-[200px]">{match.sourceFile}</span>
+                  </div>
+                )}
               </div>
 
               {/* Bottom: Match Details */}
@@ -152,8 +125,8 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
                   <span className={`text-sm font-bold flex-1 text-left ${isGreenMode ? 'text-gray-900 dark:text-white' : 'text-gray-900 dark:text-white'}`}>{match.teamB}</span>
                 </div>
 
-                {/* Duties (Grid) */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {/* Duties (Grid) - Now includes payment checkboxes */}
+                <div className={`grid ${isEligibleForPayment ? 'grid-cols-1 sm:grid-cols-5' : 'grid-cols-1 sm:grid-cols-3'} gap-2`}>
                   {[
                     { label: match.scorerLabel || 'Görevli 1', value: match.scorer },
                     { label: match.timerLabel || 'Görevli 2', value: match.timer },
@@ -198,6 +171,41 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
                       </div>
                     );
                   })}
+
+                  {/* Payment Checkboxes as Duty Boxes */}
+                  {isEligibleForPayment && onTogglePayment && (
+                    <>
+                      <div className="relative px-2 py-1.5 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/20 flex flex-col items-center justify-center text-center transition-all duration-300">
+                        <span className="text-[7px] uppercase font-bold tracking-wider mb-1 text-blue-700 dark:text-blue-300">
+                          GSB ÖDEME
+                        </span>
+                        <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={status.gsbPaid}
+                            onChange={() => onTogglePayment(matchId, 'gsb')}
+                            className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
+                          />
+                          <span className="text-[9px] font-bold text-blue-700 dark:text-blue-300">{PAYMENT_RATES.GSB}₺</span>
+                        </label>
+                      </div>
+
+                      <div className="relative px-2 py-1.5 rounded-lg border border-orange-200 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20 flex flex-col items-center justify-center text-center transition-all duration-300">
+                        <span className="text-[7px] uppercase font-bold tracking-wider mb-1 text-orange-700 dark:text-orange-300">
+                          EK ÖDEME
+                        </span>
+                        <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={status.ekPaid}
+                            onChange={() => onTogglePayment(matchId, 'ek')}
+                            className="w-4 h-4 rounded text-orange-600 focus:ring-orange-500 border-gray-300"
+                          />
+                          <span className="text-[9px] font-bold text-orange-700 dark:text-orange-300">{PAYMENT_RATES.EK}₺</span>
+                        </label>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
