@@ -78,95 +78,92 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
                 ${isGreenMode ? 'border-green-400 dark:border-green-800 ring-2 ring-green-50 dark:ring-green-900/20 shadow-green-100 dark:shadow-none' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'}
               `}
             >
-              <div className="flex flex-col md:flex-row">
-
-                {/* Left Side: Time & Date */}
-                <div className={`md:w-32 border-b md:border-b-0 md:border-r border-dashed flex flex-row md:flex-col items-center justify-center p-4 gap-3 md:gap-1 text-center transition-colors
-                    ${isGreenMode ? 'bg-green-50/50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-100/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700'}
-                `}>
-                  <div className={`text-lg font-black tracking-tight ${isGreenMode ? 'text-green-800 dark:text-green-300' : 'text-gray-900 dark:text-white'}`}>
+              {/* Top: Time & Date Header */}
+              <div className={`border-b border-dashed flex items-center justify-between px-4 py-3 transition-colors
+                  ${isGreenMode ? 'bg-green-50/50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-100/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700'}
+              `}>
+                <div className="flex items-center gap-3">
+                  <div className={`text-xl font-black tracking-tight ${isGreenMode ? 'text-green-800 dark:text-green-300' : 'text-gray-900 dark:text-white'}`}>
                     {match.time}
                   </div>
-                  <div className="text-xs font-semibold text-gray-900 dark:text-white bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-2 py-0.5 rounded uppercase">
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-3 py-1 rounded">
                     {formatDate(match.date)}
                   </div>
                 </div>
-
-                {/* Right Side: Details */}
-                <div className="flex-1 p-3">
-                  {/* Header: Category & Hall */}
-                  <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
-                    <div>
-                      <div className={`text-xs font-bold tracking-wide uppercase mb-1 flex items-center gap-1.5 ${isGreenMode ? 'text-green-700 dark:text-green-300' : 'text-gray-900 dark:text-white'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${isGreenMode ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-                        {match.category} {match.group ? `• ${match.group}` : ''}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-gray-900 dark:text-white text-sm font-medium">
-                        <MapPin size={14} />
-                        {match.hall}
-                      </div>
-                    </div>
-                    {match.sourceFile && (
-                      <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800">
-                        <FileText size={12} />
-                        <span className="truncate">{match.sourceFile}</span>
-                      </div>
-                    )}
+                {match.sourceFile && (
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <FileText size={12} />
+                    <span className="truncate max-w-[200px]">{match.sourceFile}</span>
                   </div>
+                )}
+              </div>
 
-                  {/* Teams */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className={`text-sm font-bold flex-1 text-right ${isGreenMode ? 'text-gray-900 dark:text-white' : 'text-gray-900 dark:text-white'}`}>{match.teamA}</span>
-                    <div className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-[9px] font-black px-1.5 py-0.5 rounded">VS</div>
-                    <span className={`text-sm font-bold flex-1 text-left ${isGreenMode ? 'text-gray-900 dark:text-white' : 'text-gray-900 dark:text-white'}`}>{match.teamB}</span>
+              {/* Bottom: Match Details */}
+              <div className="p-4">
+                {/* Category & Group & Hall */}
+                <div className="mb-3">
+                  <div className={`text-xs font-bold tracking-wide uppercase mb-2 flex items-center gap-1.5 ${isGreenMode ? 'text-green-700 dark:text-green-300' : 'text-gray-900 dark:text-white'}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${isGreenMode ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                    {match.category} {match.group ? `• ${match.group}` : ''}
                   </div>
+                  <div className="flex items-center gap-1.5 text-gray-900 dark:text-white text-sm font-medium">
+                    <MapPin size={14} />
+                    {match.hall}
+                  </div>
+                </div>
 
-                  {/* Duties (Grid) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {[
-                      { label: 'Sayı Görevlisi', value: match.scorer },
-                      { label: 'Saat Görevlisi', value: match.timer },
-                      { label: 'Şut Saati', value: match.shotClock },
-                    ].map((duty, i) => {
-                      const upperValue = duty.value?.toLocaleUpperCase('tr-TR') || '';
-                      const isRifat = upperValue.includes('RIFAT') || upperValue.includes('GÜRSES');
+                {/* Teams */}
+                <div className="flex items-center gap-2 mb-3">
+                  <span className={`text-sm font-bold flex-1 text-right ${isGreenMode ? 'text-gray-900 dark:text-white' : 'text-gray-900 dark:text-white'}`}>{match.teamA}</span>
+                  <div className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-[9px] font-black px-1.5 py-0.5 rounded">VS</div>
+                  <span className={`text-sm font-bold flex-1 text-left ${isGreenMode ? 'text-gray-900 dark:text-white' : 'text-gray-900 dark:text-white'}`}>{match.teamB}</span>
+                </div>
 
-                      // Visual logic for duty boxes
-                      let boxClass = 'bg-white dark:bg-gray-700 border-gray-100 dark:border-gray-600';
-                      let textClass = 'text-gray-900 dark:text-white';
-                      let labelClass = 'text-gray-700 dark:text-gray-300';
+                {/* Duties (Grid) */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {[
+                    { label: 'Görevli 1', value: match.scorer },
+                    { label: 'Görevli 2', value: match.timer },
+                    { label: 'Görevli 3', value: match.shotClock },
+                  ].map((duty, i) => {
+                    const upperValue = duty.value?.toLocaleUpperCase('tr-TR') || '';
+                    const isRifat = upperValue.includes('RIFAT') || upperValue.includes('GÜRSES');
 
-                      if (isRifat) {
-                        if (isGreenMode) {
-                          // Basketball orange background with black text
-                          boxClass = 'bg-orange-400 border-orange-500 dark:bg-orange-500 dark:border-orange-600 shadow-md transform scale-105 z-10';
-                          textClass = 'text-black dark:text-black font-extrabold';
-                          labelClass = 'text-orange-900 dark:text-orange-900';
-                        } else {
-                          boxClass = 'bg-orange-300 border-orange-400 dark:bg-orange-400 dark:border-orange-500';
-                          textClass = 'text-black dark:text-black font-extrabold';
-                          labelClass = 'text-orange-800 dark:text-orange-900';
-                        }
+                    // Visual logic for duty boxes
+                    let boxClass = 'bg-white dark:bg-gray-700 border-gray-100 dark:border-gray-600';
+                    let textClass = 'text-gray-900 dark:text-white';
+                    let labelClass = 'text-gray-700 dark:text-gray-300';
+
+                    if (isRifat) {
+                      if (isGreenMode) {
+                        // Basketball orange background with black text
+                        boxClass = 'bg-orange-400 border-orange-500 dark:bg-orange-500 dark:border-orange-600 shadow-md transform scale-105 z-10';
+                        textClass = 'text-black dark:text-black font-extrabold';
+                        labelClass = 'text-orange-900 dark:text-orange-900';
+                      } else {
+                        boxClass = 'bg-orange-300 border-orange-400 dark:bg-orange-400 dark:border-orange-500';
+                        textClass = 'text-black dark:text-black font-extrabold';
+                        labelClass = 'text-orange-800 dark:text-orange-900';
                       }
+                    }
 
-                      return (
-                        <div
-                          key={i}
-                          className={`
-                                    relative px-2 py-1.5 rounded-lg border flex flex-col items-center justify-center text-center transition-all duration-300
-                                    ${boxClass}
-                                `}
-                        >
-                          <span className={`text-[7px] uppercase font-bold tracking-wider mb-0.5 ${labelClass}`}>
-                            {duty.label}
-                          </span>
-                          <span className={`text-[10px] font-bold ${textClass}`}>
-                            {duty.value || '-'}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                    return (
+                      <div
+                        key={i}
+                        className={`
+                                  relative px-2 py-1.5 rounded-lg border flex flex-col items-center justify-center text-center transition-all duration-300
+                                  ${boxClass}
+                              `}
+                      >
+                        <span className={`text-[7px] uppercase font-bold tracking-wider mb-0.5 ${labelClass}`}>
+                          {duty.label}
+                        </span>
+                        <span className={`text-[10px] font-bold ${textClass}`}>
+                          {duty.value || '-'}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
