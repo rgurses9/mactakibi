@@ -48,10 +48,32 @@ const containsName = (value: any, nameParts: string[]): boolean => {
  * @param type - 'array' for binary or 'string' for CSV
  * @param targetNameParts - Optional array of name parts to filter by (e.g., ["RIFAT", "GURSES"])
  *                          If not provided, returns ALL matches without filtering
+ * @param fileName - Optional file name to determine column mapping
  */
-export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNameParts?: string[]): MatchDetails[] => {
+export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNameParts?: string[], fileName?: string): MatchDetails[] => {
   const workbook = XLSX.read(data, { type: type });
   const matches: MatchDetails[] = [];
+
+  // Determine which columns to check based on file name
+  let columnsToCheck: string[] = ['H', 'I', 'J', 'K', 'L']; // Default: all columns
+
+  if (fileName) {
+    const fileNameUpper = fileName.toLocaleUpperCase('tr-TR');
+
+    if (fileNameUpper.includes('OKUL') && fileNameUpper.includes('İLÇE')) {
+      // OKUL İL VE İLÇE (2025-2026): H-J (MASA GÖREVLİSİ)
+      columnsToCheck = ['H', 'I', 'J'];
+    } else if (fileNameUpper.includes('ARŞİV') || fileNameUpper.includes('TBF') || fileNameUpper.includes('FIBA') || fileNameUpper.includes('MİLLİ')) {
+      // ARŞİV TBF-FIBA-MİLLİ MAÇLAR (2025-2026): I-L
+      columnsToCheck = ['I', 'J', 'K', 'L'];
+    } else if (fileNameUpper.includes('MASA') && fileNameUpper.includes('GÖREVLİLERİ')) {
+      // MASA GÖREVLİLERİ file: J-M
+      columnsToCheck = ['J', 'K', 'L', 'M'];
+    } else if (fileNameUpper.includes('HAFTA')) {
+      // HAFTA içeren dosyalar: J-L
+      columnsToCheck = ['J', 'K', 'L'];
+    }
+  }
 
   workbook.SheetNames.forEach(sheetName => {
     const sheet = workbook.Sheets[sheetName];
@@ -59,16 +81,21 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNam
     const rows = XLSX.utils.sheet_to_json<any>(sheet, { header: "A", raw: false, defval: "" });
 
     rows.forEach((row) => {
-      // SÜTUN HARİTASI - Supporting multiple formats:
-      // Standard format: J: SAYI GÖREVLİSİ, K: SAAT GÖREVLİSİ, L: ŞUT SAATİ GÖREVLİSİ
-      // MASA GÖREVLİSİ format: H, I, J, K: MASA GÖREVLİSİ 1-4
-      // We check all columns H through L to support both formats
-
+      // Get all potential duty columns
       const colH = String(row['H'] || "").trim();
       const colI = String(row['I'] || "").trim();
       const colJ = String(row['J'] || "").trim();
       const colK = String(row['K'] || "").trim();
       const colL = String(row['L'] || "").trim();
+      const colM = String(row['M'] || "").trim();
+
+      // Map column names to values
+      const columnValues: { [key: string]: string } = {
+        'H': colH, 'I': colI, 'J': colJ, 'K': colK, 'L': colL, 'M': colM
+      };
+
+      // Get only the columns we should check for this file
+      const columnsToCheckValues = columnsToCheck.map(col => columnValues[col]);
 
       // If no target name specified, include all rows that have valid match data
       // Otherwise, filter by the target name parts
@@ -76,20 +103,15 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNam
 
       if (!targetNameParts || targetNameParts.length === 0) {
         // No filter - include if at least one duty column has data
-        shouldInclude = colH !== "" || colI !== "" || colJ !== "" || colK !== "" || colL !== "";
+        shouldInclude = columnsToCheckValues.some(val => val !== "");
       } else {
-        // Filter by user name - check if name exists in ANY duty column (H through L)
-        shouldInclude =
-          containsName(colH, targetNameParts) ||
-          containsName(colI, targetNameParts) ||
-          containsName(colJ, targetNameParts) ||
-          containsName(colK, targetNameParts) ||
-          containsName(colL, targetNameParts);
+        // Filter by user name - check if name exists in ANY of the specified columns
+        shouldInclude = columnsToCheckValues.some(val => containsName(val, targetNameParts));
       }
 
       if (shouldInclude) {
-        // Collect all non-empty duty columns
-        const allDuties = [colH, colI, colJ, colK, colL].filter(col => col !== "");
+        // Collect all non-empty duty columns from the specified columns
+        const allDuties = columnsToCheckValues.filter(col => col !== "");
 
         // For display, we'll use the first 3 non-empty columns
         // or distribute them across scorer/timer/shotClock
@@ -118,10 +140,11 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNam
  * @param data - Raw data to parse
  * @param isBinary - true for Excel binary, false for CSV string
  * @param targetNameParts - Optional name parts to filter by (e.g., ["RIFAT", "GURSES"])
+ * @param fileName - Optional file name for column mapping
  */
-export const findMatchesInRawData = (data: any, isBinary: boolean, targetNameParts?: string[]): MatchDetails[] => {
+export const findMatchesInRawData = (data: any, isBinary: boolean, targetNameParts?: string[], fileName?: string): MatchDetails[] => {
   try {
-    return parseWorkbookData(data, isBinary ? 'array' : 'string', targetNameParts);
+    return parseWorkbookData(data, isBinary ? 'array' : 'string', targetNameParts, fileName);
   } catch (error) {
     console.error("Raw data parsing error:", error);
     return [];

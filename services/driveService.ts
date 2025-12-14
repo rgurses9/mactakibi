@@ -57,6 +57,10 @@ const TARGET_FILES: { id: string; name: string }[] = [
   {
     id: "1HrTEuaINToqL53CIk6ndCTAnYudrCRuAFshrHQC_5kY",
     name: "OKUL İL VE İLÇE (2025-2026)"
+  },
+  {
+    id: "1djS7vV33pawiJa_zcuK2Z4j69RD0VKr-rYsRnLZ8H8s",
+    name: "MASA GÖREVLİLERİ (2025-2026)"
   }
 ];
 
@@ -200,7 +204,7 @@ const processFile = async (
       const fileResp = await fetch(exportUrl, { headers });
       if (fileResp.ok) {
         const csvText = await fileResp.text();
-        matches = findMatchesInRawData(csvText, false, targetNameParts);
+        matches = findMatchesInRawData(csvText, false, targetNameParts, file.name);
       }
     } else if (file.mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
       const downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
@@ -208,7 +212,7 @@ const processFile = async (
       const fileResp = await fetch(downloadUrl, { headers });
       if (fileResp.ok) {
         const arrayBuffer = await fileResp.arrayBuffer();
-        matches = findMatchesInRawData(new Uint8Array(arrayBuffer), true, targetNameParts);
+        matches = findMatchesInRawData(new Uint8Array(arrayBuffer), true, targetNameParts, file.name);
       }
     }
   } catch (e) {
@@ -261,7 +265,7 @@ export const autoScanDriveFolder = async (
 
           if (fileResp.ok) {
             const csvText = await fileResp.text();
-            const matches = findMatchesInRawData(csvText, false, targetNameParts);
+            const matches = findMatchesInRawData(csvText, false, targetNameParts, fileConfig.name);
             if (matches.length > 0) {
               onProgress(`✅ ${fileConfig.name}: ${matches.length} maç bulundu.`, 'success');
             }
