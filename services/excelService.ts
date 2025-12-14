@@ -64,10 +64,16 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNam
       // OKUL İL VE İLÇE (2025-2026): H-J (MASA GÖREVLİSİ)
       columnsToCheck = ['H', 'I', 'J'];
     } else if (fileNameUpper.includes('ARŞİV') || fileNameUpper.includes('TBF') || fileNameUpper.includes('FIBA') || fileNameUpper.includes('MİLLİ')) {
-      // ARŞİV TBF-FIBA-MİLLİ MAÇLAR (2025-2026): I-L
-      columnsToCheck = ['I', 'J', 'K', 'L'];
+      // ARŞİV TBF-FIBA-MİLLİ MAÇLAR (2025-2026): I-M
+      columnsToCheck = ['I', 'J', 'K', 'L', 'M'];
     } else if (fileNameUpper.includes('MASA') && fileNameUpper.includes('GÖREVLİLERİ')) {
       // MASA GÖREVLİLERİ file: J-M
+      columnsToCheck = ['J', 'K', 'L', 'M'];
+    } else if (fileNameUpper.includes('ÖZEL') && fileNameUpper.includes('LİG')) {
+      // ÖZEL LİG VE ÜNİVERSİTE: J-M
+      columnsToCheck = ['J', 'K', 'L', 'M'];
+    } else if (fileNameUpper.includes('ÜNİVERSİTE')) {
+      // ÜNİVERSİTE files: J-M
       columnsToCheck = ['J', 'K', 'L', 'M'];
     } else if (fileNameUpper.includes('HAFTA')) {
       // HAFTA içeren dosyalar: J-L
@@ -122,11 +128,14 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNam
           // OKUL İL VE İLÇE: MASA GÖREVLİSİ 1, 2, 3
           labels = columnsToCheck.map((_, i) => `MASA GÖREVLİSİ ${i + 1}`);
         } else if (fileNameUpper.includes('ARŞİV') || fileNameUpper.includes('TBF') || fileNameUpper.includes('FIBA') || fileNameUpper.includes('MİLLİ')) {
-          // ARŞİV: SAYI, SAAT, ŞUT SAATİ, YARDIMCI SAYI
-          labels = ['SAYI GÖREVLİSİ', 'SAAT GÖREVLİSİ', 'ŞUT SAATİ GÖREVLİSİ', 'YARDIMCI SAYI'];
+          // ARŞİV: SAYI, SAAT, ŞUT SAATİ, YARDIMCI SAYI, 5. GÖREVLI
+          labels = ['SAYI GÖREVLİSİ', 'SAAT GÖREVLİSİ', 'ŞUT SAATİ GÖREVLİSİ', 'YARDIMCI SAYI', '5. GÖREVLİ'];
         } else if (fileNameUpper.includes('MASA') && fileNameUpper.includes('GÖREVLİLERİ')) {
           // MASA GÖREVLİLERİ: MASA GÖREVLİSİ 1, 2, 3, 4
           labels = columnsToCheck.map((_, i) => `MASA GÖREVLİSİ ${i + 1}`);
+        } else if (fileNameUpper.includes('ÖZEL') || fileNameUpper.includes('ÜNİVERSİTE')) {
+          // ÖZEL LİG VE ÜNİVERSİTE: SAYI, SAAT, ŞUT SAATİ, YARDIMCI SAYI
+          labels = ['SAYI GÖREVLİSİ', 'SAAT GÖREVLİSİ', 'ŞUT SAATİ GÖREVLİSİ', 'YARDIMCI SAYI'];
         } else if (fileNameUpper.includes('HAFTA')) {
           // HAFTA: SAYI, SAAT, ŞUT SAATİ
           labels = ['SAYI GÖREVLİSİ', 'SAAT GÖREVLİSİ', 'ŞUT SAATİ GÖREVLİSİ'];
