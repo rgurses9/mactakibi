@@ -256,27 +256,24 @@ const App: React.FC = () => {
         return () => clearInterval(interval);
     }, [autoRefresh, hasAutoScanned, isFirebaseActive, user]);
 
-    const handleAutoScan = async () => {
+    const handleAutoScan = async (forceRefresh = false) => {
         if (isFirebaseActive) {
             return;
         }
 
-        // Check if we have cached data
+        // Check if we have cached data (only if not forcing refresh)
         const cacheKey = `matches_cache_${user?.email}`;
         const lastScanKey = `last_scan_${user?.email}`;
         const cachedData = localStorage.getItem(cacheKey);
         const lastScanTime = localStorage.getItem(lastScanKey);
 
-        // If we have cached data and it's less than 1 hour old, use it
-        const now = Date.now();
-        const oneHour = 60 * 60 * 1000;
-
-        if (cachedData && lastScanTime && (now - parseInt(lastScanTime)) < oneHour) {
+        // If we have cached data, use it (indefinite cache until manual refresh)
+        if (cachedData && lastScanTime) {
             try {
                 const cached = JSON.parse(cachedData);
                 setMatches(cached);
                 setLastUpdated(new Date(parseInt(lastScanTime)).toLocaleString('tr-TR'));
-                addLog(`📦 Önbellekten ${cached.length} maç yüklendi. Yeni maçlar kontrol ediliyor...`, 'info');
+                addLog(`📦 Önbellekten ${cached.length} maç yüklendi. Yenilemek için 'Yenile' butonunu kullanabilirsiniz.`, 'info');
                 setIsAnalyzing(false);
                 return; // Don't scan again, use cached data
             } catch (e) {
@@ -311,7 +308,7 @@ const App: React.FC = () => {
 
             // Cache the results
             localStorage.setItem(cacheKey, JSON.stringify(driveMatches));
-            localStorage.setItem(lastScanKey, now.toString());
+            localStorage.setItem(lastScanKey, Date.now().toString());
 
             setShowManualUpload(false);
         } catch (err: any) {
@@ -361,13 +358,9 @@ const App: React.FC = () => {
         if (isFirebaseActive) {
             addLog("Veri canlı (Firebase). Manuel yenilemeye gerek yok.", 'success');
         } else {
-            // Clear cache to force fresh scan
-            const cacheKey = `matches_cache_${user?.email}`;
-            const lastScanKey = `last_scan_${user?.email}`;
-            localStorage.removeItem(cacheKey);
-            localStorage.removeItem(lastScanKey);
-            addLog("🔄 Önbellek temizlendi, yeni tarama başlatılıyor...", 'info');
-            handleAutoScan();
+            // Force refresh without clearing screen first
+            addLog("🔄 Müsabakalar güncelleniyor...", 'info');
+            handleAutoScan(true);
         }
     };
 
