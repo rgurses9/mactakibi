@@ -59,14 +59,16 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNam
     const rows = XLSX.utils.sheet_to_json<any>(sheet, { header: "A", raw: false, defval: "" });
 
     rows.forEach((row) => {
-      // SÜTUN HARİTASI (Kullanıcı Talebi):
-      // A: TARİH, B: SALON, C: SAAT, D: A TAKIMI, E: B TAKIMI
-      // F: KATEGORİ, G: GRUP
-      // J: SAYI GÖREVLİSİ, K: SAAT GÖREVLİSİ, L: ŞUT SAATİ GÖREVLİSİ
+      // SÜTUN HARİTASI - Supporting multiple formats:
+      // Standard format: J: SAYI GÖREVLİSİ, K: SAAT GÖREVLİSİ, L: ŞUT SAATİ GÖREVLİSİ
+      // MASA GÖREVLİSİ format: H, I, J, K: MASA GÖREVLİSİ 1-4
+      // We check all columns H through L to support both formats
 
-      const scorer = String(row['J'] || "").trim();
-      const timer = String(row['K'] || "").trim();
-      const shotClock = String(row['L'] || "").trim();
+      const colH = String(row['H'] || "").trim();
+      const colI = String(row['I'] || "").trim();
+      const colJ = String(row['J'] || "").trim();
+      const colK = String(row['K'] || "").trim();
+      const colL = String(row['L'] || "").trim();
 
       // If no target name specified, include all rows that have valid match data
       // Otherwise, filter by the target name parts
@@ -74,13 +76,15 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNam
 
       if (!targetNameParts || targetNameParts.length === 0) {
         // No filter - include if at least one duty column has data
-        shouldInclude = scorer !== "" || timer !== "" || shotClock !== "";
+        shouldInclude = colH !== "" || colI !== "" || colJ !== "" || colK !== "" || colL !== "";
       } else {
-        // Filter by user name - check if name exists in any duty column
+        // Filter by user name - check if name exists in ANY duty column (H through L)
         shouldInclude =
-          containsName(scorer, targetNameParts) ||
-          containsName(timer, targetNameParts) ||
-          containsName(shotClock, targetNameParts);
+          containsName(colH, targetNameParts) ||
+          containsName(colI, targetNameParts) ||
+          containsName(colJ, targetNameParts) ||
+          containsName(colK, targetNameParts) ||
+          containsName(colL, targetNameParts);
       }
 
       if (shouldInclude) {
@@ -92,9 +96,10 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNam
           teamB: String(row['E'] || "").trim(),
           category: String(row['F'] || "").trim(),
           group: String(row['G'] || "").trim(),
-          scorer: scorer,
-          timer: timer,
-          shotClock: shotClock
+          // Store all duty columns - use J, K, L as primary for backward compatibility
+          scorer: colJ,
+          timer: colK,
+          shotClock: colL
         });
       }
     });
