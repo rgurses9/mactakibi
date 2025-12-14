@@ -1,7 +1,7 @@
 import React from 'react';
 import { MatchDetails } from '../types';
 import { MapPin, FileText, Trophy, History, CheckCircle2 } from 'lucide-react';
-import { parseDate, isPastDate } from '../utils/dateHelpers';
+import { parseDate, isPastDate, formatDate } from '../utils/dateHelpers';
 
 interface MatchListProps {
   matches: MatchDetails[];
@@ -56,7 +56,7 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
                     {match.time}
                   </div>
                   <div className="text-xs font-semibold text-gray-900 dark:text-white bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-2 py-0.5 rounded uppercase">
-                    {match.date}
+                    {formatDate(match.date)}
                   </div>
                 </div>
 

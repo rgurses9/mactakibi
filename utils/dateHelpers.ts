@@ -103,3 +103,19 @@ export const isPastDate = (dateStr: string, timeStr?: string): boolean => {
   // Fallback: If time parsing failed logic somehow, keep active
   return false;
 };
+
+/**
+ * Formats a date string to DD.MM.YYYY format
+ * @param dateStr - Original date string in any supported format
+ * @returns Formatted date string as DD.MM.YYYY
+ */
+export const formatDate = (dateStr: string): string => {
+  const date = parseDate(dateStr);
+  if (!date) return dateStr; // Return original if parsing fails
+
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+
+  return `${day}.${month}.${year}`;
+};
