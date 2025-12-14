@@ -24,6 +24,19 @@ export const parseDate = (dateStr: string): Date | null => {
       }
     }
 
+    // Try Turkish format with hyphens: "13-Mart-2023"
+    const turkishHyphenMatch = cleanStr.match(/^(\d{1,2})-([A-Za-zÇĞİÖŞÜçğıöşü]+)-(\d{4})$/i);
+    if (turkishHyphenMatch) {
+      const day = parseInt(turkishHyphenMatch[1], 10);
+      const monthName = turkishHyphenMatch[2].toLocaleLowerCase('tr-TR');
+      const year = parseInt(turkishHyphenMatch[3], 10);
+
+      const monthNum = TURKISH_MONTHS[monthName];
+      if (monthNum !== undefined && !isNaN(day) && !isNaN(year)) {
+        return new Date(year, monthNum, day);
+      }
+    }
+
     // Fallback: Normalize date string: replace / and - with .
     const normalizedStr = cleanStr.replace(/[\/\-]/g, '.');
 
