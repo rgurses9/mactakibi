@@ -331,23 +331,38 @@ const App: React.FC = () => {
         }
     };
 
-    // Split matches into active (today and future) and past (before today)
+    // Remove duplicate matches and split into active/past
     const { activeMatches, pastMatches } = useMemo(() => {
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Set to midnight for date-only comparison
+        today.setHours(0, 0, 0, 0);
 
+        // First, deduplicate matches based on key fields
+        const uniqueMatches = new Map<string, MatchDetails>();
+
+        matches.forEach(m => {
+            // Create a unique key based on date, time, hall, and teams
+            const key = `${m.date}|${m.time}|${m.hall}|${m.teamA}|${m.teamB}`.toLowerCase();
+
+            // Only keep the first occurrence of each unique match
+            if (!uniqueMatches.has(key)) {
+                uniqueMatches.set(key, m);
+            }
+        });
+
+        // Convert back to array
+        const deduplicatedMatches = Array.from(uniqueMatches.values());
+
+        // Now split into active and past
         const active: MatchDetails[] = [];
         const past: MatchDetails[] = [];
 
-        matches.forEach(m => {
+        deduplicatedMatches.forEach(m => {
             const matchDate = parseDate(m.date);
             if (!matchDate) {
-                // If date can't be parsed, treat as active to be safe
                 active.push(m);
                 return;
             }
 
-            // Set match date to midnight for fair comparison
             const matchDateMidnight = new Date(matchDate);
             matchDateMidnight.setHours(0, 0, 0, 0);
 
@@ -359,7 +374,7 @@ const App: React.FC = () => {
         });
 
         return { activeMatches: active, pastMatches: past };
-    }, [matches, currentTime]); // Re-calculate when currentTime updates
+    }, [matches, currentTime]);
 
     const activeMatchCount = activeMatches.length;
 
