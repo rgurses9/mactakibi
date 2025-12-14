@@ -13,16 +13,12 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
   if (matches.length === 0) return null;
 
   // Sorting logic:
-  // Active matches: Ascending (Earliest date first)
-  // Past matches: Descending (Most recent date first)
+  // Both active and past matches: Ascending (Earliest date first)
   const sortedMatches = [...matches].sort((a, b) => {
     const dateA = parseDate(a.date);
     const dateB = parseDate(b.date);
     if (!dateA || !dateB) return 0;
 
-    if (variant === 'past') {
-      return dateB.getTime() - dateA.getTime();
-    }
     return dateA.getTime() - dateB.getTime();
   });
 
@@ -110,13 +106,14 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
 
                       if (isRifat) {
                         if (isGreenMode) {
-                          boxClass = 'bg-green-600 border-green-600 dark:bg-green-700 dark:border-green-700 shadow-md transform scale-105 z-10';
+                          // Basketball orange color for highlighted user
+                          boxClass = 'bg-orange-500 border-orange-500 dark:bg-orange-600 dark:border-orange-600 shadow-md transform scale-105 z-10';
                           textClass = 'text-white';
-                          labelClass = 'text-green-100 dark:text-green-200';
+                          labelClass = 'text-orange-100 dark:text-orange-200';
                         } else {
-                          boxClass = 'bg-gray-600 border-gray-600 dark:bg-gray-600 dark:border-gray-600';
+                          boxClass = 'bg-orange-400 border-orange-400 dark:bg-orange-500 dark:border-orange-500';
                           textClass = 'text-white';
-                          labelClass = 'text-gray-300';
+                          labelClass = 'text-orange-100';
                         }
                       }
 

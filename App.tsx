@@ -328,8 +328,8 @@ const App: React.FC = () => {
         }
     };
 
-    // Season cutoff: August 1, 2025
-    const SEASON_CUTOFF = new Date(2025, 7, 1); // August is month 7 (0-indexed)
+    // Season cutoff: September 1, 2025
+    const SEASON_CUTOFF = new Date(2025, 8, 1); // September is month 8 (0-indexed)
 
     const { currentSeasonMatches, pastSeasonMatches } = useMemo(() => {
         const currentSeason: MatchDetails[] = [];

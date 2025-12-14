@@ -82,7 +82,7 @@ const Auth: React.FC = () => {
           </p>
           <button
             onClick={() => setPendingApproval(false)}
-            className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+            className="text-orange-600 dark:text-orange-400 font-semibold hover:underline"
           >
             Giriş Ekranına Dön
           </button>
@@ -95,16 +95,16 @@ const Auth: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950 p-4 transition-colors duration-300">
         <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center mx-auto mb-4">
             <Mail size={32} />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Doğrulama E-postası Gönderildi</h2>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Kaydınız Alınmıştır</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Lütfen <strong>{email}</strong> adresini kontrol edin. Gelen kutusundaki bağlantıya tıklayarak hesabınızı doğrulayın. Ardından yönetici onayı için beklemeniz gerekecektir.
+            Kaydınız onaylanınca <strong>{email}</strong> mail adresinize bilgi verilecektir.
           </p>
           <button
             onClick={() => setVerificationSent(false)}
-            className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+            className="text-orange-600 dark:text-orange-400 font-semibold hover:underline"
           >
             Giriş Ekranına Dön
           </button>
@@ -118,20 +118,20 @@ const Auth: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
 
         {/* Header Banner */}
-        <div className="bg-blue-600 dark:bg-blue-800 p-8 text-white text-center relative overflow-hidden transition-colors duration-300">
+        <div className="bg-orange-500 dark:bg-orange-700 p-8 text-white text-center relative overflow-hidden transition-colors duration-300">
           <div className="relative z-10">
             <div className="bg-white/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
               <ShieldCheck size={28} />
             </div>
             <h1 className="text-3xl font-bold mb-2">Maç Takip Sistemi</h1>
-            <p className="text-blue-100 dark:text-blue-200 text-sm leading-relaxed">
+            <p className="text-orange-100 dark:text-orange-200 text-sm leading-relaxed">
               Basketbol müsabaka ve görev takip platformu
             </p>
           </div>
 
           {/* Decorative Circles */}
-          <div className="absolute top-[-50px] left-[-50px] w-48 h-48 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-          <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
+          <div className="absolute top-[-50px] left-[-50px] w-48 h-48 bg-orange-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+          <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-orange-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
         </div>
 
         {/* Form Section */}
@@ -167,7 +167,7 @@ const Auth: React.FC = () => {
                       required
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                       placeholder="Adınız"
                     />
                   </div>
@@ -180,7 +180,7 @@ const Auth: React.FC = () => {
                       required
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                       placeholder="Soyadınız"
                     />
                   </div>
@@ -196,7 +196,7 @@ const Auth: React.FC = () => {
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                       placeholder="kullaniciadi"
                     />
                   </div>
@@ -215,7 +215,7 @@ const Auth: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder="ornek@email.com"
                 />
               </div>
@@ -232,7 +232,7 @@ const Auth: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder="••••••••"
                 />
               </div>
@@ -250,7 +250,7 @@ const Auth: React.FC = () => {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                    className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                     placeholder="••••••••"
                   />
                 </div>
@@ -260,7 +260,7 @@ const Auth: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 dark:bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-200 dark:shadow-none mt-4 disabled:opacity-70"
+              className="w-full bg-orange-500 dark:bg-orange-600 text-white font-bold py-3 rounded-lg hover:bg-orange-600 dark:hover:bg-orange-500 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-orange-200 dark:shadow-none mt-4 disabled:opacity-70"
             >
               {loading ? 'İşleniyor...' : (isLogin ? 'Giriş Yap' : 'Kayıt Ol')}
               {!loading && <ArrowRight size={18} />}
@@ -282,7 +282,7 @@ const Auth: React.FC = () => {
                   setPassword('');
                   setConfirmPassword('');
                 }}
-                className="ml-2 font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                className="ml-2 font-bold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors"
               >
                 {isLogin ? "Kayıt Ol" : "Giriş Yap"}
               </button>
