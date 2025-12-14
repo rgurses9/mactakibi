@@ -331,18 +331,37 @@ const App: React.FC = () => {
         }
     };
 
-    // Season cutoff: September 1, 2025
-    // Only show matches from this date onwards - no past seasons displayed
-    const SEASON_CUTOFF = new Date(2025, 8, 1); // September is month 8 (0-indexed)
+    // Split matches into active (today and future) and past (before today)
+    const { activeMatches, pastMatches } = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Set to midnight for date-only comparison
 
-    const currentSeasonMatches = useMemo(() => {
-        return matches.filter(m => {
+        const active: MatchDetails[] = [];
+        const past: MatchDetails[] = [];
+
+        matches.forEach(m => {
             const matchDate = parseDate(m.date);
-            return matchDate && matchDate >= SEASON_CUTOFF;
-        });
-    }, [matches]);
+            if (!matchDate) {
+                // If date can't be parsed, treat as active to be safe
+                active.push(m);
+                return;
+            }
 
-    const activeMatchCount = currentSeasonMatches.length;
+            // Set match date to midnight for fair comparison
+            const matchDateMidnight = new Date(matchDate);
+            matchDateMidnight.setHours(0, 0, 0, 0);
+
+            if (matchDateMidnight >= today) {
+                active.push(m);
+            } else {
+                past.push(m);
+            }
+        });
+
+        return { activeMatches: active, pastMatches: past };
+    }, [matches, currentTime]); // Re-calculate when currentTime updates
+
+    const activeMatchCount = activeMatches.length;
 
     // Check if logged in user is admin
     const adminEmails = ['admin@admin.com', 'rifatgurses@gmail.com'];
@@ -528,16 +547,24 @@ const App: React.FC = () => {
                         </div>
                     )}
 
-                    {currentSeasonMatches.length > 0 && (
+                    {activeMatches.length > 0 && (
                         <MatchList
-                            matches={currentSeasonMatches}
-                            title="2025-2026 Sezonu"
+                            matches={activeMatches}
+                            title="Aktif Müsabakalar"
                             variant="active"
                         />
                     )}
 
-                    {currentSeasonMatches.length > 0 && (
-                        <WhatsAppSender matches={currentSeasonMatches} config={botConfig} />
+                    {pastMatches.length > 0 && (
+                        <MatchList
+                            matches={pastMatches}
+                            title="Geçmiş Müsabakalar"
+                            variant="past"
+                        />
+                    )}
+
+                    {activeMatches.length > 0 && (
+                        <WhatsAppSender matches={activeMatches} config={botConfig} />
                     )}
 
                 </div>
