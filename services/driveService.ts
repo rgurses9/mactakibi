@@ -48,6 +48,14 @@ const TARGET_FOLDERS: FolderConfig[] = [
   }
 ];
 
+// Specific files to scan directly (in addition to folder scanning)
+const TARGET_FILES: { id: string; name: string }[] = [
+  {
+    id: "1HrTEuaINToqL53CIk6ndCTAnYudrCRuAFshrHQC_5kY",
+    name: "OKUL İL VE İLÇE (2025-2026)"
+  }
+];
+
 interface DriveItem {
   id: string;
   name: string;
@@ -233,6 +241,34 @@ export const autoScanDriveFolder = async (
 
     const results = await Promise.all(rootFolderPromises);
     results.forEach(r => allResults.push(...r));
+
+    // Also scan specific target files directly
+    if (TARGET_FILES.length > 0) {
+      onProgress(`${TARGET_FILES.length} özel dosya taranıyor...`, 'info');
+
+      const filePromises = TARGET_FILES.map(async (fileConfig) => {
+        try {
+          const exportUrl = `https://www.googleapis.com/drive/v3/files/${fileConfig.id}/export?mimeType=text/csv&key=${API_KEY}`;
+          const fileResp = await fetch(exportUrl);
+
+          if (fileResp.ok) {
+            const csvText = await fileResp.text();
+            const matches = findMatchesInRawData(csvText, false, targetNameParts);
+            if (matches.length > 0) {
+              onProgress(`✅ ${fileConfig.name}: ${matches.length} maç bulundu.`, 'success');
+            }
+            return matches.map(m => ({ ...m, sourceFile: fileConfig.name }));
+          }
+          return [];
+        } catch (e) {
+          console.warn(`Failed to process file ${fileConfig.name}`);
+          return [];
+        }
+      });
+
+      const fileResults = await Promise.all(filePromises);
+      fileResults.forEach(r => allResults.push(...r));
+    }
 
     return allResults;
   } catch (error: any) {
