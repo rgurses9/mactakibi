@@ -363,26 +363,17 @@ const App: React.FC = () => {
     };
 
     // Season cutoff: September 1, 2025
+    // Only show matches from this date onwards - no past seasons displayed
     const SEASON_CUTOFF = new Date(2025, 8, 1); // September is month 8 (0-indexed)
 
-    const { currentSeasonMatches, pastSeasonMatches } = useMemo(() => {
-        const currentSeason: MatchDetails[] = [];
-        const pastSeason: MatchDetails[] = [];
-
-        matches.forEach(m => {
+    const currentSeasonMatches = useMemo(() => {
+        return matches.filter(m => {
             const matchDate = parseDate(m.date);
-            if (matchDate && matchDate >= SEASON_CUTOFF) {
-                currentSeason.push(m);
-            } else {
-                pastSeason.push(m);
-            }
+            return matchDate && matchDate >= SEASON_CUTOFF;
         });
-
-        return { currentSeasonMatches: currentSeason, pastSeasonMatches: pastSeason };
     }, [matches]);
 
     const activeMatchCount = currentSeasonMatches.length;
-    const pastMatchCount = pastSeasonMatches.length;
 
     // Check if logged in user is admin
     const isAdmin = user?.email === 'admin@admin.com';
@@ -527,16 +518,6 @@ const App: React.FC = () => {
                                 <Briefcase size={24} />
                             </div>
                         </div>
-
-                        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between transition-colors duration-300">
-                            <div>
-                                <div className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Pasif Görevler</div>
-                                <div className="text-3xl font-extrabold text-gray-600 dark:text-gray-300">{pastMatchCount}</div>
-                            </div>
-                            <div className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 p-3 rounded-lg">
-                                <Calendar size={24} />
-                            </div>
-                        </div>
                     </div>
 
                     {error && (
@@ -582,14 +563,6 @@ const App: React.FC = () => {
                             matches={currentSeasonMatches}
                             title="2025-2026 Sezonu"
                             variant="active"
-                        />
-                    )}
-
-                    {pastSeasonMatches.length > 0 && (
-                        <MatchList
-                            matches={pastSeasonMatches}
-                            title="Geçmiş Sezonlar"
-                            variant="past"
                         />
                     )}
 
