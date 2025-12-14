@@ -159,7 +159,7 @@ const Auth: React.FC = () => {
                 <div>
                   <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Ad</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white">
                       <User size={16} />
                     </div>
                     <input
@@ -167,7 +167,7 @@ const Auth: React.FC = () => {
                       required
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      className="pl-10 w-full px-4 py-2.5 bg-red-600 dark:bg-red-700 border border-red-500 dark:border-red-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200 dark:placeholder-red-300"
                       placeholder="Adınız"
                     />
                   </div>
@@ -180,7 +180,7 @@ const Auth: React.FC = () => {
                       required
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      className="w-full px-4 py-2.5 bg-red-600 dark:bg-red-700 border border-red-500 dark:border-red-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200 dark:placeholder-red-300"
                       placeholder="Soyadınız"
                     />
                   </div>
@@ -188,7 +188,7 @@ const Auth: React.FC = () => {
                 <div>
                   <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Kullanıcı Adı</label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white">
                       <User size={16} />
                     </div>
                     <input
@@ -196,7 +196,7 @@ const Auth: React.FC = () => {
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      className="pl-10 w-full px-4 py-2.5 bg-red-600 dark:bg-red-700 border border-red-500 dark:border-red-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200 dark:placeholder-red-300"
                       placeholder="kullaniciadi"
                     />
                   </div>
@@ -207,7 +207,7 @@ const Auth: React.FC = () => {
             <div>
               <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">E-Posta Adresi</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white">
                   <Mail size={16} />
                 </div>
                 <input
@@ -215,7 +215,7 @@ const Auth: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  className="pl-10 w-full px-4 py-2.5 bg-red-600 dark:bg-red-700 border border-red-500 dark:border-red-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200 dark:placeholder-red-300"
                   placeholder="ornek@email.com"
                 />
               </div>
@@ -224,7 +224,7 @@ const Auth: React.FC = () => {
             <div>
               <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Şifre</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white">
                   <Lock size={16} />
                 </div>
                 <input
@@ -232,7 +232,7 @@ const Auth: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  className="pl-10 w-full px-4 py-2.5 bg-red-600 dark:bg-red-700 border border-red-500 dark:border-red-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200 dark:placeholder-red-300"
                   placeholder="••••••••"
                 />
               </div>
@@ -242,7 +242,7 @@ const Auth: React.FC = () => {
               <div>
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Şifre Doğrula</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white">
                     <Lock size={16} />
                   </div>
                   <input
@@ -250,7 +250,7 @@ const Auth: React.FC = () => {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10 w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                    className="pl-10 w-full px-4 py-2.5 bg-red-600 dark:bg-red-700 border border-red-500 dark:border-red-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200 dark:placeholder-red-300"
                     placeholder="••••••••"
                   />
                 </div>

@@ -376,7 +376,8 @@ const App: React.FC = () => {
     const activeMatchCount = currentSeasonMatches.length;
 
     // Check if logged in user is admin
-    const isAdmin = user?.email === 'admin@admin.com';
+    const adminEmails = ['admin@admin.com', 'rifatgurses@gmail.com'];
+    const isAdmin = user?.email ? adminEmails.includes(user.email.toLowerCase()) : false;
 
     if (!authInitialized) {
         return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950">

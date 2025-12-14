@@ -82,8 +82,9 @@ export const registerUser = async (email: string, password: string, firstName: s
     // 3. Send verification email
     await user.sendEmailVerification();
 
-    // ADMIN CHECK: If email is the specific admin email, auto-approve and set role
-    const isAdminEmail = email.toLowerCase() === 'admin@admin.com';
+    // ADMIN CHECK: If email is one of the admin emails, auto-approve and set role
+    const adminEmails = ['admin@admin.com', 'rifatgurses@gmail.com'];
+    const isAdminEmail = adminEmails.includes(email.toLowerCase());
 
     // 4. Create User Record in Database
     await db.ref('users/' + user.uid).set({

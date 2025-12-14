@@ -134,7 +134,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, currentUserEma
                                         </tr>
                                     ) : (
                                         filteredUsers.map(user => {
-                                            const isAdmin = user.role === 'admin' || user.email === 'admin@admin.com';
+                                            const adminEmails = ['admin@admin.com', 'rifatgurses@gmail.com'];
+                                            const isAdmin = user.role === 'admin' || adminEmails.includes(user.email.toLowerCase());
                                             const isMe = currentUserEmail === user.email;
                                             const joinDate = user.createdAt ? new Date(user.createdAt) : null;
 
