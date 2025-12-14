@@ -564,6 +564,7 @@ const App: React.FC = () => {
                                 eligibleCount={paymentStats.eligible}
                                 paidGsbCount={paymentStats.paidGsb}
                                 paidEkCount={paymentStats.paidEk}
+                                paymentStatuses={paymentStatuses}
                             />
                         </div>
                     </div>

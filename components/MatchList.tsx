@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { MapPin, History, CheckCircle2, DollarSign, Edit, FileText } from 'lucide-react';
-import { Match } from '../types';
+import { MatchDetails } from '../types';
 import { parseDate, formatDate } from '../utils/dateHelpers';
-import { PaymentStatus, PaymentType, PAYMENT_RATES, getPaymentId, isMatchEligibleForPayment, getMatchId } from '../services/paymentService';
-import FeeInputModal from './FeeInputModal';
+import { PaymentStatus, PaymentType, PAYMENT_RATES, isMatchEligibleForPayment, getMatchId, getPaymentType } from '../services/paymentService';
 
 interface MatchListProps {
-  matches: Match[];
+  matches: MatchDetails[];
   title?: string;
   variant?: 'active' | 'past';
   paymentStatuses?: Record<string, PaymentStatus>;
@@ -15,28 +14,26 @@ interface MatchListProps {
 }
 
 const MatchCard: React.FC<{
-  match: Match;
+  match: MatchDetails;
   isGreenMode: boolean;
   paymentStatus?: PaymentStatus;
   onTogglePayment?: (matchId: string, type: 'gsb' | 'ek', customFee?: number) => void;
   isEligibleForPayment: boolean;
 }> = ({ match, isGreenMode, paymentStatus = { gsbPaid: false, ekPaid: false }, onTogglePayment, isEligibleForPayment }) => {
   const [showPaymentButtons, setShowPaymentButtons] = useState(false);
-  const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
 
   const matchId = getMatchId(match);
-  const paymentType = match.paymentType || PaymentType.NONE;
+  const paymentType = getPaymentType(match);
 
-  // Local state for custom fee input
   const handleCustomFeeClick = () => {
-    setIsFeeModalOpen(true);
-  };
-
-  const handleSaveFee = (fee: number) => {
-    if (onTogglePayment) {
-      onTogglePayment(matchId, 'ek', fee); // 'ek' is used to store payment status, customFee is extra
+    const currentFee = paymentStatus.customFee || 0;
+    const feeStr = window.prompt("Lütfen maç ücretini giriniz (TL):", currentFee.toString());
+    if (feeStr !== null) {
+      const fee = parseFloat(feeStr);
+      if (!isNaN(fee) && fee > 0 && onTogglePayment) {
+        onTogglePayment(matchId, 'ek', fee);
+      }
     }
-    setIsFeeModalOpen(false); // Close modal after saving
   };
 
   return (
@@ -200,13 +197,6 @@ const MatchCard: React.FC<{
         </div>
       </div>
 
-      <FeeInputModal
-        isOpen={isFeeModalOpen}
-        onClose={() => setIsFeeModalOpen(false)}
-        onSave={handleSaveFee}
-        initialFee={paymentStatus.customFee}
-        title={`${match.category || 'Maç'} - Ücreti`}
-      />
     </>
   );
 };
