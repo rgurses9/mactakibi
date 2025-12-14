@@ -336,6 +336,9 @@ const App: React.FC = () => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
+        // Season cutoff: September 1, 2025
+        const SEASON_CUTOFF = new Date(2025, 8, 1); // September is month 8 (0-indexed)
+
         // First, deduplicate matches based on key fields
         const uniqueMatches = new Map<string, MatchDetails>();
 
@@ -349,8 +352,12 @@ const App: React.FC = () => {
             }
         });
 
-        // Convert back to array
-        const deduplicatedMatches = Array.from(uniqueMatches.values());
+        // Convert back to array and filter by season cutoff
+        const deduplicatedMatches = Array.from(uniqueMatches.values()).filter(m => {
+            const matchDate = parseDate(m.date);
+            // Only include matches from September 1, 2025 onwards
+            return matchDate && matchDate >= SEASON_CUTOFF;
+        });
 
         // Now split into active and past
         const active: MatchDetails[] = [];
