@@ -9,6 +9,9 @@ export interface MatchDetails {
   scorer: string;     // J Sütunu - SAYI GÖREVLİSİ
   timer: string;      // K Sütunu - SAAT GÖREVLİSİ
   shotClock: string;  // L Sütunu - ŞUT SAATİ GÖREVLİSİ
+  scorerLabel?: string;    // Label for scorer column (e.g., "MASA GÖREVLİSİ 1")
+  timerLabel?: string;     // Label for timer column
+  shotClockLabel?: string; // Label for shotClock column
   sourceFile?: string; // Optional source file name
 }
 

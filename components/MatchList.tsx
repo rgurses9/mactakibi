@@ -122,9 +122,9 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
                 {/* Duties (Grid) */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {[
-                    { label: 'Görevli 1', value: match.scorer },
-                    { label: 'Görevli 2', value: match.timer },
-                    { label: 'Görevli 3', value: match.shotClock },
+                    { label: match.scorerLabel || 'Görevli 1', value: match.scorer },
+                    { label: match.timerLabel || 'Görevli 2', value: match.timer },
+                    { label: match.shotClockLabel || 'Görevli 3', value: match.shotClock },
                   ].map((duty, i) => {
                     const upperValue = duty.value?.toLocaleUpperCase('tr-TR') || '';
                     const isRifat = upperValue.includes('RIFAT') || upperValue.includes('GÜRSES');

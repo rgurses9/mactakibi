@@ -113,8 +113,37 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNam
         // Collect all non-empty duty columns from the specified columns
         const allDuties = columnsToCheckValues.filter(col => col !== "");
 
+        // Create labels based on file type and columns
+        const fileNameUpper = fileName ? fileName.toLocaleUpperCase('tr-TR') : '';
+        let labels: string[] = [];
+
+        // Determine labels based on file type
+        if (fileNameUpper.includes('OKUL') && fileNameUpper.includes('İLÇE')) {
+          // OKUL İL VE İLÇE: MASA GÖREVLİSİ 1, 2, 3
+          labels = columnsToCheck.map((_, i) => `MASA GÖREVLİSİ ${i + 1}`);
+        } else if (fileNameUpper.includes('ARŞİV') || fileNameUpper.includes('TBF') || fileNameUpper.includes('FIBA') || fileNameUpper.includes('MİLLİ')) {
+          // ARŞİV: SAYI, SAAT, ŞUT SAATİ, YARDIMCI SAYI
+          labels = ['SAYI GÖREVLİSİ', 'SAAT GÖREVLİSİ', 'ŞUT SAATİ GÖREVLİSİ', 'YARDIMCI SAYI'];
+        } else if (fileNameUpper.includes('MASA') && fileNameUpper.includes('GÖREVLİLERİ')) {
+          // MASA GÖREVLİLERİ: MASA GÖREVLİSİ 1, 2, 3, 4
+          labels = columnsToCheck.map((_, i) => `MASA GÖREVLİSİ ${i + 1}`);
+        } else if (fileNameUpper.includes('HAFTA')) {
+          // HAFTA: SAYI, SAAT, ŞUT SAATİ
+          labels = ['SAYI GÖREVLİSİ', 'SAAT GÖREVLİSİ', 'ŞUT SAATİ GÖREVLİSİ'];
+        } else {
+          // Default: Generic labels
+          labels = columnsToCheck.map((col, i) => `${col} SÜTUNU`);
+        }
+
+        // Get labels for non-empty columns
+        const nonEmptyIndices: number[] = [];
+        columnsToCheckValues.forEach((val, i) => {
+          if (val !== "") nonEmptyIndices.push(i);
+        });
+
+        const dutyLabels = nonEmptyIndices.map(i => labels[i] || `Görevli ${i + 1}`);
+
         // For display, we'll use the first 3 non-empty columns
-        // or distribute them across scorer/timer/shotClock
         matches.push({
           date: String(row['A'] || "").trim(),
           hall: String(row['B'] || "").trim(),
@@ -126,7 +155,11 @@ export const parseWorkbookData = (data: any, type: 'array' | 'string', targetNam
           // Distribute all duties across the three display fields
           scorer: allDuties[0] || colJ,
           timer: allDuties[1] || colK,
-          shotClock: allDuties[2] || colL
+          shotClock: allDuties[2] || colL,
+          // Add labels
+          scorerLabel: dutyLabels[0],
+          timerLabel: dutyLabels[1],
+          shotClockLabel: dutyLabels[2]
         });
       }
     });
