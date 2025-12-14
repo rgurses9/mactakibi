@@ -39,24 +39,72 @@ const MatchCard: React.FC<{
   return (
     <>
       <div
-        className={`group bg-white dark:bg-gray-800 rounded-xl border-2 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300
-          ${isGreenMode ? 'border-green-400 dark:border-green-800 ring-2 ring-green-50 dark:ring-green-900/20 shadow-green-100 dark:shadow-none' : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50'}
+        className={`group bg-white rounded-xl border-2 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 relative
+          ${isGreenMode ? 'border-green-400 ring-2 ring-green-50 shadow-green-100' : 'border-black bg-gray-50'}
         `}
       >
-        {/* Top: Time & Date Header */}
-        <div className={`border-b border-dashed px-4 py-3 transition-colors flex items-center justify-between
-          ${isGreenMode ? 'bg-green-50/50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-gray-100/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700'}
-        `}>
-          <div className={`text-xl font-black tracking-tight ${isGreenMode ? 'text-green-800 dark:text-green-300' : 'text-gray-900 dark:text-white'}`}>
-            {match.time}
+        {/* Payment Status Checkboxes - Top Right (Clickable) */}
+        {isEligibleForPayment && onTogglePayment && (
+          <div className="absolute top-2 right-2 z-10">
+            <div className="flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-black">
+              {/* GSB Checkbox - Clickable */}
+              {(paymentType === PaymentType.STANDARD || paymentType === PaymentType.GSB_ONLY) && (
+                <button
+                  onClick={() => onTogglePayment(matchId, 'gsb')}
+                  className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+                >
+                  <div className={`w-5 h-5 rounded border flex items-center justify-center ${paymentStatus.gsbPaid
+                    ? 'bg-green-500 border-green-600'
+                    : 'bg-white border-gray-400'
+                    }`}>
+                    {paymentStatus.gsbPaid && (
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="text-xs font-semibold text-gray-900">GSB</span>
+                </button>
+              )}
+
+              {/* EK Checkbox - Clickable */}
+              {(paymentType === PaymentType.STANDARD || paymentType === PaymentType.CUSTOM_FEE) && (
+                <button
+                  onClick={() => {
+                    if (paymentType === PaymentType.CUSTOM_FEE && !paymentStatus.isCustomFeeSet) {
+                      handleCustomFeeClick();
+                    } else {
+                      onTogglePayment(matchId, 'ek');
+                    }
+                  }}
+                  className="flex items-center gap-1 hover:opacity-80 transition-opacity"
+                >
+                  <div className={`w-5 h-5 rounded border flex items-center justify-center ${paymentStatus.ekPaid
+                    ? 'bg-green-500 border-green-600'
+                    : 'bg-white border-gray-400'
+                    }`}>
+                    {paymentStatus.ekPaid && (
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="text-xs font-semibold text-gray-900">EK</span>
+                </button>
+              )}
+
+              {/* Completion Text - Shows when all payments complete */}
+              {((paymentType === PaymentType.STANDARD && paymentStatus.gsbPaid && paymentStatus.ekPaid) ||
+                (paymentType === PaymentType.GSB_ONLY && paymentStatus.gsbPaid) ||
+                (paymentType === PaymentType.CUSTOM_FEE && paymentStatus.ekPaid)) && (
+                  <span className="text-xs font-bold text-green-600">Ödeme Tamamlandı</span>
+                )}
+            </div>
           </div>
-          <div className="text-sm font-semibold text-gray-900 dark:text-white bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 px-3 py-1 rounded">
-            {formatDate(match.date)}
-          </div>
-        </div>
+        )}
 
         {match.sourceFile && (
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-black bg-white px-3 py-1.5 rounded-lg border border-black">
             <FileText size={12} />
             <span className="truncate max-w-[200px]">{match.sourceFile}</span>
           </div>
@@ -65,23 +113,36 @@ const MatchCard: React.FC<{
 
       {/* Bottom: Match Details */}
       <div className="p-4">
-        {/* Category & Group & Hall */}
-        <div className="mb-3">
-          <div className={`text-xs font-bold tracking-wide uppercase mb-2 flex items-center gap-1.5 ${isGreenMode ? 'text-green-700 dark:text-green-300' : 'text-gray-900 dark:text-white'}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${isGreenMode ? 'bg-green-500' : 'bg-gray-400'}`}></span>
-            {match.category} {match.group ? `• ${match.group}` : ''}
+        {/* Category + Time/Date + Hall + Teams - All in one row */}
+        <div className="flex items-center justify-center gap-4 mb-3 bg-white p-3 rounded-lg">
+          {/* Left: Category & Hall */}
+          <div className="flex flex-col gap-2 items-center">
+            <div className={`text-xs font-semibold uppercase flex items-center gap-0 text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${isGreenMode ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+              {match.category} {match.group ? `• ${match.group}` : ''}
+            </div>
+            <div className={`flex items-center gap-0 text-xs font-semibold text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>
+              <MapPin size={12} />
+              {match.hall}
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 text-gray-900 dark:text-white text-sm font-medium">
-            <MapPin size={14} />
-            {match.hall}
-          </div>
-        </div>
 
-        {/* Teams */}
-        <div className="flex items-center gap-2 mb-3">
-          <span className={`text-sm font-bold flex-1 text-right ${isGreenMode ? 'text-gray-900 dark:text-white' : 'text-gray-900 dark:text-white'}`}>{match.teamA}</span>
-          <div className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white text-[9px] font-black px-1.5 py-0.5 rounded">VS</div>
-          <span className={`text-sm font-bold flex-1 text-left ${isGreenMode ? 'text-gray-900 dark:text-white' : 'text-gray-900 dark:text-white'}`}>{match.teamB}</span>
+          {/* Center: Time & Date */}
+          <div className="flex flex-col items-center gap-2">
+            <div className={`text-xs font-semibold text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>
+              {match.time}
+            </div>
+            <div className={`text-xs font-semibold bg-white border border-black px-2 py-0.5 rounded text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>
+              {formatDate(match.date)}
+            </div>
+          </div>
+
+          {/* Right: Teams */}
+          <div className="flex items-center gap-2">
+            <span className={`text-xs font-semibold text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>{match.teamA}</span>
+            <div className={`bg-gray-100 text-xs font-semibold px-1.5 py-0.5 rounded text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>VS</div>
+            <span className={`text-xs font-semibold text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>{match.teamB}</span>
+          </div>
         </div>
 
         {/* Duties (Grid) */}
@@ -99,21 +160,21 @@ const MatchCard: React.FC<{
             const isRifat = upperValue.includes('RIFAT') || upperValue.includes('GÜRSES');
 
             // Visual logic for duty boxes
-            let boxClass = 'bg-white dark:bg-gray-700 border-gray-100 dark:border-gray-600';
-            let textClass = 'text-gray-900 dark:text-white';
-            let labelClass = 'text-gray-700 dark:text-gray-300';
+            let boxClass = 'bg-white border-black';
+            let textClass = 'text-gray-900';
+            let labelClass = 'text-gray-700';
 
             if (isRifat) {
               if (isGreenMode) {
                 // Basketball orange background with black text
-                boxClass = 'bg-orange-500 border-orange-600 dark:bg-orange-500 dark:border-orange-600 shadow-xl transform scale-110 z-10 ring-2 ring-orange-400';
-                textClass = 'text-black dark:text-black font-black';
-                labelClass = 'text-orange-900 dark:text-orange-900 font-bold';
+                boxClass = 'bg-orange-500 border-orange-600 shadow-xl transform scale-110 z-10 ring-2 ring-orange-400';
+                textClass = 'text-black font-black';
+                labelClass = 'text-orange-900 font-bold';
               } else {
                 // Basketball orange background with black text
-                boxClass = 'bg-orange-400 border-orange-500 dark:bg-orange-500 dark:border-orange-600 shadow-lg';
-                textClass = 'text-black dark:text-black font-black';
-                labelClass = 'text-orange-900 dark:text-orange-900 font-bold';
+                boxClass = 'bg-orange-400 border-orange-500 shadow-lg';
+                textClass = 'text-black font-black';
+                labelClass = 'text-orange-900 font-bold';
               }
             }
 
@@ -134,67 +195,39 @@ const MatchCard: React.FC<{
               </div>
             );
           })}
-
-          {/* Payment Toggle Button */}
-          {isEligibleForPayment && onTogglePayment && !showPaymentButtons && (
-            <button
-              onClick={() => setShowPaymentButtons(true)}
-              className="col-span-1 sm:col-span-2 relative px-2 py-1.5 rounded-lg border border-purple-200 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/40 flex flex-col items-center justify-center text-center transition-all duration-300 group/btn"
-            >
-              <DollarSign size={16} className="text-purple-600 dark:text-purple-400 mb-0.5 group-hover/btn:scale-110 transition-transform" />
-              <span className="text-[10px] font-bold text-purple-700 dark:text-purple-300">ÖDEME</span>
-            </button>
-          )}
-
-          {/* Payment Action Buttons based on PaymentType */}
-          {isEligibleForPayment && onTogglePayment && showPaymentButtons && (
-            <>
-              {/* STANDARD: GSB + EK */}
-              {paymentType === PaymentType.STANDARD && (
-                <>
-                  <button onClick={() => onTogglePayment(matchId, 'gsb')} className={`relative px-2 py-1.5 rounded-lg border flex flex-col items-center justify-center text-center transition-all duration-300 ${paymentStatus.gsbPaid ? 'bg-green-500 border-green-600 text-white shadow-md transform scale-105' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'}`}>
-                    <span className={`text-[7px] uppercase font-bold tracking-wider mb-0.5 ${paymentStatus.gsbPaid ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>GSB ({PAYMENT_RATES.GSB}₺)</span>
-                    <span className={`text-[10px] font-bold ${paymentStatus.gsbPaid ? 'text-white' : 'text-gray-900 dark:text-white'}`}>GSB ÖDEME</span>
-                  </button>
-                  <button onClick={() => onTogglePayment(matchId, 'ek')} className={`relative px-2 py-1.5 rounded-lg border flex flex-col items-center justify-center text-center transition-all duration-300 ${paymentStatus.ekPaid ? 'bg-green-500 border-green-600 text-white shadow-md transform scale-105' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'}`}>
-                    <span className={`text-[7px] uppercase font-bold tracking-wider mb-0.5 ${paymentStatus.ekPaid ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>EK ({PAYMENT_RATES.EK}₺)</span>
-                    <span className={`text-[10px] font-bold ${paymentStatus.ekPaid ? 'text-white' : 'text-gray-900 dark:text-white'}`}>EK ÖDEME</span>
-                  </button>
-                </>
-              )}
-
-              {/* GSB_ONLY: Only GSB */}
-              {paymentType === PaymentType.GSB_ONLY && (
-                <button onClick={() => onTogglePayment(matchId, 'gsb')} className={`col-span-2 relative px-2 py-1.5 rounded-lg border flex flex-col items-center justify-center text-center transition-all duration-300 ${paymentStatus.gsbPaid ? 'bg-green-500 border-green-600 text-white shadow-md transform scale-105' : 'bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'}`}>
-                  <span className={`text-[7px] uppercase font-bold tracking-wider mb-0.5 ${paymentStatus.gsbPaid ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>GSB ({PAYMENT_RATES.GSB}₺)</span>
-                  <span className={`text-[10px] font-bold ${paymentStatus.gsbPaid ? 'text-white' : 'text-gray-900 dark:text-white'}`}>GSB ÖDEME</span>
-                </button>
-              )}
-
-              {/* CUSTOM_FEE: Prompt for fee then simple toggle */}
-              {paymentType === PaymentType.CUSTOM_FEE && (
-                <div className="col-span-2 flex gap-1">
-                  {!paymentStatus.isCustomFeeSet ? (
-                    <button onClick={handleCustomFeeClick} className="w-full relative px-2 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50 flex flex-col items-center justify-center text-center hover:bg-indigo-100 transition-colors">
-                      <Edit size={14} className="text-indigo-600 mb-0.5" />
-                      <span className="text-[10px] font-bold text-indigo-700">ÜCRET GİRİNİZ</span>
-                    </button>
-                  ) : (
-                    <div className="flex w-full gap-1">
-                      <button onClick={() => onTogglePayment(matchId, 'ek')} className={`flex-1 relative px-2 py-1.5 rounded-lg border flex flex-col items-center justify-center text-center transition-all duration-300 ${paymentStatus.ekPaid ? 'bg-green-500 border-green-600 text-white shadow-md' : 'bg-white border-gray-200'}`}>
-                        <span className={`text-[7px] uppercase font-bold tracking-wider mb-0.5 ${paymentStatus.ekPaid ? 'text-green-100' : 'text-gray-500'}`}>ÖZEL ({paymentStatus.customFee}₺)</span>
-                        <span className={`text-[10px] font-bold ${paymentStatus.ekPaid ? 'text-white' : 'text-gray-900'}`}>ÖDENDİ</span>
-                      </button>
-                      <button onClick={handleCustomFeeClick} className="px-2 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-500">
-                        <Edit size={12} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
         </div>
+
+        {/* Ödemesi Tamamlandı Section - Shows when both payments complete */}
+        {((paymentType === PaymentType.STANDARD && paymentStatus.gsbPaid && paymentStatus.ekPaid) ||
+          (paymentType === PaymentType.GSB_ONLY && paymentStatus.gsbPaid) ||
+          (paymentType === PaymentType.CUSTOM_FEE && paymentStatus.ekPaid)) && (
+            <div className="mt-3 bg-green-100 border-2 border-green-500 rounded-lg p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm font-bold text-green-800">Ödemesi Tamamlandı</span>
+              </div>
+
+              {/* Duty Assignments */}
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: match.scorerLabel || 'Görevli 1', value: match.scorer },
+                  { label: match.timerLabel || 'Görevli 2', value: match.timer },
+                  { label: match.shotClockLabel || 'Görevli 3', value: match.shotClock },
+                ].map((duty, i) => (
+                  <div key={i} className="bg-white rounded p-2 border border-green-300">
+                    <div className="text-[8px] uppercase font-bold text-green-700 mb-1">
+                      {duty.label}
+                    </div>
+                    <div className="text-[10px] font-semibold text-gray-900">
+                      {duty.value || '-'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
       </div>
 
     </>
@@ -249,18 +282,18 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
   const isGreenMode = variant === 'active';
 
   return (
-    <div className={`space-y-4 ${variant === 'past' ? 'opacity-70 grayscale-[0.8]' : ''}`}>
+    <div className={`space-y-0 ${variant === 'past' ? 'opacity-70 grayscale-[0.8]' : ''}`}>
       <div className="flex items-center justify-between mb-2 mt-6">
-        <h2 className={`text-lg font-bold flex items-center gap-2 ${isGreenMode ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'}`}>
-          {isGreenMode ? <CheckCircle2 className="text-green-600 dark:text-green-400" size={20} /> : <History className="text-gray-500 dark:text-gray-400" size={20} />}
+        <h2 className={`text-lg font-bold flex items-center gap-2 ${isGreenMode ? 'text-green-700' : 'text-gray-600'}`}>
+          {isGreenMode ? <CheckCircle2 className="text-green-600" size={20} /> : <History className="text-gray-500" size={20} />}
           {title}
         </h2>
-        <span className={`text-xs font-bold px-2 py-1 rounded-md ${isGreenMode ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300'}`}>
+        <span className={`text-xs font-bold px-2 py-1 rounded-md ${isGreenMode ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}`}>
           {sortedMatches.length} Maç
         </span>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-0">
         {sortedMatches.map((match, index) => {
           const isEligible = isMatchEligibleForPayment(match);
           const matchId = getMatchId(match);

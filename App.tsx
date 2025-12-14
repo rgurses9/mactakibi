@@ -120,7 +120,7 @@ const App: React.FC = () => {
     const getThemeIcon = () => {
         if (theme === 'light') return <Sun size={18} className="text-orange-500" />;
         if (theme === 'dark') return <Moon size={18} className="text-blue-400" />;
-        return <Monitor size={18} className="text-gray-500 dark:text-gray-400" />;
+        return <Monitor size={18} className="text-gray-500" />;
     };
 
     const getThemeLabel = () => {
@@ -272,7 +272,11 @@ const App: React.FC = () => {
         let ek = 0;
 
         matches.forEach(match => {
-            if (isMatchEligibleForPayment(match)) {
+            // Only count past matches for payment stats
+            const matchDate = parseDate(match.date);
+            const isPast = isPastDate(matchDate, currentTime);
+
+            if (isPast && isMatchEligibleForPayment(match)) {
                 eligible++;
                 const id = getMatchId(match);
                 if (paymentStatuses[id]?.gsbPaid) gsb++;
@@ -281,7 +285,7 @@ const App: React.FC = () => {
         });
 
         setPaymentStats({ eligible, paidGsb: gsb, paidEk: ek });
-    }, [matches, paymentStatuses]);
+    }, [matches, paymentStatuses, currentTime]);
 
     // Toggle payment status handler
     const togglePaymentStatus = (matchId: string, type: 'gsb' | 'ek', customFee?: number) => {
@@ -490,10 +494,10 @@ const App: React.FC = () => {
     const isAdmin = user?.email ? adminEmails.includes(user.email.toLowerCase()) : false;
 
     if (!authInitialized) {
-        return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950">
+        return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
             <div className="flex flex-col items-center gap-2">
-                <RefreshCw className="animate-spin text-blue-600 dark:text-blue-400" size={32} />
-                <span className="text-gray-500 dark:text-gray-400 font-medium">Yükleniyor...</span>
+                <RefreshCw className="animate-spin text-blue-600" size={32} />
+                <span className="text-gray-500 font-medium">Yükleniyor...</span>
             </div>
         </div>;
     }
@@ -504,7 +508,7 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950 font-sans pb-24 transition-colors duration-300">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-sans pb-24 transition-colors duration-300">
 
             <FirebaseSettings
                 isOpen={isFirebaseOpen}
@@ -526,10 +530,10 @@ const App: React.FC = () => {
 
             {isBotSettingsOpen && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
-                        <div className="bg-green-600 p-4 flex items-center justify-between text-white">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                        <div className="bg-green-600 p-4 flex items-center justify-between text-black">
                             <h3 className="font-bold flex items-center gap-2">
-                                <Settings size={20} className="text-white" />
+                                <Settings size={20} className="text-black" />
                                 Bot Ayarları
                             </h3>
                             <button onClick={() => setIsBotSettingsOpen(false)} className="hover:bg-green-700 p-1 rounded-full transition-colors">
@@ -549,10 +553,10 @@ const App: React.FC = () => {
             {/* Fee List Modal */}
             {isFeeListOpen && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setIsFeeListOpen(false)}>
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full animate-in fade-in zoom-in-95 duration-200 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                        <div className="bg-green-600 p-4 flex items-center justify-between text-white">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full animate-in fade-in zoom-in-95 duration-200 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        <div className="bg-green-600 p-4 flex items-center justify-between text-black">
                             <h3 className="font-bold flex items-center gap-2">
-                                <span className="text-xl">💰</span>
+                                <span className="text-base">💰</span>
                                 Ücret Listesi
                             </h3>
                             <button onClick={() => setIsFeeListOpen(false)} className="hover:bg-green-700 p-1 rounded-full transition-colors">
@@ -572,13 +576,13 @@ const App: React.FC = () => {
             )}
 
             {/* HEADER SECTION - Theme Toggle Moved Here */}
-            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-30 shadow-sm transition-colors duration-300">
+            <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm transition-colors duration-300">
                 <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="bg-blue-600 text-white p-2 rounded-lg">
+                        <div className="bg-blue-600 text-black p-2 rounded-lg">
                             <Shield size={20} />
                         </div>
-                        <h1 className="font-bold text-gray-900 dark:text-white text-lg leading-tight hidden sm:block">Maç Takip Sistemi</h1>
+                        <h1 className="font-bold text-gray-900 text-sm leading-tight hidden sm:block">Maç Takip Sistemi</h1>
                     </div>
 
                     <div className="flex items-center gap-3 md:gap-4">
@@ -586,9 +590,9 @@ const App: React.FC = () => {
                         {paymentStats.eligible > 0 && (
                             <button
                                 onClick={() => setIsFeeListOpen(true)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-colors shadow-md shadow-green-200 dark:shadow-none"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-black rounded-lg text-xs font-bold transition-colors shadow-md shadow-green-200"
                             >
-                                <span className="text-lg">💰</span>
+                                <span className="text-base">💰</span>
                                 <span className="hidden sm:inline">Ücret Listesi</span>
                             </button>
                         )}
@@ -597,7 +601,7 @@ const App: React.FC = () => {
                         {isAdmin && (
                             <button
                                 onClick={() => setIsAdminPanelOpen(true)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-colors shadow-md shadow-red-200 dark:shadow-none"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-black rounded-lg text-xs font-bold transition-colors shadow-md shadow-red-200"
                             >
                                 <ShieldAlert size={14} />
                                 <span className="hidden sm:inline">Yönetici Paneli</span>
@@ -607,20 +611,20 @@ const App: React.FC = () => {
                         {/* Theme Toggle Button - Moved to Header */}
                         <button
                             onClick={toggleTheme}
-                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                             title={`Tema: ${getThemeLabel()}`}
                         >
                             {getThemeIcon()}
                         </button>
 
-                        <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 font-bold border-l border-r border-gray-200 dark:border-gray-600 px-3 h-8">
-                            <UserIcon size={16} className="text-blue-600 dark:text-blue-400" />
+                        <div className="flex items-center gap-2 text-sm text-gray-700 font-bold border-l border-r border-gray-200 px-3 h-8">
+                            <UserIcon size={16} className="text-blue-600" />
                             <span className="hidden sm:inline">{user.displayName?.toLocaleUpperCase('tr-TR')}</span>
                         </div>
 
                         <button
                             onClick={logoutUser}
-                            className="flex items-center gap-1.5 text-xs bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                            className="flex items-center gap-1.5 text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
                         >
                             <LogOut size={14} />
                             Çıkış
@@ -630,20 +634,20 @@ const App: React.FC = () => {
             </div>
 
             {/* WELCOME HERO SECTION */}
-            <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
+            <div className="bg-white border-b border-gray-200 transition-colors duration-300">
                 <div className="max-w-5xl mx-auto px-4 py-8">
                     <div className="flex items-center gap-4">
                         <div className="relative">
-                            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-md ring-4 ring-blue-50 dark:ring-blue-900">
+                            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-black font-bold text-base shadow-md ring-4 ring-blue-50">
                                 {user.displayName ? user.displayName.substring(0, 2).toUpperCase() : 'UR'}
                             </div>
                         </div>
                         <div>
                             {/* Updated Welcome Message */}
-                            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
+                            <h2 className="text-lg font-bold text-gray-800">
                                 Hoş Geldiniz, {user.displayName?.toLocaleUpperCase('tr-TR')}
                             </h2>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">
+                            <p className="text-gray-500 text-sm mt-0.5">
                                 Hesabınız onaylandı. Sistemde <strong>{user.displayName?.toLocaleUpperCase('tr-TR')}</strong> adına tanımlı maçlar listelenmektedir.
                             </p>
                         </div>
@@ -659,20 +663,20 @@ const App: React.FC = () => {
                 <div className="space-y-6">
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center justify-between transition-colors duration-300">
+                        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between transition-colors duration-300">
                             <div>
-                                <div className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Aktif Görevler</div>
-                                <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{activeMatchCount}</div>
+                                <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Aktif Görevler</div>
+                                <div className="text-3xl font-extrabold text-blue-600">{activeMatchCount}</div>
                             </div>
-                            <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 p-3 rounded-lg">
+                            <div className="bg-blue-50 text-blue-600 p-3 rounded-lg">
                                 <Briefcase size={24} />
                             </div>
                         </div>
                     </div>
 
                     {error && (
-                        <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 rounded-xl p-4 text-red-700 dark:text-red-400 text-sm flex items-start gap-3">
-                            <div className="bg-red-100 dark:bg-red-900/30 p-1.5 rounded-full mt-0.5"><Bot size={16} /></div>
+                        <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-red-700 text-sm flex items-start gap-3">
+                            <div className="bg-red-100 p-1.5 rounded-full mt-0.5"><Bot size={16} /></div>
                             <div>
                                 <strong>Bağlantı Hatası:</strong>
                                 <p className="mt-1 opacity-90">{error}</p>
@@ -684,8 +688,8 @@ const App: React.FC = () => {
                     )}
 
                     {showManualUpload && !isFirebaseActive && (
-                        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-orange-200 dark:border-orange-900/50 shadow-sm transition-colors duration-300">
-                            <div className="flex items-center gap-2 mb-4 text-orange-700 dark:text-orange-500">
+                        <div className="bg-white p-6 rounded-xl border border-orange-200 shadow-sm transition-colors duration-300">
+                            <div className="flex items-center gap-2 mb-4 text-orange-700">
                                 <Upload size={20} />
                                 <h3 className="font-bold">Manuel Dosya Yükle</h3>
                             </div>
@@ -694,12 +698,12 @@ const App: React.FC = () => {
                     )}
 
                     {!isAnalyzing && matches.length === 0 && !error && !showManualUpload && (
-                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center transition-colors duration-300">
-                            <div className="bg-gray-50 dark:bg-gray-700 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100 dark:border-gray-600">
-                                <Folder size={32} className="text-gray-300 dark:text-gray-500" />
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center transition-colors duration-300">
+                            <div className="bg-gray-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                                <Folder size={32} className="text-gray-900" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-800 dark:text-white">Aktif Maç Bulunamadı</h3>
-                            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2 max-w-md mx-auto">
+                            <h3 className="text-sm font-bold text-gray-800">Aktif Maç Bulunamadı</h3>
+                            <p className="text-gray-500 text-sm mt-2 max-w-md mx-auto">
                                 {isFirebaseActive
                                     ? `Firebase veritabanında '${user.displayName}' adına kayıtlı maç bulunamadı.`
                                     : `Google Drive'da '${user.displayName}' için tanımlanmış herhangi bir maç bulunamadı.`
@@ -738,14 +742,14 @@ const App: React.FC = () => {
 
             </main>
 
-            <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-colors duration-300">
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-colors duration-300">
                 <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs md:text-sm">
-                    <div className="text-gray-400 font-medium">
+                    <div className="text-gray-700 font-medium">
                         Sistem v10.5 &copy; 2025
                     </div>
-                    <div className="text-gray-500 dark:text-gray-400 font-medium hidden md:block">
+                    <div className="text-gray-500 font-medium hidden md:block">
                         {isAnalyzing ? (
-                            <span className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                            <span className="flex items-center gap-2 text-blue-600">
                                 <RefreshCw size={12} className="animate-spin" />
                                 {progress}
                             </span>
@@ -758,17 +762,17 @@ const App: React.FC = () => {
                         )}
                     </div>
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setIsBotSettingsOpen(true)} className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
+                        <button onClick={() => setIsBotSettingsOpen(true)} className="flex items-center gap-1 text-gray-500 hover:text-green-600 transition-colors">
                             <Settings size={14} />
                             <span className="hidden sm:inline">Bot Ayarları</span>
                         </button>
                         {!isFirebaseActive && (
-                            <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">
-                                <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 w-3.5 h-3.5" />
+                            <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 hover:text-gray-900 transition-colors">
+                                <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 bg-white w-3.5 h-3.5" />
                                 <span className="hidden sm:inline">Oto. Yenile</span>
                             </label>
                         )}
-                        <button onClick={handleRefresh} disabled={isAnalyzing} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded border border-gray-200 dark:border-gray-600 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50">
+                        <button onClick={handleRefresh} disabled={isAnalyzing} className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded border border-gray-200 flex items-center gap-2 hover:bg-gray-200 transition-colors disabled:opacity-50">
                             <RefreshCw size={12} className={isAnalyzing ? "animate-spin" : ""} />
                             {isAnalyzing ? "Taranıyor" : "Yenile"}
                         </button>
