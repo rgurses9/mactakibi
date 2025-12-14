@@ -138,10 +138,16 @@ const App: React.FC = () => {
     const filterForUser = (list: MatchDetails[], currentUser: firebase.User | null) => {
         if (!currentUser || !currentUser.displayName) return [];
 
-        // Normalize function for Turkish characters
-        const norm = (str: string) => str ? str.toLocaleUpperCase('tr-TR')
+        // Enhanced normalize function for Turkish characters, dots, spaces
+        const norm = (str: string) => str ? str
+            .toLocaleUpperCase('tr-TR')
+            .replace(/\./g, '')
+            .replace(/\s+/g, ' ')
             .replace(/Ğ/g, 'G').replace(/Ü/g, 'U').replace(/Ş/g, 'S')
-            .replace(/İ/g, 'I').replace(/Ö/g, 'O').replace(/Ç/g, 'C') : "";
+            .replace(/İ/g, 'I').replace(/I/g, 'I').replace(/Ö/g, 'O').replace(/Ç/g, 'C')
+            .replace(/ğ/g, 'G').replace(/ü/g, 'U').replace(/ş/g, 'S')
+            .replace(/ı/g, 'I').replace(/ö/g, 'O').replace(/ç/g, 'C')
+            .trim() : "";
 
         // Split user name into parts (e.g. "Rıfat Gürses" -> ["RIFAT", "GURSES"])
         const userParts = norm(currentUser.displayName).split(' ').filter(p => p.length > 1);

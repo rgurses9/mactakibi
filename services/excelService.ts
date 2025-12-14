@@ -3,16 +3,30 @@ import { MatchDetails } from '../types';
 
 /**
  * Normalizes string for loose comparison (Turkish chars -> English chars).
+ * Handles: case, Turkish characters, dots, extra spaces
  */
 const normalizeString = (str: string): string => {
   if (!str) return "";
-  return str.toLocaleUpperCase('tr-TR')
+  return str
+    .toLocaleUpperCase('tr-TR')
+    // Remove dots and extra spaces
+    .replace(/\./g, '')
+    .replace(/\s+/g, ' ')
+    // Turkish to English character mapping
     .replace(/Ğ/g, 'G')
     .replace(/Ü/g, 'U')
     .replace(/Ş/g, 'S')
     .replace(/İ/g, 'I')
+    .replace(/I/g, 'I')  // Handle both İ and I
     .replace(/Ö/g, 'O')
     .replace(/Ç/g, 'C')
+    // Also handle lowercase versions that might slip through
+    .replace(/ğ/g, 'G')
+    .replace(/ü/g, 'U')
+    .replace(/ş/g, 'S')
+    .replace(/ı/g, 'I')
+    .replace(/ö/g, 'O')
+    .replace(/ç/g, 'C')
     .trim();
 };
 
