@@ -50,12 +50,6 @@ const App: React.FC = () => {
     const [autoRefresh, setAutoRefresh] = useState(true);
     const [hasAutoScanned, setHasAutoScanned] = useState(false);
 
-    // First login detection - checks if user has logged in before
-    const [isFirstLogin, setIsFirstLogin] = useState<boolean>(() => {
-        // Will be properly set when user is available
-        return true;
-    });
-
     // Firebase State
     const [isFirebaseOpen, setIsFirebaseOpen] = useState(false);
     const [isFirebaseActive, setIsFirebaseActive] = useState(false);
@@ -238,53 +232,32 @@ const App: React.FC = () => {
         // Only auto scan if user is logged in
         if (!user) return;
 
-        // Check if this is user's first login
-        const firstLoginKey = `first_login_${user.uid}`;
-        const hasLoggedInBefore = localStorage.getItem(firstLoginKey);
-
-        if (!hasLoggedInBefore) {
-            // First time login - mark as first login and do full scan
-            setIsFirstLogin(true);
-            addLog(`🆕 ${user.displayName} için ilk giriş tespit edildi. Tam tarama yapılacak.`, 'info');
-        } else {
-            // Subsequent login - only check for new matches
-            setIsFirstLogin(false);
-            addLog(`👤 ${user.displayName} için giriş yapıldı. Yeni müsabaka kontrolü yapılacak.`, 'info');
-        }
+        // Always check for new matches only - no full scan of old matches
+        addLog(`👤 ${user.displayName} için giriş yapıldı. Yeni müsabaka kontrolü yapılacak.`, 'info');
 
         if (!hasAutoScanned && !isFirebaseActive) {
-            handleAutoScan(!hasLoggedInBefore); // Pass isFirstLogin to scan function
+            handleAutoScan(); // Always check for new matches only
             setHasAutoScanned(true);
-
-            // Mark that user has logged in before (after first scan)
-            if (!hasLoggedInBefore) {
-                localStorage.setItem(firstLoginKey, new Date().toISOString());
-            }
         }
         if (!lastUpdated) setLastUpdated(new Date().toLocaleString('tr-TR'));
 
         const interval = setInterval(() => {
             if (autoRefresh && !isAnalyzing && !isFirebaseActive) {
-                handleAutoScan(false); // Regular refresh always checks for new matches only
+                handleAutoScan(); // Regular refresh checks for new matches
             }
         }, 5 * 60 * 1000);
 
         return () => clearInterval(interval);
     }, [autoRefresh, hasAutoScanned, isFirebaseActive, user]);
 
-    const handleAutoScan = async (fullScan: boolean = false) => {
+    const handleAutoScan = async () => {
         if (isFirebaseActive) {
             return;
         }
 
         setIsAnalyzing(true);
         setError(null);
-
-        if (fullScan) {
-            setProgress("İlk giriş: Tüm eski müsabakalar taranıyor...");
-        } else {
-            setProgress("Yeni müsabakalar kontrol ediliyor...");
-        }
+        setProgress("Yeni müsabakalar kontrol ediliyor...");
 
         // Extract user name parts for filtering
         const userNameParts = user?.displayName
@@ -294,11 +267,7 @@ const App: React.FC = () => {
                 .split(' ').filter(p => p.length > 1)
             : undefined;
 
-        if (fullScan) {
-            addLog(`🔍 İlk Giriş - Tam Drive taraması başlatıldı: ${user?.displayName?.toLocaleUpperCase('tr-TR') || 'Kullanıcı belirsiz'}`, 'info');
-        } else {
-            addLog(`🔄 Yeni müsabaka kontrolü: ${user?.displayName?.toLocaleUpperCase('tr-TR') || 'Kullanıcı belirsiz'}`, 'info');
-        }
+        addLog(`🔄 Yeni müsabaka kontrolü: ${user?.displayName?.toLocaleUpperCase('tr-TR') || 'Kullanıcı belirsiz'}`, 'info');
 
         try {
             // Pass user name parts directly to Drive scanner for efficient filtering
