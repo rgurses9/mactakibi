@@ -40,6 +40,11 @@ const TARGET_FOLDERS: FolderConfig[] = [
     id: "1Tqtn2oN96UAyeARYtmYFGSfzkrSJOG9s",
     resourceKey: undefined, // No resource key provided in the link for the second folder
     name: "Ek Maç Klasörü"
+  },
+  {
+    id: "1gBZ_nHumGI-VjgqYjKTLTe_moSi4Pbl6",
+    resourceKey: undefined,
+    name: "Yeni Maç Klasörü"
   }
 ];
 

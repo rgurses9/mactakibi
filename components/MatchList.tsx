@@ -13,7 +13,7 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
   if (matches.length === 0) return null;
 
   // Sorting logic:
-  // Both active and past matches: Ascending (Earliest date first)
+  // Both active and past matches: Descending (Newest date first)
   // Invalid dates are placed at the end
   const sortedMatches = [...matches].sort((a, b) => {
     const dateA = parseDate(a.date);
@@ -28,8 +28,8 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
     // If only dateB is invalid, push it to the end
     if (!dateB) return -1;
 
-    // Both dates are valid, sort chronologically (earliest first)
-    return dateA.getTime() - dateB.getTime();
+    // Both dates are valid, sort reverse chronologically (newest first)
+    return dateB.getTime() - dateA.getTime();
   });
 
   const isGreenMode = variant === 'active';
