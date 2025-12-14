@@ -261,9 +261,32 @@ const App: React.FC = () => {
             return;
         }
 
+        // Check if we have cached data
+        const cacheKey = `matches_cache_${user?.email}`;
+        const lastScanKey = `last_scan_${user?.email}`;
+        const cachedData = localStorage.getItem(cacheKey);
+        const lastScanTime = localStorage.getItem(lastScanKey);
+
+        // If we have cached data and it's less than 1 hour old, use it
+        const now = Date.now();
+        const oneHour = 60 * 60 * 1000;
+
+        if (cachedData && lastScanTime && (now - parseInt(lastScanTime)) < oneHour) {
+            try {
+                const cached = JSON.parse(cachedData);
+                setMatches(cached);
+                setLastUpdated(new Date(parseInt(lastScanTime)).toLocaleString('tr-TR'));
+                addLog(`📦 Önbellekten ${cached.length} maç yüklendi. Yeni maçlar kontrol ediliyor...`, 'info');
+                setIsAnalyzing(false);
+                return; // Don't scan again, use cached data
+            } catch (e) {
+                console.error('Cache parse error:', e);
+            }
+        }
+
         setIsAnalyzing(true);
         setError(null);
-        setProgress("Yeni müsabakalar kontrol ediliyor...");
+        setProgress(cachedData ? "Yeni müsabakalar kontrol ediliyor..." : "İlk tarama yapılıyor...");
 
         // Extract user name parts for filtering
         const userNameParts = user?.displayName
@@ -273,7 +296,7 @@ const App: React.FC = () => {
                 .split(' ').filter(p => p.length > 1)
             : undefined;
 
-        addLog(`🔄 Yeni müsabaka kontrolü: ${user?.displayName?.toLocaleUpperCase('tr-TR') || 'Kullanıcı belirsiz'}`, 'info');
+        addLog(`🔄 ${cachedData ? 'Yeni müsabaka kontrolü' : 'İlk tarama'}: ${user?.displayName?.toLocaleUpperCase('tr-TR') || 'Kullanıcı belirsiz'}`, 'info');
 
         try {
             // Pass user name parts directly to Drive scanner for efficient filtering
@@ -285,6 +308,11 @@ const App: React.FC = () => {
             addLog(`Tarama bitti. ${driveMatches.length} maç bulundu.`, 'success');
             setMatches(driveMatches);
             setLastUpdated(new Date().toLocaleString('tr-TR'));
+
+            // Cache the results
+            localStorage.setItem(cacheKey, JSON.stringify(driveMatches));
+            localStorage.setItem(lastScanKey, now.toString());
+
             setShowManualUpload(false);
         } catch (err: any) {
             console.error(err);
@@ -333,6 +361,12 @@ const App: React.FC = () => {
         if (isFirebaseActive) {
             addLog("Veri canlı (Firebase). Manuel yenilemeye gerek yok.", 'success');
         } else {
+            // Clear cache to force fresh scan
+            const cacheKey = `matches_cache_${user?.email}`;
+            const lastScanKey = `last_scan_${user?.email}`;
+            localStorage.removeItem(cacheKey);
+            localStorage.removeItem(lastScanKey);
+            addLog("🔄 Önbellek temizlendi, yeni tarama başlatılıyor...", 'info');
             handleAutoScan();
         }
     };
