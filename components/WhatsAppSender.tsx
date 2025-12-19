@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Check, AlertCircle, Settings } from 'lucide-react';
+import { Send, Check, AlertCircle, MessageSquare } from 'lucide-react';
 import { MatchDetails } from '../types';
 
 interface WhatsAppSenderProps {
@@ -63,48 +63,57 @@ const WhatsAppSender: React.FC<WhatsAppSenderProps> = ({ matches, config }) => {
 
   const isConfigured = config.phone && config.apiKey && config.phone.length > 5 && config.apiKey.length > 3;
 
+  if (!isConfigured) {
+    return (
+      <div className="mt-8 bg-gray-50 dark:bg-gray-800/50 border border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-6 text-center">
+        <AlertCircle size={32} className="mx-auto text-gray-400 mb-2" />
+        <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-widest">WhatsApp Yapılandırılmadı</h4>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Bildirimler için Bot Ayarlarını kullanın.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="mt-6">
-      {!isConfigured ? (
-        <div className="border border-gray-300 dark:border-gray-600 rounded-xl p-4 flex items-center justify-between">
+    <div className="mt-8 w-full group">
+      <button
+        onClick={sendToWhatsApp}
+        disabled={sending || matches.length === 0}
+        style={{
+          backgroundColor: status === 'success' ? '#16a34a' : '#25D366',
+          backgroundImage: 'radial-gradient(rgba(0,0,0,0.15) 15%, transparent 16%)',
+          backgroundSize: '8px 8px',
+          backgroundPosition: '0 0'
+        }}
+        className={`w-full py-4 px-6 rounded-2xl border-2 ${status === 'success' ? 'border-green-800' : 'border-green-700'} shadow-lg flex flex-col items-center justify-center gap-2 transform transition-all duration-300 hover:scale-[1.01] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed`}
+      >
+        <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
-            <div className="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg text-gray-600 dark:text-gray-400">
-              <AlertCircle size={20} />
+            <div className="bg-white/20 p-2 rounded-lg border border-white/20 text-white shadow-sm">
+              {sending ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : status === 'success' ? (
+                <Check size={20} className="text-white drop-shadow-md" />
+              ) : (
+                <MessageSquare size={20} className="text-white drop-shadow-md" />
+              )}
             </div>
-            <div>
-              <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200">WhatsApp Yapılandırılmadı</h4>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Bildirim göndermek için Bot Ayarlarını yapın.</p>
-            </div>
+            <span className="text-white text-sm font-black uppercase tracking-widest drop-shadow-md">
+              {sending ? 'GÖNDERİLİYOR...' : status === 'success' ? 'BAŞARIYLA İLETİLDİ!' : 'LİSTEYİ WHATSAPP\'A GÖNDER'}
+            </span>
+          </div>
+
+          <div className="bg-black/20 p-2 rounded-lg border border-white/10 text-white group-hover:bg-black/30 transition-colors">
+            <Send size={18} className={sending ? 'animate-bounce' : ''} />
           </div>
         </div>
-      ) : (
-        <button
-          onClick={sendToWhatsApp}
-          disabled={sending || matches.length === 0}
-          className={`w-full py-4 px-6 rounded-xl font-bold text-black flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 ${status === 'success'
-            ? 'bg-green-500'
-            : sending
-              ? 'bg-green-400'
-              : 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400'
-            }`}
-        >
-          {sending ? (
-            <span className="animate-pulse">Gönderiliyor...</span>
-          ) : status === 'success' ? (
-            <><Check size={24} /> Başarıyla İletildi</>
-          ) : (
-            <><Send size={24} /> Listeyi WhatsApp'a Gönder</>
-          )}
-        </button>
-      )}
 
-      {isConfigured && (
-        <div className="mt-2 text-center">
-          <p className="text-[10px] text-black dark:text-white font-bold uppercase">
-            Hedef: {config.phone.replace(/.(?=.{4})/g, '*')} • Servis: CallMeBot
-          </p>
+        {/* BOTTOM INFO AREA INTEGRATED */}
+        <div className="w-full mt-2 pt-2 border-t border-white/10 flex justify-center">
+          <span className="text-[10px] text-white/90 font-black tracking-widest uppercase drop-shadow-sm">
+            HEDEF: {config.phone.replace(/.(?=.{4})/g, '*')} • SERVİS: CALLMEBOT
+          </span>
         </div>
-      )}
+      </button>
     </div>
   );
 };

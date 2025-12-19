@@ -8,17 +8,16 @@ import FileUpload from './components/FileUpload';
 import Auth from './components/Auth';
 import AdminPanel from './components/AdminPanel'; // Import Admin Panel
 import { MatchDetails, AnalysisResult } from './types';
-import { getMatchId, getAllPaymentStatuses, savePaymentStatus, isMatchEligibleForPayment, PaymentStatus } from './services/paymentService';
+import { getMatchId, getAllPaymentStatuses, savePaymentStatus, isMatchEligibleForPayment, getPaymentType, PaymentType, PAYMENT_RATES, PaymentStatus } from './services/paymentService';
 import { autoScanDriveFolder } from './services/driveService';
 import { findMatchesInExcel, findMatchesInRawData } from './services/excelService';
 import { initFirebase, subscribeToMatches, subscribeToAuthChanges, logoutUser } from './services/firebaseService';
 import { isPastDate, parseDate } from './utils/dateHelpers';
 import FeeTable from './components/FeeTable';
 import {
-    RefreshCw, Bot, Folder,
-    Calendar, Briefcase, Shield,
-    Settings, Flame, X, Upload, LogOut, User as UserIcon,
-    Sun, Moon, Monitor, ShieldAlert
+    Search, RefreshCw, Filter, Settings, Shield, User as UserIcon, LogOut, Check, X,
+    Briefcase, AlertCircle, Upload, ShieldAlert, Bot, History as HistoryIcon,
+    Sun, Moon, Monitor, Folder, Calendar, Flame, ChevronDown, ChevronUp
 } from 'lucide-react';
 import firebase from 'firebase/compat/app';
 
@@ -72,7 +71,12 @@ const App: React.FC = () => {
 
     // Payment State
     const [paymentStatuses, setPaymentStatuses] = useState<Record<string, PaymentStatus>>({});
-    const [paymentStats, setPaymentStats] = useState({ eligible: 0, paidGsb: 0, paidEk: 0 });
+    const [paymentStats, setPaymentStats] = useState<{
+        eligible: number;
+        totalAmount: number;
+        paidAmount: number;
+        details: any[];
+    }>({ eligible: 0, totalAmount: 0, paidAmount: 0, details: [] });
 
     // Theme State
     const [theme, setTheme] = useState<Theme>(() => {
@@ -82,6 +86,10 @@ const App: React.FC = () => {
 
     // Manual Upload Mode
     const [showManualUpload, setShowManualUpload] = useState(false);
+
+    // Accordion State
+    const [activeExpanded, setActiveExpanded] = useState(true);
+    const [pastExpanded, setPastExpanded] = useState(false);
 
     // Theme Logic
     useEffect(() => {
@@ -270,23 +278,68 @@ const App: React.FC = () => {
     // Calculate Payment Stats whenever matches or statuses change
     useEffect(() => {
         let eligible = 0;
-        let gsb = 0;
-        let ek = 0;
+        let totalAmount = 0;
+        let paidAmount = 0;
+        const details: any[] = [];
 
         matches.forEach(match => {
-            // Only count past matches for payment stats
-            const matchDate = parseDate(match.date);
             const isPast = isPastDate(match.date, match.time);
-
             if (isPast && isMatchEligibleForPayment(match)) {
-                eligible++;
                 const id = getMatchId(match);
-                if (paymentStatuses[id]?.gsbPaid) gsb++;
-                if (paymentStatuses[id]?.ekPaid) ek++;
+                const status = paymentStatuses[id];
+
+                // Only count in hakediş if the user has taken some action on this match
+                const hasAction = status && (status.gsbPaid || status.ekPaid || status.isCustomFeeSet);
+
+                if (hasAction) {
+                    eligible++;
+                    const pType = getPaymentType(match);
+                    let mGsbHakedis = 0;
+                    let mEkHakedis = 0;
+                    let mGsbOdenen = 0;
+                    let mEkOdenen = 0;
+
+                    // GSB Logic
+                    if (pType === PaymentType.STANDARD || pType === PaymentType.GSB_ONLY) {
+                        mGsbHakedis = PAYMENT_RATES.GSB;
+                        if (status.gsbPaid) mGsbOdenen = PAYMENT_RATES.GSB;
+                    }
+
+                    // EK Logic
+                    if (pType === PaymentType.STANDARD || pType === PaymentType.CUSTOM_FEE) {
+                        const rate = (pType === PaymentType.CUSTOM_FEE && status.customFee) ? status.customFee : PAYMENT_RATES.EK;
+                        mEkHakedis = rate;
+                        if (status.ekPaid) mEkOdenen = rate;
+                    }
+
+                    totalAmount += (mGsbHakedis + mEkHakedis);
+                    paidAmount += (mGsbOdenen + mEkOdenen);
+
+                    details.push({
+                        id,
+                        teamA: match.teamA,
+                        teamB: match.teamB,
+                        date: match.date,
+                        gsbAmount: mGsbHakedis,
+                        gsbPaid: !!status.gsbPaid,
+                        ekAmount: mEkHakedis,
+                        ekPaid: !!status.ekPaid,
+                        total: mGsbHakedis + mEkHakedis
+                    });
+                }
             }
         });
 
-        setPaymentStats({ eligible, paidGsb: gsb, paidEk: ek });
+        setPaymentStats({
+            eligible,
+            totalAmount,
+            paidAmount,
+            details: details.sort((a, b) => {
+                const dateA = parseDate(a.date)?.getTime() || 0;
+                const dateB = parseDate(b.date)?.getTime() || 0;
+                return dateB - dateA;
+            })
+        });
     }, [matches, paymentStatuses, currentTime]);
 
     // Toggle payment status handler
@@ -303,8 +356,8 @@ const App: React.FC = () => {
                 newStatus = {
                     ...currentStatus,
                     ekPaid: !currentStatus.ekPaid,
-                    // If custom fee is provided, update it. If unchecking, keep it or handle as needed. 
-                    // For now resetting if unpaying? No, keep it. 
+                    // If custom fee is provided, update it. If unchecking, keep it or handle as needed.
+                    // For now resetting if unpaying? No, keep it.
                     customFee: customFee !== undefined ? customFee : currentStatus.customFee,
                     isCustomFeeSet: customFee !== undefined ? true : currentStatus.isCustomFeeSet
                 };
@@ -580,9 +633,9 @@ const App: React.FC = () => {
                         <div className="p-6">
                             <FeeTable
                                 eligibleCount={paymentStats.eligible}
-                                paidGsbCount={paymentStats.paidGsb}
-                                paidEkCount={paymentStats.paidEk}
-                                paymentStatuses={paymentStatuses}
+                                totalAmount={paymentStats.totalAmount}
+                                paidAmount={paymentStats.paidAmount}
+                                details={paymentStats.details}
                             />
                         </div>
                     </div>
@@ -653,7 +706,10 @@ const App: React.FC = () => {
                     <div className="flex items-center gap-4">
                         <div className="relative">
                             <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-base shadow-md ring-4 ring-blue-50 dark:ring-blue-900">
-                                {user.displayName ? user.displayName.substring(0, 2).toUpperCase() : 'UR'}
+                                {user.displayName ?
+                                    user.displayName.split(' ').map(name => name[0]).join('').toUpperCase()
+                                    : 'UR'
+                                }
                             </div>
                         </div>
                         <div>
@@ -671,21 +727,96 @@ const App: React.FC = () => {
 
             <main className="max-w-5xl mx-auto px-4 py-8">
 
-                {/* Show Fee Table if there are eligible matches */}
                 {/* Removed FeeTable from here, moved to modal */}
 
                 <div className="space-y-6">
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex items-center justify-between transition-colors duration-300">
-                            <div>
-                                <div className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Aktif Görevler</div>
-                                <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{activeMatchCount}</div>
+                    <div className="flex flex-col gap-3">
+                        {/* Aktif Görevler Banner Button */}
+                        <button
+                            onClick={() => setActiveExpanded(!activeExpanded)}
+                            style={{
+                                backgroundColor: '#ee6730',
+                                backgroundImage: 'radial-gradient(rgba(0,0,0,0.3) 15%, transparent 16%)',
+                                backgroundSize: '8px 8px',
+                                backgroundPosition: '0 0'
+                            }}
+                            className="py-3 px-6 rounded-2xl border-2 border-orange-800 shadow-lg flex items-center justify-between transform hover:scale-[1.01] transition-all duration-300 w-full group"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="bg-black/20 p-2 rounded-lg border border-white/10 text-white">
+                                    <Briefcase size={18} />
+                                </div>
+                                <span className="text-white text-sm font-black uppercase tracking-widest drop-shadow-md">
+                                    Aktif Görevler
+                                </span>
                             </div>
-                            <div className="bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 p-3 rounded-lg">
-                                <Briefcase size={24} />
+                            <div className="flex items-center gap-4">
+                                <div className="text-2xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] bg-black/30 px-5 py-1 rounded-xl border border-white/20">
+                                    {activeMatches.length}
+                                </div>
+                                <div className="text-white/70 group-hover:text-white transition-colors">
+                                    {activeExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+                                </div>
                             </div>
-                        </div>
+                        </button>
+
+                        {/* Aktif Müsabakalar List */}
+                        {activeExpanded && activeMatches.length > 0 && (
+                            <div className="animate-in slide-in-from-top-2 duration-300">
+                                <MatchList
+                                    matches={activeMatches}
+                                    title=""
+                                    variant="active"
+                                    paymentStatuses={paymentStatuses}
+                                    onTogglePayment={togglePaymentStatus}
+                                    userEmail={user.email}
+                                />
+                            </div>
+                        )}
+
+                        {/* Geçmiş Müsabakalar Banner Button */}
+                        <button
+                            onClick={() => setPastExpanded(!pastExpanded)}
+                            style={{
+                                backgroundColor: '#334155',
+                                backgroundImage: 'radial-gradient(rgba(255,255,255,0.1) 15%, transparent 16%)',
+                                backgroundSize: '8px 8px',
+                                backgroundPosition: '0 0'
+                            }}
+                            className="py-3 px-6 rounded-2xl border-2 border-slate-900 shadow-md flex items-center justify-between transform hover:scale-[1.01] transition-all duration-300 w-full opacity-90 group"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="bg-white/10 p-2 rounded-lg border border-white/5 text-white">
+                                    <HistoryIcon size={18} />
+                                </div>
+                                <span className="text-white text-sm font-black uppercase tracking-widest drop-shadow-md">
+                                    Geçmiş Müsabakalar
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <div className="text-2xl font-black text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] bg-white/10 px-5 py-1 rounded-xl border border-white/10">
+                                    {pastMatches.length}
+                                </div>
+                                <div className="text-white/50 group-hover:text-white transition-colors">
+                                    {pastExpanded ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
+                                </div>
+                            </div>
+                        </button>
+
+                        {/* Geçmiş Müsabakalar List */}
+                        {pastExpanded && pastMatches.length > 0 && (
+                            <div className="animate-in slide-in-from-top-2 duration-300">
+                                <MatchList
+                                    matches={pastMatches}
+                                    title=""
+                                    variant="past"
+                                    paymentStatuses={paymentStatuses}
+                                    onTogglePayment={togglePaymentStatus}
+                                    userEmail={user.email}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {error && (
@@ -724,28 +855,6 @@ const App: React.FC = () => {
                                 }
                             </p>
                         </div>
-                    )}
-
-                    {activeMatches.length > 0 && (
-                        <MatchList
-                            matches={activeMatches}
-                            title="Aktif Müsabakalar"
-                            variant="active"
-                            paymentStatuses={paymentStatuses}
-                            onTogglePayment={togglePaymentStatus}
-                            userEmail={user.email}
-                        />
-                    )}
-
-                    {pastMatches.length > 0 && (
-                        <MatchList
-                            matches={pastMatches}
-                            title="Geçmiş Müsabakalar"
-                            variant="past"
-                            paymentStatuses={paymentStatuses}
-                            onTogglePayment={togglePaymentStatus}
-                            userEmail={user.email}
-                        />
                     )}
 
                     {activeMatches.length > 0 && (

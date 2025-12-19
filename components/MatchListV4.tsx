@@ -70,37 +70,41 @@ const MatchCard: React.FC<{
 
         {/* Mini Buttons Column */}
         <div className="flex flex-col gap-2 shrink-0">
-          {/* GSB Mini */}
-          <button
-            onClick={() => handleToggle('gsb')}
-            className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-          >
-            <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.gsbPaid ? 'bg-green-500 border-green-600' : 'bg-white border-gray-300'}`}>
-              {paymentStatus.gsbPaid && <CheckCircle2 size={14} className="text-white" />}
-            </div>
-            <span className={`text-[10px] font-black w-6 ${paymentStatus.gsbPaid ? 'text-red-600 line-through decoration-1' : 'text-black dark:text-white'}`}>
-              GSB
-            </span>
-          </button>
+          {/* GSB Mini - Hide for Special/Uni matches */}
+          {(paymentType === PaymentType.STANDARD || paymentType === PaymentType.GSB_ONLY) && (
+            <button
+              onClick={() => handleToggle('gsb')}
+              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+            >
+              <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.gsbPaid ? 'bg-green-500 border-green-600' : 'bg-white border-gray-300'}`}>
+                {paymentStatus.gsbPaid && <CheckCircle2 size={14} className="text-white" />}
+              </div>
+              <span className={`text-[10px] font-black w-6 ${paymentStatus.gsbPaid ? 'text-red-600 line-through decoration-1' : 'text-black dark:text-white'}`}>
+                GSB
+              </span>
+            </button>
+          )}
 
-          {/* EK Mini */}
-          <button
-            onClick={(e) => {
-              if (paymentType === PaymentType.CUSTOM_FEE && !paymentStatus.isCustomFeeSet) {
-                handleCustomFeeClick(e);
-              } else {
-                handleToggle('ek');
-              }
-            }}
-            className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-          >
-            <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.ekPaid ? 'bg-green-500 border-green-600' : 'bg-white border-gray-300'}`}>
-              {paymentStatus.ekPaid && <CheckCircle2 size={14} className="text-white" />}
-            </div>
-            <span className={`text-[10px] font-black w-6 text-center ${paymentStatus.ekPaid ? 'text-red-600 line-through decoration-1' : 'text-black dark:text-white'}`}>
-              EK
-            </span>
-          </button>
+          {/* EK Mini - Show for Standard or Custom Fee (Special/Uni) matches */}
+          {(paymentType === PaymentType.STANDARD || paymentType === PaymentType.CUSTOM_FEE) && (
+            <button
+              onClick={(e) => {
+                if (paymentType === PaymentType.CUSTOM_FEE && !paymentStatus.isCustomFeeSet) {
+                  handleCustomFeeClick(e);
+                } else {
+                  handleToggle('ek');
+                }
+              }}
+              className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+            >
+              <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.ekPaid ? 'bg-green-500 border-green-600' : 'bg-white border-gray-300'}`}>
+                {paymentStatus.ekPaid && <CheckCircle2 size={14} className="text-white" />}
+              </div>
+              <span className={`text-[10px] font-black w-6 text-center ${paymentStatus.ekPaid ? 'text-red-600 line-through decoration-1' : 'text-black dark:text-white'}`}>
+                {paymentStatus.customFee ? `${paymentStatus.customFee}₺` : 'EK'}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -130,9 +134,35 @@ const MatchCard: React.FC<{
               </span>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="text-red-700 dark:text-red-500 text-[10px] font-black uppercase tracking-widest border border-red-200 dark:border-red-900 px-2 py-0.5 rounded bg-red-50 dark:bg-red-950/30">
-                  {isFullyPaid ? 'ÖDEME ALINDI' : 'GÖREV TAMAMLANDI'}
-                </span>
+                {(() => {
+                  let label = 'GÖREV TAMAMLANDI';
+                  let isSuccess = false;
+
+                  if (paymentType === PaymentType.STANDARD) {
+                    if (paymentStatus.gsbPaid && paymentStatus.ekPaid) {
+                      label = 'ÖDEME ALINDI';
+                      isSuccess = true;
+                    } else if (paymentStatus.gsbPaid) {
+                      label = 'GSB ALINDI';
+                    } else if (paymentStatus.ekPaid) {
+                      label = 'EK ALINDI';
+                    }
+                  } else {
+                    if (isFullyPaid) {
+                      label = 'ÖDEME ALINDI';
+                      isSuccess = true;
+                    }
+                  }
+
+                  return (
+                    <span className={`text-[10px] font-black uppercase tracking-widest border px-2 py-0.5 rounded ${isSuccess
+                        ? 'text-green-700 dark:text-green-400 border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/30'
+                        : 'text-red-700 dark:text-red-500 border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30'
+                      }`}>
+                      {label}
+                    </span>
+                  );
+                })()}
               </div>
             )}
           </div>
@@ -154,15 +184,17 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
 
   return (
     <div className={`${variant === 'past' ? 'opacity-80' : ''} mb-6`}>
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-sm font-black text-black dark:text-white uppercase tracking-tight flex items-center gap-1.5">
-          {variant === 'active' ? <CheckCircle2 size={14} className="text-green-600" /> : <History size={14} className="text-gray-500" />}
-          {title}
-        </h2>
-        <span className={`text-[10px] font-black ${variant === 'active' ? 'bg-[#ee6730] text-white' : 'bg-gray-100 text-gray-600'} px-2 py-0.5 rounded shadow-sm`}>
-          {sortedMatches.length}
-        </span>
-      </div>
+      {title && (
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-sm font-black text-black dark:text-white uppercase tracking-tight flex items-center gap-1.5">
+            {variant === 'active' ? <CheckCircle2 size={14} className="text-green-600" /> : <History size={14} className="text-gray-500" />}
+            {title}
+          </h2>
+          <span className={`text-[10px] font-black ${variant === 'active' ? 'bg-[#ee6730] text-white' : 'bg-gray-100 text-gray-600'} px-2 py-0.5 rounded shadow-sm`}>
+            {sortedMatches.length}
+          </span>
+        </div>
+      )}
       <div className="grid grid-cols-1 gap-1">
         {sortedMatches.map((match, index) => {
           const id = getMatchId(match);
