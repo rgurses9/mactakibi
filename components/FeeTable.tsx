@@ -90,10 +90,10 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
 
             <button
                 onClick={() => setShowBreakdown(!showBreakdown)}
-                className="w-full py-2 px-4 rounded-xl border border-gray-200 dark:border-gray-800 flex items-center justify-between text-xs font-black uppercase text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="w-full py-1.5 px-4 rounded-lg border border-gray-100 dark:border-gray-800 flex items-center justify-between text-[6px] font-black uppercase text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
                 <span>Maç Bazlı Detayları Gör</span>
-                {showBreakdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                {showBreakdown ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
             </button>
 
             {showBreakdown && (
