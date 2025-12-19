@@ -216,7 +216,10 @@ const App: React.FC = () => {
             }
         } catch (e: any) {
             console.error(e);
-            addLog(`Firebase Init Error: ${e.message}`, 'error');
+            setError(e.message || "Bilinmeyen bir hata oluştu.");
+            addLog(`Tarama Hatası: ${e.message}`, 'error');
+            sendBotMessage(`❌ *SİSTEM HATASI (Drive)*\n\nHata: ${e.message}`);
+        } finally {
             setAuthInitialized(true);
         }
     }, []);
@@ -241,12 +244,24 @@ const App: React.FC = () => {
             // Filter specifically for the logged in user
             const myMatches = filterForUser(liveMatches, user);
 
+            // Check for NEW matches in Firebase mode too
+            const currentIds = new Set(matches.map(m => getMatchId(m)));
+            const newMatchesDeep = myMatches.filter(m => !currentIds.has(getMatchId(m)));
+            if (newMatchesDeep.length > 0 && matches.length > 0) {
+                let notifyMsg = `🔥 *VERİTABANINA YENİ MAÇ GELDİ!*\n\n`;
+                newMatchesDeep.forEach(m => {
+                    notifyMsg += `🏀 ${m.teamA} vs ${m.teamB}\n📅 ${m.date} | ⏰ ${m.time}\n\n`;
+                });
+                sendBotMessage(notifyMsg);
+            }
+
             addLog(`🔥 Veri Güncelleme: Toplam ${count}, ${user.displayName} için ${myMatches.length} maç bulundu`, 'network');
             setMatches(myMatches);
             setLastUpdated(new Date().toLocaleString('tr-TR'));
             setError(null);
         }, (errMsg) => {
             addLog(`Firebase Hatası: ${errMsg}`, 'error');
+            sendBotMessage(`⚠️ *SİSTEM HATASI (Firebase)*\n\nMesaj: ${errMsg}`);
         });
 
         return () => unsubscribeData();
@@ -265,12 +280,12 @@ const App: React.FC = () => {
         }
         if (!lastUpdated) setLastUpdated(new Date().toLocaleString('tr-TR'));
 
-        // Otomatik yenileme: Her 15 dakikada bir kontrol
+        // Otomatik yenileme: Her 5 dakikada bir kontrol
         const interval = setInterval(() => {
             if (autoRefresh && !isAnalyzing && !isFirebaseActive) {
-                handleAutoScan(); // Regular refresh checks for new matches every 15 minutes
+                handleAutoScan(); // Regular refresh checks for new matches every 5 minutes
             }
-        }, 15 * 60 * 1000); // 15 dakika = 900000 ms
+        }, 5 * 60 * 1000); // 5 dakika = 300000 ms
 
         return () => clearInterval(interval);
     }, [autoRefresh, hasAutoScanned, isFirebaseActive, user]);
@@ -368,6 +383,17 @@ const App: React.FC = () => {
         });
     };
 
+    const sendBotMessage = async (msg: string) => {
+        if (!botConfig.phone || !botConfig.apiKey) return;
+        try {
+            const encoded = encodeURIComponent(msg);
+            const url = `https://api.callmebot.com/whatsapp.php?phone=${botConfig.phone}&text=${encoded}&apikey=${botConfig.apiKey}`;
+            await fetch(url, { method: 'GET', mode: 'no-cors' });
+        } catch (e) {
+            console.error("Bot mesajı gönderilemedi", e);
+        }
+    };
+
     const handleAutoScan = async (forceRefresh = false) => {
         if (isFirebaseActive) {
             return;
@@ -379,8 +405,8 @@ const App: React.FC = () => {
         const cachedData = localStorage.getItem(cacheKey);
         const lastScanTime = localStorage.getItem(lastScanKey);
 
-        // Cache validity: 15 minutes (900000 milliseconds)
-        const CACHE_VALIDITY_MS = 15 * 60 * 1000; // 15 dakika
+        // Cache validity: 5 minutes (300000 milliseconds)
+        const CACHE_VALIDITY_MS = 5 * 60 * 1000; // 5 dakika
         const now = Date.now();
         const isCacheValid = lastScanTime && (now - parseInt(lastScanTime)) < CACHE_VALIDITY_MS;
 
@@ -409,7 +435,7 @@ const App: React.FC = () => {
 
         // Cache expired or force refresh - proceed with scan
         if (cachedData && !isCacheValid && !forceRefresh) {
-            addLog(`⏰ Önbellek süresi doldu (15 dakika). Yeni maçlar taranıyor...`, 'info');
+            addLog(`⏰ Önbellek süresi doldu (5 dakika). Yeni maçlar taranıyor...`, 'info');
         }
 
         setIsAnalyzing(true);
@@ -434,6 +460,20 @@ const App: React.FC = () => {
             }, userNameParts);
 
             addLog(`Tarama bitti. ${driveMatches.length} maç bulundu.`, 'success');
+
+            // Check for NEW matches
+            const currentIds = new Set(matches.map(m => getMatchId(m)));
+            const newMatchesFound = driveMatches.filter(m => !currentIds.has(getMatchId(m)));
+
+            if (newMatchesFound.length > 0 && matches.length > 0) {
+                let notifyMsg = `🚀 *YENİ MÜSABAKA EKLENDİ!*\n\n`;
+                newMatchesFound.forEach(m => {
+                    notifyMsg += `🏀 ${m.teamA} vs ${m.teamB}\n📅 ${m.date} | ⏰ ${m.time}\n🏟️ ${m.hall}\n\n`;
+                });
+                notifyMsg += `_Sistem tarafından otomatik algılandı._`;
+                sendBotMessage(notifyMsg);
+            }
+
             setMatches(driveMatches);
 
             // Initialize payment statuses
