@@ -128,7 +128,7 @@ const MatchCard: React.FC<{
                     </svg>
                   )}
                 </div>
-                <span className={`text-xs font-bold ${paymentStatus.gsbPaid ? 'text-red-600 dark:text-red-400' : 'text-black dark:text-white'}`}>GSB</span>
+                <span className={`text-xs font-bold ${paymentStatus.gsbPaid ? 'text-red-600 dark:text-red-400 line-through' : 'text-black dark:text-white'}`}>GSB</span>
               </button>
             )}
 
@@ -154,7 +154,7 @@ const MatchCard: React.FC<{
                     </svg>
                   )}
                 </div>
-                <span className="text-xs font-bold text-black dark:text-white">
+                <span className={`text-xs font-bold ${paymentStatus.ekPaid ? 'line-through' : ''} text-black dark:text-white`}>
                   {paymentStatus.ekPaid ? 'Ödeme Tamamlandı' : 'EK'}
                 </span>
               </button>
