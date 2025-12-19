@@ -17,10 +17,11 @@ interface FeeTableProps {
     eligibleCount: number;
     totalAmount: number;
     paidAmount: number;
+    pendingCount: number;
     details: MatchPaymentDetail[];
 }
 
-const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmount, details }) => {
+const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmount, pendingCount, details }) => {
     const [showBreakdown, setShowBreakdown] = useState(false);
     const remaining = totalAmount - paidAmount;
 
@@ -35,9 +36,9 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
     if (eligibleCount === 0) return (
         <div className="text-center py-10 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800">
             <div className="text-3xl mb-2">📒</div>
-            <div className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-widest">Hesaplama İçin Veri Bekleniyor</div>
+            <div className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-widest">Hakediş Verisi Bulunmuyor</div>
             <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-2 px-6">
-                Lütfen maç kartları üzerinden GSB veya EK butonlarını işaretleyerek veya ücret girerek hakediş tablonuzu oluşturun.
+                Size atanmış geçmiş bir müsabaka bulunamadığı için hesaplama yapılamıyor.
             </p>
         </div>
     );
@@ -48,11 +49,18 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
             <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    <h3 className="text-xs font-black text-gray-800 dark:text-gray-200 uppercase tracking-tighter">İşlem Gelen Müsabaka Özeti</h3>
+                    <h3 className="text-xs font-black text-gray-800 dark:text-gray-200 uppercase tracking-tighter">Otomatik Hakediş Özeti</h3>
                 </div>
-                <span className="text-[10px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase">
-                    {eligibleCount} Müsabaka
-                </span>
+                <div className="flex gap-2">
+                    <span className="text-[9px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase">
+                        {eligibleCount} Toplam Maç
+                    </span>
+                    {pendingCount > 0 && (
+                        <span className="text-[9px] font-black bg-red-100 text-red-700 px-2 py-0.5 rounded-full uppercase">
+                            {pendingCount} Bekleyen Ödeme
+                        </span>
+                    )}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -68,6 +76,9 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
                     <div className="text-[10px] font-black uppercase tracking-widest mb-1 opacity-80">Toplam Hakediş</div>
                     <div className="text-2xl font-black drop-shadow-md">
                         {formatCurrency(totalAmount)}
+                    </div>
+                    <div className="text-[8px] font-bold uppercase mt-1 opacity-70">
+                        Atanan Tüm Maçların Toplamı
                     </div>
                 </div>
 
@@ -155,7 +166,7 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
 
             <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800/50 flex items-center gap-3">
                 <p className="text-[10px] text-blue-800 dark:text-blue-300 font-bold leading-tight">
-                    💡 Maç kartlarında GSB/EK kutusunu işaretlediğinizde o maç tabloya eklenir. Yeşil ikonlar ödenmiş, gri saat ikonları bekleyen ödemeleri temsil eder.
+                    💡 Hakedişler size atanan tüm maçlar baz alınarak otomatik hesaplanır. Kartlardaki ödeme kutuları ise sadece cebinize giren parayı (Ödenen) takip etmeniz içindir.
                 </p>
             </div>
         </div>

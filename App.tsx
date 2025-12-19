@@ -75,8 +75,9 @@ const App: React.FC = () => {
         eligible: number;
         totalAmount: number;
         paidAmount: number;
+        pendingCount: number;
         details: any[];
-    }>({ eligible: 0, totalAmount: 0, paidAmount: 0, details: [] });
+    }>({ eligible: 0, totalAmount: 0, paidAmount: 0, pendingCount: 0, details: [] });
 
     // Theme State
     const [theme, setTheme] = useState<Theme>(() => {
@@ -293,6 +294,7 @@ const App: React.FC = () => {
     // Calculate Payment Stats whenever matches or statuses change
     useEffect(() => {
         let eligible = 0;
+        let pendingCount = 0;
         let totalAmount = 0;
         let paidAmount = 0;
         const details: any[] = [];
@@ -301,47 +303,46 @@ const App: React.FC = () => {
             const isPast = isPastDate(match.date, match.time);
             if (isPast && isMatchEligibleForPayment(match)) {
                 const id = getMatchId(match);
-                const status = paymentStatuses[id];
+                const status = paymentStatuses[id] || { gsbPaid: false, ekPaid: false };
 
-                // Only count in hakediş if the user has taken some action on this match
-                const hasAction = status && (status.gsbPaid || status.ekPaid || status.isCustomFeeSet);
+                eligible++;
+                const pType = getPaymentType(match);
+                let mGsbHakedis = 0;
+                let mEkHakedis = 0;
+                let mGsbOdenen = 0;
+                let mEkOdenen = 0;
 
-                if (hasAction) {
-                    eligible++;
-                    const pType = getPaymentType(match);
-                    let mGsbHakedis = 0;
-                    let mEkHakedis = 0;
-                    let mGsbOdenen = 0;
-                    let mEkOdenen = 0;
-
-                    // GSB Logic
-                    if (pType === PaymentType.STANDARD || pType === PaymentType.GSB_ONLY) {
-                        mGsbHakedis = PAYMENT_RATES.GSB;
-                        if (status.gsbPaid) mGsbOdenen = PAYMENT_RATES.GSB;
-                    }
-
-                    // EK Logic
-                    if (pType === PaymentType.STANDARD || pType === PaymentType.CUSTOM_FEE) {
-                        const rate = (pType === PaymentType.CUSTOM_FEE && status.customFee) ? status.customFee : PAYMENT_RATES.EK;
-                        mEkHakedis = rate;
-                        if (status.ekPaid) mEkOdenen = rate;
-                    }
-
-                    totalAmount += (mGsbHakedis + mEkHakedis);
-                    paidAmount += (mGsbOdenen + mEkOdenen);
-
-                    details.push({
-                        id,
-                        teamA: match.teamA,
-                        teamB: match.teamB,
-                        date: match.date,
-                        gsbAmount: mGsbHakedis,
-                        gsbPaid: !!status.gsbPaid,
-                        ekAmount: mEkHakedis,
-                        ekPaid: !!status.ekPaid,
-                        total: mGsbHakedis + mEkHakedis
-                    });
+                // GSB Logic
+                if (pType === PaymentType.STANDARD || pType === PaymentType.GSB_ONLY) {
+                    mGsbHakedis = PAYMENT_RATES.GSB;
+                    if (status.gsbPaid) mGsbOdenen = PAYMENT_RATES.GSB;
                 }
+
+                // EK Logic
+                if (pType === PaymentType.STANDARD || pType === PaymentType.CUSTOM_FEE) {
+                    const rate = (pType === PaymentType.CUSTOM_FEE && status.customFee) ? status.customFee : PAYMENT_RATES.EK;
+                    mEkHakedis = rate;
+                    if (status.ekPaid) mEkOdenen = rate;
+                }
+
+                const mTotalHakedis = mGsbHakedis + mEkHakedis;
+                const mTotalOdenen = mGsbOdenen + mEkOdenen;
+
+                totalAmount += mTotalHakedis;
+                paidAmount += mTotalOdenen;
+                if (mTotalOdenen < mTotalHakedis) pendingCount++;
+
+                details.push({
+                    id,
+                    teamA: match.teamA,
+                    teamB: match.teamB,
+                    date: match.date,
+                    gsbAmount: mGsbHakedis,
+                    gsbPaid: !!status.gsbPaid,
+                    ekAmount: mEkHakedis,
+                    ekPaid: !!status.ekPaid,
+                    total: mTotalHakedis
+                });
             }
         });
 
@@ -349,6 +350,7 @@ const App: React.FC = () => {
             eligible,
             totalAmount,
             paidAmount,
+            pendingCount, // Add pendingCount here
             details: details.sort((a, b) => {
                 const dateA = parseDate(a.date)?.getTime() || 0;
                 const dateB = parseDate(b.date)?.getTime() || 0;
@@ -675,6 +677,7 @@ const App: React.FC = () => {
                                 eligibleCount={paymentStats.eligible}
                                 totalAmount={paymentStats.totalAmount}
                                 paidAmount={paymentStats.paidAmount}
+                                pendingCount={paymentStats.pendingCount}
                                 details={paymentStats.details}
                             />
                         </div>
