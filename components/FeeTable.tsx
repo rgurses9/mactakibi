@@ -83,17 +83,26 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
                 </div>
 
                 {/* 2. TOPLAM ÖDENEN */}
-                <div className="bg-white dark:bg-gray-900 p-4 rounded-2xl border-2 border-gray-200 dark:border-gray-800 shadow-sm">
-                    <div className="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Toplam Ödenen</div>
-                    <div className="text-2xl font-black text-green-600 dark:text-green-400">
-                        {formatCurrency(paidAmount)}
+                <div
+                    style={{
+                        backgroundColor: '#334155',
+                        backgroundImage: 'radial-gradient(rgba(255,255,255,0.1) 15%, transparent 16%)',
+                        backgroundSize: '6px 6px'
+                    }}
+                    className="p-4 rounded-2xl border-2 border-slate-900 shadow-lg text-white"
+                >
+                    <div className="text-[10px] font-black uppercase tracking-widest mb-1 opacity-80">Toplam Ödenen</div>
+                    <div className="bg-white/10 px-3 py-1 rounded-xl border border-white/10 inline-block">
+                        <div className="text-2xl font-black text-green-400 drop-shadow-sm">
+                            {formatCurrency(paidAmount)}
+                        </div>
                     </div>
                 </div>
 
                 {/* 3. KALAN ALACAK */}
-                <div className="bg-black dark:bg-slate-950 p-4 rounded-2xl border-2 border-slate-800 shadow-xl">
-                    <div className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">Kalan Alacak</div>
-                    <div className="text-2xl font-black text-white drop-shadow-sm">
+                <div className="bg-red-50 dark:bg-red-950/30 p-4 rounded-2xl border-2 border-red-100 dark:border-red-900 shadow-sm transition-colors">
+                    <div className="text-[10px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest mb-1">Kalan Alacak</div>
+                    <div className="text-2xl font-black text-red-700 dark:text-red-300 drop-shadow-sm">
                         {formatCurrency(remaining)}
                     </div>
                 </div>

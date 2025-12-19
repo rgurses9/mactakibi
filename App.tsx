@@ -209,6 +209,12 @@ const App: React.FC = () => {
                 const unsubscribeAuth = subscribeToAuthChanges((currentUser) => {
                     setUser(currentUser);
                     setAuthInitialized(true);
+
+                    // Load payment statuses immediately after user is identified
+                    if (currentUser && currentUser.email) {
+                        const statuses = getAllPaymentStatuses(currentUser.email);
+                        setPaymentStatuses(statuses);
+                    }
                 });
 
                 return () => {

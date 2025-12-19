@@ -136,7 +136,18 @@ const scanFolderRecursive = async (
 
     // Separate folders and files
     const subFolders = items.filter(i => i.mimeType === 'application/vnd.google-apps.folder');
-    const files = items.filter(i => i.mimeType !== 'application/vnd.google-apps.folder');
+    // Filter out files starting with "hafta"
+    const files = items.filter(i =>
+      i.mimeType !== 'application/vnd.google-apps.folder' &&
+      !i.name.toLocaleLowerCase('tr-TR').startsWith('hafta')
+    );
+
+    // Logging for Week folders
+    subFolders.forEach(folder => {
+      if (folder.name.toLocaleLowerCase('tr-TR').includes('hafta')) {
+        onProgress(`📁 Yeni hafta klasörü algılandı: ${folder.name} aranıyor...`, 'info');
+      }
+    });
 
     if (files.length > 0) {
       onProgress(`${files.length} dosya taranıyor...`, 'info');
