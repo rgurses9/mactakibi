@@ -81,11 +81,11 @@ const WhatsAppSender: React.FC<WhatsAppSenderProps> = ({ matches, config }) => {
         <button
           onClick={sendToWhatsApp}
           disabled={sending || matches.length === 0}
-          className={`w-full py-4 px-6 rounded-xl font-bold text-white flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 ${status === 'success'
-              ? 'bg-green-500'
-              : sending
-                ? 'bg-green-400'
-                : 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400'
+          className={`w-full py-4 px-6 rounded-xl font-bold text-black flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 ${status === 'success'
+            ? 'bg-green-500'
+            : sending
+              ? 'bg-green-400'
+              : 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400'
             }`}
         >
           {sending ? (
@@ -100,7 +100,7 @@ const WhatsAppSender: React.FC<WhatsAppSenderProps> = ({ matches, config }) => {
 
       {isConfigured && (
         <div className="mt-2 text-center">
-          <p className="text-[10px] text-gray-400">
+          <p className="text-[10px] text-black dark:text-white font-bold uppercase">
             Hedef: {config.phone.replace(/.(?=.{4})/g, '*')} • Servis: CallMeBot
           </p>
         </div>
