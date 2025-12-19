@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import MatchList from './components/MatchList';
+// v2.0 - Updated card design
+import MatchList from './components/MatchListNew';
 import WhatsAppSender from './components/WhatsAppSender';
 import ScriptGenerator from './components/ScriptGenerator';
 import FirebaseSettings from './components/FirebaseSettings';
@@ -275,7 +276,7 @@ const App: React.FC = () => {
         matches.forEach(match => {
             // Only count past matches for payment stats
             const matchDate = parseDate(match.date);
-            const isPast = isPastDate(matchDate, currentTime);
+            const isPast = isPastDate(match.date, match.time);
 
             if (isPast && isMatchEligibleForPayment(match)) {
                 eligible++;

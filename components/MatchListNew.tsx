@@ -36,6 +36,7 @@ const MatchCard: React.FC<{
     }
   };
 
+  // Updated design - single card layout
   return (
     <>
       <div
@@ -43,7 +44,7 @@ const MatchCard: React.FC<{
           backgroundColor: isGreenMode ? '#ffffff' : '#f9fafb',
           borderColor: isGreenMode ? '#e5e7eb' : '#d1d5db',
         }}
-        className={`group rounded-xl border-2 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 relative dark:bg-gray-900 dark:border-gray-800
+        className={`group rounded-xl border-2 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 relative dark:bg-gray-900 dark:border-gray-800 p-4
           ${isGreenMode ? 'ring-1 ring-gray-200 dark:ring-gray-700' : ''}
         `}
       >
@@ -67,7 +68,7 @@ const MatchCard: React.FC<{
                       </svg>
                     )}
                   </div>
-                  <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">GSB</span>
+                  <span className="text-xs font-black text-black dark:text-white">GSB</span>
                 </button>
               )}
 
@@ -93,7 +94,7 @@ const MatchCard: React.FC<{
                       </svg>
                     )}
                   </div>
-                  <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">EK</span>
+                  <span className="text-xs font-black text-black dark:text-white">EK</span>
                 </button>
               )}
 
@@ -107,140 +108,168 @@ const MatchCard: React.FC<{
           </div>
         )}
 
-        {match.sourceFile && (
-          <div style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb', color: '#111827' }} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
-            <FileText size={12} />
-            <span className="truncate max-w-[200px]">{match.sourceFile}</span>
+
+        {/* Payment Type Badge with Checkbox */}
+        {paymentType !== PaymentType.STANDARD && (
+          <div className="flex items-center gap-2 mb-2">
+            {/* GSB Badge with Checkbox */}
+            {paymentType === PaymentType.GSB_ONLY && onTogglePayment && (
+              <button
+                onClick={() => onTogglePayment(matchId, 'gsb')}
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              >
+                <div className={`w-40 h-40 rounded-lg border-8 flex items-center justify-center ${paymentStatus.gsbPaid
+                  ? 'bg-green-500 border-green-600'
+                  : 'bg-white dark:bg-gray-700 border-gray-400 dark:border-gray-500'
+                  }`}>
+                  {paymentStatus.gsbPaid && (
+                    <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <span className={`text-xs font-bold ${paymentStatus.gsbPaid ? 'text-red-600 dark:text-red-400' : 'text-black dark:text-white'}`}>GSB</span>
+              </button>
+            )}
+
+            {/* EK Badge with Checkbox */}
+            {paymentType === PaymentType.CUSTOM_FEE && onTogglePayment && (
+              <button
+                onClick={() => {
+                  if (!paymentStatus.isCustomFeeSet) {
+                    handleCustomFeeClick();
+                  } else {
+                    onTogglePayment(matchId, 'ek');
+                  }
+                }}
+                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+              >
+                <div className={`w-40 h-40 rounded-lg border-8 flex items-center justify-center ${paymentStatus.ekPaid
+                  ? 'bg-green-500 border-green-600'
+                  : 'bg-white dark:bg-gray-700 border-gray-400 dark:border-gray-500'
+                  }`}>
+                  {paymentStatus.ekPaid && (
+                    <svg className="w-20 h-20 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+                <span className="text-xs font-bold text-black dark:text-white">
+                  {paymentStatus.ekPaid ? 'Ödeme Tamamlandı' : 'EK'}
+                </span>
+              </button>
+            )}
+
+            {/* ÖZEL LİG Badge (no checkbox) */}
+            {paymentType === PaymentType.NONE && (
+              <span className="text-xs font-bold text-black dark:text-white">ÖZEL LİG VE ÜNİVERSİTE (2025 - 2026 )</span>
+            )}
           </div>
         )}
+
+        {/* Category & Group */}
+        <div className="text-sm font-black uppercase text-black dark:text-white mb-2">
+          {match.category} {match.group ? `• ${match.group}` : ''}
+        </div>
+
+        {/* Hall */}
+        <div className="flex items-center gap-1 text-sm font-black text-black dark:text-white mb-3">
+          <MapPin size={14} />
+          {match.hall}
+        </div>
+
+        {/* Time & Date */}
+        <div className="flex items-center gap-3 mb-3">
+          <div className="text-lg font-black text-black dark:text-white">
+            {match.time}
+          </div>
+          <div className="text-sm font-black text-black dark:text-white">
+            {formatDate(match.date)}
+          </div>
+        </div>
+
+        {/* Teams */}
+        <div className="flex items-center justify-center gap-3 mb-4">
+          <span className="text-sm font-black text-black dark:text-white">{match.teamA}</span>
+          <div className="text-sm font-black text-black dark:text-white px-2">VS</div>
+          <span className="text-sm font-black text-black dark:text-white">{match.teamB}</span>
+        </div>
+
+        {/* Duty - Only show Rıfat Gürses's duty */}
+        {[
+          { label: match.scorerLabel || 'Görevli 1', value: match.scorer },
+          { label: match.timerLabel || 'Görevli 2', value: match.timer },
+          { label: match.shotClockLabel || 'Görevli 3', value: match.shotClock },
+        ].map((duty, i) => {
+          const upperValue = duty.value?.toLocaleUpperCase('tr-TR') || '';
+          const isRifat = upperValue.includes('RIFAT') || upperValue.includes('GÜRSES');
+
+          // Only render if this is Rıfat Gürses's duty
+          if (!isRifat) return null;
+
+          return (
+            <div
+              key={i}
+              style={{
+                backgroundColor: isGreenMode ? '#facc15' : '#fde047',
+                borderColor: isGreenMode ? '#ca8a04' : '#eab308',
+              }}
+              className="px-4 py-2 rounded-lg border-2 flex flex-col items-center justify-center text-center"
+            >
+              <span className="text-xs uppercase font-black tracking-wider mb-1 text-black">
+                {duty.label}
+              </span>
+              <span className="text-sm font-black text-black">
+                {duty.value || '-'}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Bottom: Match Details */}
-      <div className="p-3">
-        {/* Category + Time/Date + Hall + Teams - All in one row */}
-        <div style={{ backgroundColor: '#f9fafb' }} className="flex items-center justify-center gap-3 mb-2 p-2.5 rounded-lg dark:bg-gray-800">
-          {/* Left: Category & Hall */}
-          <div className="flex flex-col gap-1 items-center">
-            <div className="text-xs font-black uppercase flex items-center gap-0 text-center text-black">
-              <span className={`w-1.5 h-1.5 rounded-full ${isGreenMode ? 'bg-green-500' : 'bg-orange-500'}`}></span>
-              {match.category} {match.group ? `• ${match.group}` : ''}
+      {/* Ödemesi Tamamlandı Section - Shows when both payments complete */}
+      {((paymentType === PaymentType.STANDARD && paymentStatus.gsbPaid && paymentStatus.ekPaid) ||
+        (paymentType === PaymentType.GSB_ONLY && paymentStatus.gsbPaid) ||
+        (paymentType === PaymentType.CUSTOM_FEE && paymentStatus.ekPaid)) && (
+          <div className="mt-3 bg-green-100 border-2 border-green-500 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm font-bold text-green-800">Ödemesi Tamamlandı</span>
             </div>
-            <div className="flex items-center gap-0 text-xs font-black text-center text-black">
-              <MapPin size={12} />
-              {match.hall}
-            </div>
-          </div>
 
-          {/* Center: Time & Date */}
-          <div className="flex flex-col items-center gap-1">
-            <div className="text-xs font-black text-center text-black">
-              {match.time}
-            </div>
-            <div className="text-xs font-black bg-orange-200 dark:bg-orange-700 border border-orange-400 dark:border-orange-600 px-2 py-0.5 rounded text-center text-black">
-              {formatDate(match.date)}
-            </div>
-          </div>
+            {/* Duty Assignment - Only Rıfat Gürses's duty */}
+            <div className="flex justify-center">
+              {[
+                { label: match.scorerLabel || 'Görevli 1', value: match.scorer },
+                { label: match.timerLabel || 'Görevli 2', value: match.timer },
+                { label: match.shotClockLabel || 'Görevli 3', value: match.shotClock },
+              ].map((duty, i) => {
+                const upperValue = duty.value?.toLocaleUpperCase('tr-TR') || '';
+                const isRifat = upperValue.includes('RIFAT') || upperValue.includes('GÜRSES');
 
-          {/* Right: Teams */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-black text-center text-black">{match.teamA}</span>
-            <div className="bg-orange-200 dark:bg-orange-700 text-xs font-black px-1.5 py-0.5 rounded text-center text-black">VS</div>
-            <span className="text-xs font-black text-center text-black">{match.teamB}</span>
-          </div>
-        </div>
+                // Only show Rıfat Gürses's duty
+                if (!isRifat) return null;
 
-        {/* Duties (Grid) - Only show Rıfat Gürses's duty */}
-        <div className="flex justify-center">
-          {[
-            { label: match.scorerLabel || 'Görevli 1', value: match.scorer },
-            { label: match.timerLabel || 'Görevli 2', value: match.timer },
-            { label: match.shotClockLabel || 'Görevli 3', value: match.shotClock },
-          ].map((duty, i) => {
-            const upperValue = duty.value?.toLocaleUpperCase('tr-TR') || '';
-            const isRifat = upperValue.includes('RIFAT') || upperValue.includes('GÜRSES');
-
-            // Only render if this is Rıfat Gürses's duty
-            if (!isRifat) return null;
-
-            // Visual logic for duty box
-            let boxClass = 'bg-white border-black';
-
-            if (isGreenMode) {
-              // Yellow background for active matches
-              boxClass = 'bg-yellow-400 border-yellow-600 shadow-xl ring-4 ring-yellow-300';
-            } else {
-              // Yellow background for past matches
-              boxClass = 'bg-yellow-300 border-yellow-500 shadow-lg';
-            }
-
-            return (
-              <div
-                key={i}
-                style={{
-                  backgroundColor: isGreenMode ? '#facc15' : '#fde047',
-                  borderColor: isGreenMode ? '#ca8a04' : '#eab308',
-                }}
-                className={`
-                          relative px-4 py-2 rounded-lg border-2 flex flex-col items-center justify-center text-center transition-all duration-300
-                          ${boxClass}
-                `}
-              >
-                <span className="text-xs uppercase font-black tracking-wider mb-1 text-black">
-                  {duty.label}
-                </span>
-                <span className="text-sm font-black text-red-900">
-                  {duty.value || '-'}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Ödemesi Tamamlandı Section - Shows when both payments complete */}
-        {((paymentType === PaymentType.STANDARD && paymentStatus.gsbPaid && paymentStatus.ekPaid) ||
-          (paymentType === PaymentType.GSB_ONLY && paymentStatus.gsbPaid) ||
-          (paymentType === PaymentType.CUSTOM_FEE && paymentStatus.ekPaid)) && (
-            <div className="mt-3 bg-green-100 border-2 border-green-500 rounded-lg p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-bold text-green-800">Ödemesi Tamamlandı</span>
-              </div>
-
-              {/* Duty Assignment - Only Rıfat Gürses's duty */}
-              <div className="flex justify-center">
-                {[
-                  { label: match.scorerLabel || 'Görevli 1', value: match.scorer },
-                  { label: match.timerLabel || 'Görevli 2', value: match.timer },
-                  { label: match.shotClockLabel || 'Görevli 3', value: match.shotClock },
-                ].map((duty, i) => {
-                  const upperValue = duty.value?.toLocaleUpperCase('tr-TR') || '';
-                  const isRifat = upperValue.includes('RIFAT') || upperValue.includes('GÜRSES');
-
-                  // Only show Rıfat Gürses's duty
-                  if (!isRifat) return null;
-
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        backgroundColor: '#fde047',
-                        borderColor: '#eab308',
-                      }}
-                      className="rounded-lg p-3 border-2 shadow-md"
-                    >
-                      <div className="text-xs uppercase font-black text-black mb-1">
-                        {duty.label}
-                      </div>
-                      <div className="text-sm font-black text-red-900">
-                        {duty.value || '-'}
-                      </div>
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      backgroundColor: '#fde047',
+                      borderColor: '#eab308',
+                    }}
+                    className="rounded-lg p-3 border-2 shadow-md"
+                  >
+                    <div className="text-xs uppercase font-black text-black mb-1">
+                      {duty.label}
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="text-sm font-black text-black">
+                      {duty.value || '-'}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          )}
-      </div>
-
+          </div>
+        )}
     </>
   );
 };
