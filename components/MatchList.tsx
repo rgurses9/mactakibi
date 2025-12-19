@@ -39,14 +39,18 @@ const MatchCard: React.FC<{
   return (
     <>
       <div
-        className={`group bg-white rounded-xl border-2 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 relative
-          ${isGreenMode ? 'border-green-400 ring-2 ring-green-50 shadow-green-100' : 'border-black bg-gray-50'}
+        style={{
+          backgroundColor: isGreenMode ? '#ffffff' : '#f9fafb',
+          borderColor: isGreenMode ? '#e5e7eb' : '#d1d5db',
+        }}
+        className={`group rounded-xl border-2 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 relative dark:bg-gray-900 dark:border-gray-800
+          ${isGreenMode ? 'ring-1 ring-gray-200 dark:ring-gray-700' : ''}
         `}
       >
         {/* Payment Status Checkboxes - Top Right (Clickable) */}
         {isEligibleForPayment && onTogglePayment && (
           <div className="absolute top-2 right-2 z-10">
-            <div className="flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-black">
+            <div style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb' }} className="flex items-center gap-2 px-2 py-1 rounded-lg border dark:bg-gray-800 dark:border-gray-700">
               {/* GSB Checkbox - Clickable */}
               {(paymentType === PaymentType.STANDARD || paymentType === PaymentType.GSB_ONLY) && (
                 <button
@@ -63,7 +67,7 @@ const MatchCard: React.FC<{
                       </svg>
                     )}
                   </div>
-                  <span className="text-xs font-semibold text-gray-900">GSB</span>
+                  <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">GSB</span>
                 </button>
               )}
 
@@ -89,7 +93,7 @@ const MatchCard: React.FC<{
                       </svg>
                     )}
                   </div>
-                  <span className="text-xs font-semibold text-gray-900">EK</span>
+                  <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">EK</span>
                 </button>
               )}
 
@@ -104,7 +108,7 @@ const MatchCard: React.FC<{
         )}
 
         {match.sourceFile && (
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-black bg-white px-3 py-1.5 rounded-lg border border-black">
+          <div style={{ backgroundColor: '#f9fafb', borderColor: '#e5e7eb', color: '#111827' }} className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
             <FileText size={12} />
             <span className="truncate max-w-[200px]">{match.sourceFile}</span>
           </div>
@@ -112,45 +116,41 @@ const MatchCard: React.FC<{
       </div>
 
       {/* Bottom: Match Details */}
-      <div className="p-4">
+      <div className="p-3">
         {/* Category + Time/Date + Hall + Teams - All in one row */}
-        <div className="flex items-center justify-center gap-4 mb-3 bg-white p-3 rounded-lg">
+        <div style={{ backgroundColor: '#f9fafb' }} className="flex items-center justify-center gap-3 mb-2 p-2.5 rounded-lg dark:bg-gray-800">
           {/* Left: Category & Hall */}
-          <div className="flex flex-col gap-2 items-center">
-            <div className={`text-xs font-semibold uppercase flex items-center gap-0 text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${isGreenMode ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+          <div className="flex flex-col gap-1 items-center">
+            <div className="text-xs font-black uppercase flex items-center gap-0 text-center text-black">
+              <span className={`w-1.5 h-1.5 rounded-full ${isGreenMode ? 'bg-green-500' : 'bg-orange-500'}`}></span>
               {match.category} {match.group ? `• ${match.group}` : ''}
             </div>
-            <div className={`flex items-center gap-0 text-xs font-semibold text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>
+            <div className="flex items-center gap-0 text-xs font-black text-center text-black">
               <MapPin size={12} />
               {match.hall}
             </div>
           </div>
 
           {/* Center: Time & Date */}
-          <div className="flex flex-col items-center gap-2">
-            <div className={`text-xs font-semibold text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>
+          <div className="flex flex-col items-center gap-1">
+            <div className="text-xs font-black text-center text-black">
               {match.time}
             </div>
-            <div className={`text-xs font-semibold bg-white border border-black px-2 py-0.5 rounded text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>
+            <div className="text-xs font-black bg-orange-200 dark:bg-orange-700 border border-orange-400 dark:border-orange-600 px-2 py-0.5 rounded text-center text-black">
               {formatDate(match.date)}
             </div>
           </div>
 
           {/* Right: Teams */}
           <div className="flex items-center gap-2">
-            <span className={`text-xs font-semibold text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>{match.teamA}</span>
-            <div className={`bg-gray-100 text-xs font-semibold px-1.5 py-0.5 rounded text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>VS</div>
-            <span className={`text-xs font-semibold text-center ${paymentStatus.gsbPaid || paymentStatus.ekPaid ? 'text-red-600' : 'text-gray-900'}`}>{match.teamB}</span>
+            <span className="text-xs font-black text-center text-black">{match.teamA}</span>
+            <div className="bg-orange-200 dark:bg-orange-700 text-xs font-black px-1.5 py-0.5 rounded text-center text-black">VS</div>
+            <span className="text-xs font-black text-center text-black">{match.teamB}</span>
           </div>
         </div>
 
-        {/* Duties (Grid) */}
-        <div className={`grid ${isEligibleForPayment && showPaymentButtons && paymentType === PaymentType.STANDARD ? 'grid-cols-1 sm:grid-cols-5' :
-          isEligibleForPayment && showPaymentButtons && paymentType === PaymentType.GSB_ONLY ? 'grid-cols-1 sm:grid-cols-4' :
-            isEligibleForPayment && showPaymentButtons && paymentType === PaymentType.CUSTOM_FEE ? 'grid-cols-1 sm:grid-cols-5' :
-              'grid-cols-1 sm:grid-cols-3'
-          } gap-2`}>
+        {/* Duties (Grid) - Only show Rıfat Gürses's duty */}
+        <div className="flex justify-center">
           {[
             { label: match.scorerLabel || 'Görevli 1', value: match.scorer },
             { label: match.timerLabel || 'Görevli 2', value: match.timer },
@@ -159,37 +159,36 @@ const MatchCard: React.FC<{
             const upperValue = duty.value?.toLocaleUpperCase('tr-TR') || '';
             const isRifat = upperValue.includes('RIFAT') || upperValue.includes('GÜRSES');
 
-            // Visual logic for duty boxes
-            let boxClass = 'bg-white border-black';
-            let textClass = 'text-gray-900';
-            let labelClass = 'text-gray-700';
+            // Only render if this is Rıfat Gürses's duty
+            if (!isRifat) return null;
 
-            if (isRifat) {
-              if (isGreenMode) {
-                // Basketball orange background with black text
-                boxClass = 'bg-orange-500 border-orange-600 shadow-xl transform scale-110 z-10 ring-2 ring-orange-400';
-                textClass = 'text-black font-black';
-                labelClass = 'text-orange-900 font-bold';
-              } else {
-                // Basketball orange background with black text
-                boxClass = 'bg-orange-400 border-orange-500 shadow-lg';
-                textClass = 'text-black font-black';
-                labelClass = 'text-orange-900 font-bold';
-              }
+            // Visual logic for duty box
+            let boxClass = 'bg-white border-black';
+
+            if (isGreenMode) {
+              // Yellow background for active matches
+              boxClass = 'bg-yellow-400 border-yellow-600 shadow-xl ring-4 ring-yellow-300';
+            } else {
+              // Yellow background for past matches
+              boxClass = 'bg-yellow-300 border-yellow-500 shadow-lg';
             }
 
             return (
               <div
                 key={i}
+                style={{
+                  backgroundColor: isGreenMode ? '#facc15' : '#fde047',
+                  borderColor: isGreenMode ? '#ca8a04' : '#eab308',
+                }}
                 className={`
-                          relative px-2 py-1.5 rounded-lg border flex flex-col items-center justify-center text-center transition-all duration-300
+                          relative px-4 py-2 rounded-lg border-2 flex flex-col items-center justify-center text-center transition-all duration-300
                           ${boxClass}
                 `}
               >
-                <span className={`text-[7px] uppercase font-bold tracking-wider mb-0.5 ${labelClass}`}>
+                <span className="text-xs uppercase font-black tracking-wider mb-1 text-black">
                   {duty.label}
                 </span>
-                <span className={`text-[10px] font-bold ${textClass}`}>
+                <span className="text-sm font-black text-red-900">
                   {duty.value || '-'}
                 </span>
               </div>
@@ -203,28 +202,40 @@ const MatchCard: React.FC<{
           (paymentType === PaymentType.CUSTOM_FEE && paymentStatus.ekPaid)) && (
             <div className="mt-3 bg-green-100 border-2 border-green-500 rounded-lg p-3">
               <div className="flex items-center gap-2 mb-2">
-                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
                 <span className="text-sm font-bold text-green-800">Ödemesi Tamamlandı</span>
               </div>
 
-              {/* Duty Assignments */}
-              <div className="grid grid-cols-3 gap-2">
+              {/* Duty Assignment - Only Rıfat Gürses's duty */}
+              <div className="flex justify-center">
                 {[
                   { label: match.scorerLabel || 'Görevli 1', value: match.scorer },
                   { label: match.timerLabel || 'Görevli 2', value: match.timer },
                   { label: match.shotClockLabel || 'Görevli 3', value: match.shotClock },
-                ].map((duty, i) => (
-                  <div key={i} className="bg-white rounded p-2 border border-green-300">
-                    <div className="text-[8px] uppercase font-bold text-green-700 mb-1">
-                      {duty.label}
+                ].map((duty, i) => {
+                  const upperValue = duty.value?.toLocaleUpperCase('tr-TR') || '';
+                  const isRifat = upperValue.includes('RIFAT') || upperValue.includes('GÜRSES');
+
+                  // Only show Rıfat Gürses's duty
+                  if (!isRifat) return null;
+
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        backgroundColor: '#fde047',
+                        borderColor: '#eab308',
+                      }}
+                      className="rounded-lg p-3 border-2 shadow-md"
+                    >
+                      <div className="text-xs uppercase font-black text-black mb-1">
+                        {duty.label}
+                      </div>
+                      <div className="text-sm font-black text-red-900">
+                        {duty.value || '-'}
+                      </div>
                     </div>
-                    <div className="text-[10px] font-semibold text-gray-900">
-                      {duty.value || '-'}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -282,18 +293,18 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
   const isGreenMode = variant === 'active';
 
   return (
-    <div className={`space-y-0 ${variant === 'past' ? 'opacity-70 grayscale-[0.8]' : ''}`}>
+    <div className={`${variant === 'past' ? 'opacity-70 grayscale-[0.8]' : ''}`}>
       <div className="flex items-center justify-between mb-2 mt-6">
-        <h2 className={`text-lg font-bold flex items-center gap-2 ${isGreenMode ? 'text-green-700' : 'text-gray-600'}`}>
-          {isGreenMode ? <CheckCircle2 className="text-green-600" size={20} /> : <History className="text-gray-500" size={20} />}
+        <h2 className={`text-lg font-bold flex items-center gap-2 ${isGreenMode ? 'text-orange-700 dark:text-orange-400' : 'text-orange-600 dark:text-orange-500'}`}>
+          {isGreenMode ? <CheckCircle2 className="text-orange-600 dark:text-orange-400" size={20} /> : <History className="text-orange-500" size={20} />}
           {title}
         </h2>
-        <span className={`text-xs font-bold px-2 py-1 rounded-md ${isGreenMode ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}`}>
+        <span className={`text-xs font-bold px-2 py-1 rounded-md ${isGreenMode ? 'bg-orange-100 dark:bg-orange-800 text-orange-700 dark:text-orange-200' : 'bg-orange-200 dark:bg-orange-700 text-orange-600 dark:text-orange-300'}`}>
           {sortedMatches.length} Maç
         </span>
       </div>
 
-      <div className="grid grid-cols-1 gap-0">
+      <div className="grid grid-cols-1 gap-3">
         {sortedMatches.map((match, index) => {
           const isEligible = isMatchEligibleForPayment(match);
           const matchId = getMatchId(match);

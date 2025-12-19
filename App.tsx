@@ -76,7 +76,7 @@ const App: React.FC = () => {
     // Theme State
     const [theme, setTheme] = useState<Theme>(() => {
         const saved = localStorage.getItem('theme');
-        return (saved as Theme) || 'system';
+        return (saved as Theme) || 'dark';
     });
 
     // Manual Upload Mode
@@ -256,11 +256,12 @@ const App: React.FC = () => {
         }
         if (!lastUpdated) setLastUpdated(new Date().toLocaleString('tr-TR'));
 
+        // Otomatik yenileme: Her 15 dakikada bir kontrol
         const interval = setInterval(() => {
             if (autoRefresh && !isAnalyzing && !isFirebaseActive) {
-                handleAutoScan(); // Regular refresh checks for new matches
+                handleAutoScan(); // Regular refresh checks for new matches every 15 minutes
             }
-        }, 5 * 60 * 1000);
+        }, 15 * 60 * 1000); // 15 dakika = 900000 ms
 
         return () => clearInterval(interval);
     }, [autoRefresh, hasAutoScanned, isFirebaseActive, user]);
@@ -324,13 +325,20 @@ const App: React.FC = () => {
         const cachedData = localStorage.getItem(cacheKey);
         const lastScanTime = localStorage.getItem(lastScanKey);
 
-        // If we have cached data, use it (indefinite cache until manual refresh)
-        if (cachedData && lastScanTime) {
+        // Cache validity: 15 minutes (900000 milliseconds)
+        const CACHE_VALIDITY_MS = 15 * 60 * 1000; // 15 dakika
+        const now = Date.now();
+        const isCacheValid = lastScanTime && (now - parseInt(lastScanTime)) < CACHE_VALIDITY_MS;
+
+        // If we have cached data and it's still valid (and not forcing refresh), use it
+        if (cachedData && lastScanTime && isCacheValid && !forceRefresh) {
             try {
                 const cached = JSON.parse(cachedData);
                 setMatches(cached);
                 setLastUpdated(new Date(parseInt(lastScanTime)).toLocaleString('tr-TR'));
-                addLog(`📦 Önbellekten ${cached.length} maç yüklendi. Yenilemek için 'Yenile' butonunu kullanabilirsiniz.`, 'info');
+
+                const minutesAgo = Math.floor((now - parseInt(lastScanTime)) / 60000);
+                addLog(`📦 Önbellekten ${cached.length} maç yüklendi (${minutesAgo} dakika önce tarandı). Sonraki otomatik tarama: ${15 - minutesAgo} dakika sonra.`, 'info');
 
                 // Initialize payment statuses
                 if (user?.email) {
@@ -343,6 +351,11 @@ const App: React.FC = () => {
             } catch (e) {
                 console.error('Cache parse error:', e);
             }
+        }
+
+        // Cache expired or force refresh - proceed with scan
+        if (cachedData && !isCacheValid && !forceRefresh) {
+            addLog(`⏰ Önbellek süresi doldu (15 dakika). Yeni maçlar taranıyor...`, 'info');
         }
 
         setIsAnalyzing(true);
@@ -494,10 +507,10 @@ const App: React.FC = () => {
     const isAdmin = user?.email ? adminEmails.includes(user.email.toLowerCase()) : false;
 
     if (!authInitialized) {
-        return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+        return <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
             <div className="flex flex-col items-center gap-2">
-                <RefreshCw className="animate-spin text-blue-600" size={32} />
-                <span className="text-gray-500 font-medium">Yükleniyor...</span>
+                <RefreshCw className="animate-spin text-blue-600 dark:text-blue-400" size={32} />
+                <span className="text-gray-500 dark:text-gray-400 font-medium">Yükleniyor...</span>
             </div>
         </div>;
     }
@@ -508,7 +521,7 @@ const App: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 font-sans pb-24 transition-colors duration-300">
+        <div className="min-h-screen bg-white dark:bg-black font-sans pb-24 transition-colors duration-300">
 
             <FirebaseSettings
                 isOpen={isFirebaseOpen}
@@ -576,13 +589,13 @@ const App: React.FC = () => {
             )}
 
             {/* HEADER SECTION - Theme Toggle Moved Here */}
-            <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm transition-colors duration-300">
+            <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-30 shadow-sm transition-colors duration-300">
                 <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="bg-blue-600 text-black p-2 rounded-lg">
                             <Shield size={20} />
                         </div>
-                        <h1 className="font-bold text-gray-900 text-sm leading-tight hidden sm:block">Maç Takip Sistemi</h1>
+                        <h1 className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-tight hidden sm:block">Maç Takip Sistemi</h1>
                     </div>
 
                     <div className="flex items-center gap-3 md:gap-4">
@@ -590,7 +603,7 @@ const App: React.FC = () => {
                         {paymentStats.eligible > 0 && (
                             <button
                                 onClick={() => setIsFeeListOpen(true)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-black rounded-lg text-xs font-bold transition-colors shadow-md shadow-green-200"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-colors shadow-md shadow-green-200 dark:shadow-green-900"
                             >
                                 <span className="text-base">💰</span>
                                 <span className="hidden sm:inline">Ücret Listesi</span>
@@ -601,7 +614,7 @@ const App: React.FC = () => {
                         {isAdmin && (
                             <button
                                 onClick={() => setIsAdminPanelOpen(true)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-black rounded-lg text-xs font-bold transition-colors shadow-md shadow-red-200"
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-colors shadow-md shadow-red-200 dark:shadow-red-900"
                             >
                                 <ShieldAlert size={14} />
                                 <span className="hidden sm:inline">Yönetici Paneli</span>
@@ -611,20 +624,20 @@ const App: React.FC = () => {
                         {/* Theme Toggle Button - Moved to Header */}
                         <button
                             onClick={toggleTheme}
-                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             title={`Tema: ${getThemeLabel()}`}
                         >
                             {getThemeIcon()}
                         </button>
 
-                        <div className="flex items-center gap-2 text-sm text-gray-700 font-bold border-l border-r border-gray-200 px-3 h-8">
+                        <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 font-bold border-l border-r border-gray-200 dark:border-gray-600 px-3 h-8">
                             <UserIcon size={16} className="text-blue-600" />
                             <span className="hidden sm:inline">{user.displayName?.toLocaleUpperCase('tr-TR')}</span>
                         </div>
 
                         <button
                             onClick={logoutUser}
-                            className="flex items-center gap-1.5 text-xs bg-red-50 text-red-600 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
+                            className="flex items-center gap-1.5 text-xs bg-red-50 dark:bg-red-900 text-red-600 dark:text-red-200 px-3 py-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-800 transition-colors"
                         >
                             <LogOut size={14} />
                             Çıkış
@@ -634,20 +647,20 @@ const App: React.FC = () => {
             </div>
 
             {/* WELCOME HERO SECTION */}
-            <div className="bg-white border-b border-gray-200 transition-colors duration-300">
+            <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
                 <div className="max-w-5xl mx-auto px-4 py-8">
                     <div className="flex items-center gap-4">
                         <div className="relative">
-                            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-black font-bold text-base shadow-md ring-4 ring-blue-50">
+                            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-base shadow-md ring-4 ring-blue-50 dark:ring-blue-900">
                                 {user.displayName ? user.displayName.substring(0, 2).toUpperCase() : 'UR'}
                             </div>
                         </div>
                         <div>
                             {/* Updated Welcome Message */}
-                            <h2 className="text-lg font-bold text-gray-800">
+                            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">
                                 Hoş Geldiniz, {user.displayName?.toLocaleUpperCase('tr-TR')}
                             </h2>
-                            <p className="text-gray-500 text-sm mt-0.5">
+                            <p className="text-gray-500 dark:text-gray-400 text-sm mt-0.5">
                                 Hesabınız onaylandı. Sistemde <strong>{user.displayName?.toLocaleUpperCase('tr-TR')}</strong> adına tanımlı maçlar listelenmektedir.
                             </p>
                         </div>
@@ -663,12 +676,12 @@ const App: React.FC = () => {
                 <div className="space-y-6">
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between transition-colors duration-300">
+                        <div className="bg-white dark:bg-gray-900 p-5 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm flex items-center justify-between transition-colors duration-300">
                             <div>
-                                <div className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Aktif Görevler</div>
-                                <div className="text-3xl font-extrabold text-blue-600">{activeMatchCount}</div>
+                                <div className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Aktif Görevler</div>
+                                <div className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{activeMatchCount}</div>
                             </div>
-                            <div className="bg-blue-50 text-blue-600 p-3 rounded-lg">
+                            <div className="bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 p-3 rounded-lg">
                                 <Briefcase size={24} />
                             </div>
                         </div>
@@ -742,14 +755,14 @@ const App: React.FC = () => {
 
             </main>
 
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-colors duration-300">
+            <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 p-3 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-colors duration-300">
                 <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs md:text-sm">
-                    <div className="text-gray-700 font-medium">
+                    <div className="text-gray-700 dark:text-gray-300 font-medium">
                         Sistem v10.5 &copy; 2025
                     </div>
-                    <div className="text-gray-500 font-medium hidden md:block">
+                    <div className="text-gray-500 dark:text-gray-400 font-medium hidden md:block">
                         {isAnalyzing ? (
-                            <span className="flex items-center gap-2 text-blue-600">
+                            <span className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
                                 <RefreshCw size={12} className="animate-spin" />
                                 {progress}
                             </span>
@@ -762,17 +775,17 @@ const App: React.FC = () => {
                         )}
                     </div>
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setIsBotSettingsOpen(true)} className="flex items-center gap-1 text-gray-500 hover:text-green-600 transition-colors">
+                        <button onClick={() => setIsBotSettingsOpen(true)} className="flex items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
                             <Settings size={14} />
                             <span className="hidden sm:inline">Bot Ayarları</span>
                         </button>
                         {!isFirebaseActive && (
-                            <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 hover:text-gray-900 transition-colors">
-                                <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 bg-white w-3.5 h-3.5" />
+                            <label className="flex items-center gap-2 cursor-pointer select-none text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors">
+                                <input type="checkbox" checked={autoRefresh} onChange={(e) => setAutoRefresh(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 w-3.5 h-3.5" />
                                 <span className="hidden sm:inline">Oto. Yenile</span>
                             </label>
                         )}
-                        <button onClick={handleRefresh} disabled={isAnalyzing} className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded border border-gray-200 flex items-center gap-2 hover:bg-gray-200 transition-colors disabled:opacity-50">
+                        <button onClick={handleRefresh} disabled={isAnalyzing} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1.5 rounded border border-gray-200 dark:border-gray-600 flex items-center gap-2 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50">
                             <RefreshCw size={12} className={isAnalyzing ? "animate-spin" : ""} />
                             {isAnalyzing ? "Taranıyor" : "Yenile"}
                         </button>

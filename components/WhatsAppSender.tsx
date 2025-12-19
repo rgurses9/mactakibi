@@ -5,8 +5,8 @@ import { MatchDetails } from '../types';
 interface WhatsAppSenderProps {
   matches: MatchDetails[];
   config: {
-      phone: string;
-      apiKey: string;
+    phone: string;
+    apiKey: string;
   };
 }
 
@@ -17,10 +17,10 @@ const WhatsAppSender: React.FC<WhatsAppSenderProps> = ({ matches, config }) => {
   const sendToWhatsApp = async () => {
     if (matches.length === 0) return;
     if (!config.phone || !config.apiKey) {
-        alert("Lütfen önce Bot Ayarları menüsünden telefon ve API anahtarınızı girin.");
-        return;
+      alert("Lütfen önce Bot Ayarları menüsünden telefon ve API anahtarınızı girin.");
+      return;
     }
-    
+
     setSending(true);
     setStatus('idle');
 
@@ -66,44 +66,43 @@ const WhatsAppSender: React.FC<WhatsAppSenderProps> = ({ matches, config }) => {
   return (
     <div className="mt-6">
       {!isConfigured ? (
-           <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="bg-yellow-100 p-2 rounded-lg text-yellow-600">
-                        <AlertCircle size={20} />
-                    </div>
-                    <div>
-                        <h4 className="text-sm font-bold text-yellow-800">WhatsApp Yapılandırılmadı</h4>
-                        <p className="text-xs text-yellow-700">Bildirim göndermek için Bot Ayarlarını yapın.</p>
-                    </div>
-                </div>
-           </div>
+        <div className="border border-gray-300 dark:border-gray-600 rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg text-gray-600 dark:text-gray-400">
+              <AlertCircle size={20} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200">WhatsApp Yapılandırılmadı</h4>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Bildirim göndermek için Bot Ayarlarını yapın.</p>
+            </div>
+          </div>
+        </div>
       ) : (
         <button
-            onClick={sendToWhatsApp}
-            disabled={sending || matches.length === 0}
-            className={`w-full py-4 px-6 rounded-xl font-bold text-white flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 ${
-            status === 'success' 
-                ? 'bg-green-500' 
-                : sending 
-                ? 'bg-green-400' 
+          onClick={sendToWhatsApp}
+          disabled={sending || matches.length === 0}
+          className={`w-full py-4 px-6 rounded-xl font-bold text-white flex items-center justify-center gap-3 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 active:translate-y-0 ${status === 'success'
+              ? 'bg-green-500'
+              : sending
+                ? 'bg-green-400'
                 : 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400'
             }`}
         >
-            {sending ? (
+          {sending ? (
             <span className="animate-pulse">Gönderiliyor...</span>
-            ) : status === 'success' ? (
+          ) : status === 'success' ? (
             <><Check size={24} /> Başarıyla İletildi</>
-            ) : (
+          ) : (
             <><Send size={24} /> Listeyi WhatsApp'a Gönder</>
-            )}
+          )}
         </button>
       )}
 
       {isConfigured && (
         <div className="mt-2 text-center">
-            <p className="text-[10px] text-gray-400">
-                Hedef: {config.phone.replace(/.(?=.{4})/g, '*')} • Servis: CallMeBot
-            </p>
+          <p className="text-[10px] text-gray-400">
+            Hedef: {config.phone.replace(/.(?=.{4})/g, '*')} • Servis: CallMeBot
+          </p>
         </div>
       )}
     </div>
