@@ -299,10 +299,17 @@ const App: React.FC = () => {
         let paidAmount = 0;
         const details: any[] = [];
 
+        const seenIds = new Set<string>();
+
         matches.forEach(match => {
             const isPast = isPastDate(match.date, match.time);
             if (isPast && isMatchEligibleForPayment(match)) {
                 const id = getMatchId(match);
+
+                // PREVENT DUPLICATE COUNTING
+                if (seenIds.has(id)) return;
+                seenIds.add(id);
+
                 const status = paymentStatuses[id] || { gsbPaid: false, ekPaid: false };
 
                 eligible++;
@@ -550,46 +557,29 @@ const App: React.FC = () => {
         today.setHours(0, 0, 0, 0);
 
         // Season cutoff: September 1, 2025
-        const SEASON_CUTOFF = new Date(2025, 8, 1); // September is month 8 (0-indexed)
+        const SEASON_CUTOFF = new Date(2025, 8, 1);
 
-        // First, deduplicate matches based on key fields
         const uniqueMatches = new Map<string, MatchDetails>();
-
         matches.forEach(m => {
-            // Create a unique key based on date, time, hall, and teams
-            const key = `${m.date}|${m.time}|${m.hall}|${m.teamA}|${m.teamB}`.toLowerCase();
-
-            // Only keep the first occurrence of each unique match
-            if (!uniqueMatches.has(key)) {
-                uniqueMatches.set(key, m);
+            const id = getMatchId(m);
+            if (!uniqueMatches.has(id)) {
+                uniqueMatches.set(id, m);
             }
         });
 
-        // Convert back to array and filter by season cutoff
-        const deduplicatedMatches = Array.from(uniqueMatches.values()).filter(m => {
-            const matchDate = parseDate(m.date);
-            // Only include matches from September 1, 2025 onwards
-            return matchDate && matchDate >= SEASON_CUTOFF;
+        const dedupedBySeason = Array.from(uniqueMatches.values()).filter(m => {
+            const mDate = parseDate(m.date);
+            return mDate && mDate >= SEASON_CUTOFF;
         });
 
-        // Now split into active and past
         const active: MatchDetails[] = [];
         const past: MatchDetails[] = [];
 
-        deduplicatedMatches.forEach(m => {
-            const matchDate = parseDate(m.date);
-            if (!matchDate) {
-                active.push(m);
-                return;
-            }
-
-            const matchDateMidnight = new Date(matchDate);
-            matchDateMidnight.setHours(0, 0, 0, 0);
-
-            if (matchDateMidnight >= today) {
-                active.push(m);
-            } else {
+        dedupedBySeason.forEach(m => {
+            if (isPastDate(m.date, m.time)) {
                 past.push(m);
+            } else {
+                active.push(m);
             }
         });
 
