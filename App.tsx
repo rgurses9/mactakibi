@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-// v2.0 - Updated card design
-import MatchList from './components/MatchListNew';
+// v3.0 - Huge Checkbox Version
+import MatchList from './components/MatchListDevesa';
 import WhatsAppSender from './components/WhatsAppSender';
 import ScriptGenerator from './components/ScriptGenerator';
 import FirebaseSettings from './components/FirebaseSettings';
