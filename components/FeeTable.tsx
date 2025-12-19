@@ -92,10 +92,8 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
                     className="p-4 rounded-2xl border-2 border-slate-900 shadow-lg text-white"
                 >
                     <div className="text-[10px] font-black uppercase tracking-widest mb-1 opacity-80">Toplam Ödenen</div>
-                    <div className="bg-white/10 px-3 py-1 rounded-xl border border-white/10 inline-block">
-                        <div className="text-2xl font-black text-green-400 drop-shadow-sm">
-                            {formatCurrency(paidAmount)}
-                        </div>
+                    <div className="text-2xl font-black text-green-400 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+                        {formatCurrency(paidAmount)}
                     </div>
                 </div>
 
