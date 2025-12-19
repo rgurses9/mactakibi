@@ -694,7 +694,7 @@ const App: React.FC = () => {
 
                     <div className="flex items-center gap-3 md:gap-4">
                         {/* Fee List Button - Only visible when eligible matches exist */}
-                        {paymentStats.eligible > 0 && (
+                        {matches.length > 0 && (
                             <button
                                 onClick={() => setIsFeeListOpen(true)}
                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition-colors shadow-md shadow-green-200 dark:shadow-green-900"
