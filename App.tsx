@@ -414,45 +414,30 @@ const App: React.FC = () => {
             return;
         }
 
-        // Check if we have cached data (only if not forcing refresh)
         const cacheKey = `matches_cache_${user?.email}`;
         const lastScanKey = `last_scan_${user?.email}`;
         const cachedData = localStorage.getItem(cacheKey);
         const lastScanTime = localStorage.getItem(lastScanKey);
 
-        // Cache validity: 5 minutes (300000 milliseconds)
-        const CACHE_VALIDITY_MS = 5 * 60 * 1000; // 5 dakika
-        const now = Date.now();
-        const isCacheValid = lastScanTime && (now - parseInt(lastScanTime)) < CACHE_VALIDITY_MS;
+        // Baseline matches for NEW match detection
+        let baselineMatches = matches;
 
-        // If we have cached data and it's still valid (and not forcing refresh), use it
-        if (cachedData && lastScanTime && isCacheValid && !forceRefresh) {
+        // ALWAYS load from cache first if it exists, for instant UI
+        if (cachedData && !forceRefresh) {
             try {
                 const cached = JSON.parse(cachedData);
                 setMatches(cached);
-                setLastUpdated(new Date(parseInt(lastScanTime)).toLocaleString('tr-TR'));
-
-                const minutesAgo = Math.floor((now - parseInt(lastScanTime)) / 60000);
-                addLog(`📦 Önbellekten ${cached.length} maç yüklendi (${minutesAgo} dakika önce tarandı). Sonraki otomatik tarama: ${15 - minutesAgo} dakika sonra.`, 'info');
-
-                // Initialize payment statuses
-                if (user?.email) {
-                    const statuses = getAllPaymentStatuses(user.email);
-                    setPaymentStatuses(statuses);
+                baselineMatches = cached; // Update baseline for detector
+                if (lastScanTime) {
+                    setLastUpdated(new Date(parseInt(lastScanTime)).toLocaleString('tr-TR'));
                 }
-
-                setIsAnalyzing(false);
-                return; // Don't scan again, use cached data
+                addLog(`📦 Önbellekten ${cached.length} maç anında yüklendi. Arka planda güncelleniyor...`, 'info');
             } catch (e) {
                 console.error('Cache parse error:', e);
             }
         }
 
-        // Cache expired or force refresh - proceed with scan
-        if (cachedData && !isCacheValid && !forceRefresh) {
-            addLog(`⏰ Önbellek süresi doldu (5 dakika). Yeni maçlar taranıyor...`, 'info');
-        }
-
+        // Proceed to background scan
         setIsAnalyzing(true);
         setError(null);
         setProgress(cachedData ? "Yeni müsabakalar kontrol ediliyor..." : "İlk tarama yapılıyor...");
@@ -465,27 +450,23 @@ const App: React.FC = () => {
                 .split(' ').filter(p => p.length > 1)
             : undefined;
 
-        addLog(`🔄 ${cachedData ? 'Yeni müsabaka kontrolü' : 'İlk tarama'}: ${user?.displayName?.toLocaleUpperCase('tr-TR') || 'Kullanıcı belirsiz'}`, 'info');
-
         try {
-            // Pass user name parts directly to Drive scanner for efficient filtering
             const driveMatches = await autoScanDriveFolder((msg, type) => {
                 setProgress(msg);
                 addLog(msg, type);
             }, userNameParts);
 
-            addLog(`Tarama bitti. ${driveMatches.length} maç bulundu.`, 'success');
-
-            // Check for NEW matches
-            const currentIds = new Set(matches.map(m => getMatchId(m)));
+            // Check for NEW matches against baseline
+            const currentIds = new Set(baselineMatches.map(m => getMatchId(m)));
             const newMatchesFound = driveMatches.filter(m => !currentIds.has(getMatchId(m)));
 
-            if (newMatchesFound.length > 0 && matches.length > 0) {
+            if (newMatchesFound.length > 0 && baselineMatches.length > 0) {
                 let notifyMsg = `🚀 *YENİ MÜSABAKA EKLENDİ!*\n\n`;
                 newMatchesFound.forEach(m => {
                     notifyMsg += `🏀 ${m.teamA} vs ${m.teamB}\n📅 ${m.date} | ⏰ ${m.time}\n🏟️ ${m.hall}\n\n`;
                 });
                 notifyMsg += `_Sistem tarafından otomatik algılandı._`;
+                addLog(`📱 ${newMatchesFound.length} yeni maç için bildirim gönderiliyor...`, 'success');
                 sendBotMessage(notifyMsg);
             }
 
@@ -506,7 +487,7 @@ const App: React.FC = () => {
             setShowManualUpload(false);
         } catch (err: any) {
             console.error(err);
-            if (matches.length === 0) {
+            if (matches.length === 0 && !cachedData) {
                 setError(`Drive Bağlantı Hatası: ${err.message}`);
                 setShowManualUpload(true);
             }

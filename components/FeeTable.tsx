@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, CheckCircle2, Clock } from 'lucide-react';
+import { ChevronDown, ChevronUp, CheckCircle2, Clock, History as HistoryIcon, AlertCircle } from 'lucide-react';
 
 interface MatchPaymentDetail {
     id: string;
@@ -108,10 +108,13 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
 
             <button
                 onClick={() => setShowBreakdown(!showBreakdown)}
-                className="w-full py-1.5 px-4 rounded-lg border border-gray-100 dark:border-gray-800 flex items-center justify-between text-[6px] font-black uppercase text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                className="w-full py-2.5 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] font-black uppercase text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm"
             >
-                <span>Maç Bazlı Detayları Gör</span>
-                {showBreakdown ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+                <span className="flex items-center gap-2">
+                    <HistoryIcon size={14} className="text-slate-500" />
+                    Maç Bazlı Detayları Gör
+                </span>
+                {showBreakdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </button>
 
             {showBreakdown && (
@@ -171,9 +174,12 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
                 }
             `}</style>
 
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800/50 flex items-center gap-3">
-                <p className="text-[10px] text-blue-800 dark:text-blue-300 font-bold leading-tight">
-                    💡 Hakedişler size atanan tüm maçlar baz alınarak otomatik hesaplanır. Kartlardaki ödeme kutuları ise sadece cebinize giren parayı (Ödenen) takip etmeniz içindir.
+            <div className="bg-amber-50 dark:bg-amber-950/40 p-4 rounded-2xl border-2 border-amber-200 dark:border-amber-900/50 flex items-center gap-4 shadow-sm">
+                <div className="bg-amber-100 dark:bg-amber-900/50 p-2 rounded-full shrink-0">
+                    <AlertCircle size={20} className="text-amber-600 dark:text-amber-400" />
+                </div>
+                <p className="text-[11px] text-amber-900 dark:text-amber-200 font-bold leading-relaxed">
+                    Hakedişler size atanan tüm maçlar baz alınarak otomatik hesaplanır. Kartlardaki ödeme kutuları ise sadece cebinize giren parayı (Ödenen) takip etmeniz içindir.
                 </p>
             </div>
         </div>
