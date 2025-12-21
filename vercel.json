@@ -8,12 +8,6 @@
       "destination": "/index.html"
     }
   ],
-  "crons": [
-    {
-      "path": "/api/cron-scan",
-      "schedule": "*/15 * * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
