@@ -4,7 +4,7 @@ import App from './App'
 import './index.css'
 
 if (typeof window !== 'undefined') {
-  console.log("App Version 10.9 initialized");
+  console.log("App Version 11.0 initialized");
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

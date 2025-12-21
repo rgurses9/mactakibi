@@ -88,14 +88,7 @@ const App: React.FC = () => {
     const [activeExpanded, setActiveExpanded] = useState(true);
     const [pastExpanded, setPastExpanded] = useState(false);
 
-    // Force Light Mode
-    useEffect(() => {
-        const root = window.document.documentElement;
-        root.classList.remove('dark');
-        root.classList.add('light');
-    }, []);
-
-    // Internal logging
+    // internal logging
     const addLog = (message: string, type: string = 'info') => {
         const timestamp = new Date().toLocaleTimeString();
         console.log(`[${timestamp}] [${type.toUpperCase()}] ${message}`);
@@ -662,7 +655,7 @@ const App: React.FC = () => {
                             <Shield size={20} />
                         </div>
                         <h1 className="font-bold text-gray-900 text-sm leading-tight hidden sm:block">
-                            Maç Takip Sistemi <span className="text-[10px] text-blue-500 ml-1">v10.9</span>
+                            Maç Takip Sistemi <span className="text-[10px] text-blue-500 ml-1">v11.0</span>
                         </h1>
                     </div>
 

@@ -169,9 +169,6 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
                     background: #e2e8f0;
                     border-radius: 10px;
                 }
-                .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #1e293b;
-                }
             `}</style>
 
             <div className="bg-amber-100 p-4 rounded-2xl border-2 border-amber-300 flex items-center gap-4 shadow-sm">
