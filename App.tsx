@@ -541,6 +541,9 @@ const App: React.FC = () => {
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
+                if (typeof window !== 'undefined') {
+                    console.log("App Version 11.2 initialized");
+                }
                 setIsFirebaseOpen(false);
                 setIsBotSettingsOpen(false);
                 setIsFeeListOpen(false);
@@ -655,7 +658,7 @@ const App: React.FC = () => {
                             <Shield size={20} />
                         </div>
                         <h1 className="font-bold text-gray-900 text-sm leading-tight hidden sm:block">
-                            Maç Takip Sistemi <span className="text-[10px] text-blue-500 ml-1">v11.1</span>
+                            Maç Takip Sistemi <span className="text-[10px] text-blue-500 ml-1">v11.2</span>
                         </h1>
                     </div>
 
