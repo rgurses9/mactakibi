@@ -11,7 +11,7 @@ const FIREBASE_CONFIG = {
     messagingSenderId: "529275453572",
     appId: "1:529275453572:web:4d6102920b55724e5902d1",
     measurementId: "G-V793VBMXF7",
-    databaseURL: "https://mactakibi-50e0b.firebaseio.com"
+    databaseURL: "https://mactakibi-50e0b-default-rtdb.firebaseio.com"
 };
 
 const DRIVE_API_KEY = "AIzaSyCILoR2i6TtjpMl6pW0OOBhc3naQHAd12Q";

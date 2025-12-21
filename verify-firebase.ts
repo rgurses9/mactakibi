@@ -10,7 +10,7 @@ const config = {
     messagingSenderId: "529275453572",
     appId: "1:529275453572:web:4d6102920b55724e5902d1",
     measurementId: "G-V793VBMXF7",
-    databaseURL: "https://mactakibi-50e0b.firebaseio.com"
+    databaseURL: "https://mactakibi-50e0b-default-rtdb.firebaseio.com"
 };
 
 async function test() {

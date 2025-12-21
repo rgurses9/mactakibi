@@ -30,7 +30,7 @@ const DEFAULT_FIREBASE_CONFIG = {
     messagingSenderId: "529275453572",
     appId: "1:529275453572:web:4d6102920b55724e5902d1",
     measurementId: "G-V793VBMXF7",
-    databaseURL: "https://mactakibi-50e0b.firebaseio.com"
+    databaseURL: "https://mactakibi-50e0b-default-rtdb.firebaseio.com"
 };
 
 
@@ -662,7 +662,7 @@ const App: React.FC = () => {
                             <Shield size={20} />
                         </div>
                         <h1 className="font-bold text-gray-900 text-sm leading-tight hidden sm:block">
-                            Maç Takip Sistemi <span className="text-[10px] text-blue-500 ml-1">v10.8</span>
+                            Maç Takip Sistemi <span className="text-[10px] text-blue-500 ml-1">v10.9</span>
                         </h1>
                     </div>
 
