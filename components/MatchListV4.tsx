@@ -49,7 +49,7 @@ const MatchCard: React.FC<{
         borderColor: isGreenMode ? '#e5e7eb' : '#d1d5db',
       }}
       className={`group rounded-lg border shadow-sm overflow-hidden mb-2 p-3 transition-all duration-300 relative
-        ${isGreenMode ? 'ring-1 ring-gray-100 : ''}
+        ${isGreenMode ? 'ring-1 ring-gray-100' : ''}
       `}
     >
       <div className="flex justify-between items-start gap-3">
@@ -79,7 +79,7 @@ const MatchCard: React.FC<{
               <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.gsbPaid ? 'bg-green-500 border-green-600' : 'bg-white border-gray-300'}`}>
                 {paymentStatus.gsbPaid && <CheckCircle2 size={14} className="text-white" />}
               </div>
-              <span className={`text-[10px] font-black w-6 ${paymentStatus.gsbPaid ? 'text-red-600 line-through decoration-1' : 'text-black}`}>
+              <span className={`text-[10px] font-black w-6 ${paymentStatus.gsbPaid ? 'text-red-600 line-through decoration-1' : 'text-black'}`}>
                 GSB
               </span>
             </button>
@@ -100,7 +100,7 @@ const MatchCard: React.FC<{
               <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.ekPaid ? 'bg-green-500 border-green-600' : 'bg-white border-gray-300'}`}>
                 {paymentStatus.ekPaid && <CheckCircle2 size={14} className="text-white" />}
               </div>
-              <span className={`text-[10px] font-black w-6 text-center ${paymentStatus.ekPaid ? 'text-red-600 line-through decoration-1' : 'text-black}`}>
+              <span className={`text-[10px] font-black w-6 text-center ${paymentStatus.ekPaid ? 'text-red-600 line-through decoration-1' : 'text-black'}`}>
                 {paymentType === PaymentType.GELISIM_LIGI ? '600₺' : (paymentStatus.customFee ? `${paymentStatus.customFee}₺` : 'EK')}
               </span>
             </button>
@@ -157,8 +157,8 @@ const MatchCard: React.FC<{
 
                   return (
                     <span className={`text-[10px] font-black uppercase tracking-widest border px-2 py-0.5 rounded ${isSuccess
-                      ? 'text-green-700 border-green-200 bg-green-50
-                      : 'text-red-700 border-red-200 bg-red-50
+                      ? 'text-green-700 border-green-200 bg-green-50'
+                      : 'text-red-700 border-red-200 bg-red-50'
                       }`}>
                       {label}
                     </span>
