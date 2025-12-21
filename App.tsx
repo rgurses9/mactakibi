@@ -11,7 +11,7 @@ import { MatchDetails, AnalysisResult } from './types';
 import { getMatchId, getAllPaymentStatuses, savePaymentStatus, isMatchEligibleForPayment, getPaymentType, PaymentType, PAYMENT_RATES, PaymentStatus } from './services/paymentService';
 import { autoScanDriveFolder } from './services/driveService';
 import { findMatchesInExcel, findMatchesInRawData } from './services/excelService';
-import { initFirebase, subscribeToMatches, subscribeToAuthChanges, logoutUser } from './services/firebaseService';
+import { initFirebase, subscribeToMatches, subscribeToAuthChanges, logoutUser, updateUserBotConfig } from './services/firebaseService';
 import { isPastDate, parseDate } from './utils/dateHelpers';
 import FeeTable from './components/FeeTable';
 import {
@@ -105,9 +105,7 @@ const App: React.FC = () => {
         setBotConfig(newConfig);
         localStorage.setItem('bot_config', JSON.stringify(newConfig));
         if (user) {
-            import('./services/firebaseService').then(({ updateUserBotConfig }) => {
-                updateUserBotConfig(user.uid, newConfig);
-            });
+            updateUserBotConfig(user.uid, newConfig).catch(err => addLog(`Bot ayarları kaydedilemedi: ${err.message}`, 'error'));
         }
         setIsBotSettingsOpen(false);
     };
@@ -663,7 +661,9 @@ const App: React.FC = () => {
                         <div className="bg-blue-600 text-black p-2 rounded-lg">
                             <Shield size={20} />
                         </div>
-                        <h1 className="font-bold text-gray-900 text-sm leading-tight hidden sm:block">Maç Takip Sistemi</h1>
+                        <h1 className="font-bold text-gray-900 text-sm leading-tight hidden sm:block">
+                            Maç Takip Sistemi <span className="text-[10px] text-blue-500 ml-1">v10.6</span>
+                        </h1>
                     </div>
 
                     <div className="flex items-center gap-3 md:gap-4">

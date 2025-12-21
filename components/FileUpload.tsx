@@ -41,12 +41,11 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesSelect, isAnalyzing }) =
   };
 
   return (
-    <div 
-      className={`relative p-8 rounded-xl border-2 border-dashed transition-all duration-300 ${
-        dragActive 
-          ? 'border-blue-500 bg-blue-50 
-          : 'border-gray-300 bg-white hover:border-gray-400
-      } ${isAnalyzing ? 'opacity-50 pointer-events-none' : ''}`}
+    <div
+      className={`relative p-8 rounded-xl border-2 border-dashed transition-all duration-300 ${dragActive
+          ? 'border-blue-500 bg-blue-50'
+          : 'border-gray-300 bg-white hover:border-gray-400'
+        } ${isAnalyzing ? 'opacity-50 pointer-events-none' : ''}`}
       onDragEnter={handleDrag}
       onDragLeave={handleDrag}
       onDragOver={handleDrag}
@@ -60,12 +59,12 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesSelect, isAnalyzing }) =
         accept="image/*,application/pdf,.xlsx,.xls,.csv"
         onChange={handleChange}
       />
-      
+
       <div className="flex flex-col items-center justify-center space-y-4 text-center">
-        <div className={`p-4 rounded-full ${dragActive ? 'bg-blue-100 text-blue-600 : 'bg-gray-100 text-gray-500}`}>
+        <div className={`p-4 rounded-full ${dragActive ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
           <Files size={32} />
         </div>
-        
+
         <div>
           <h3 className="text-lg font-semibold text-gray-800">
             Dosyaları Buraya Sürükleyin
