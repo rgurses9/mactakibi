@@ -662,7 +662,7 @@ const App: React.FC = () => {
                             <Shield size={20} />
                         </div>
                         <h1 className="font-bold text-gray-900 text-sm leading-tight hidden sm:block">
-                            Maç Takip Sistemi <span className="text-[10px] text-blue-500 ml-1">v10.6</span>
+                            Maç Takip Sistemi <span className="text-[10px] text-blue-500 ml-1">v10.7</span>
                         </h1>
                     </div>
 
