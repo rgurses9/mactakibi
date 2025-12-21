@@ -48,20 +48,20 @@ const MatchCard: React.FC<{
         backgroundColor: isGreenMode ? '#ffffff' : '#f9fafb',
         borderColor: isGreenMode ? '#e5e7eb' : '#d1d5db',
       }}
-      className={`group rounded-lg border shadow-sm overflow-hidden mb-2 dark:bg-gray-900 dark:border-gray-800 p-3 transition-all duration-300 relative
-        ${isGreenMode ? 'ring-1 ring-gray-100 dark:ring-gray-800' : ''}
+      className={`group rounded-lg border shadow-sm overflow-hidden mb-2 p-3 transition-all duration-300 relative
+        ${isGreenMode ? 'ring-1 ring-gray-100 : ''}
       `}
     >
       <div className="flex justify-between items-start gap-3">
         {/* Info Column */}
         <div className="flex-1 min-w-0">
-          <div className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 mb-0.5 truncate">
+          <div className="text-[10px] font-black uppercase text-gray-500 mb-0.5 truncate">
             {match.category} {match.group ? `• ${match.group}` : ''}
           </div>
-          <div className="text-sm font-black text-black dark:text-white leading-tight mb-1">
+          <div className="text-sm font-black text-black leading-tight mb-1">
             {match.teamA} vs {match.teamB}
           </div>
-          <div className="flex items-center gap-2 text-[10px] font-bold text-gray-600 dark:text-gray-400">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-gray-600">
             <span className="flex items-center gap-0.5"><MapPin size={10} />{match.hall}</span>
             <span>• {match.time}</span>
             <span>• {formatDate(match.date)}</span>
@@ -79,14 +79,14 @@ const MatchCard: React.FC<{
               <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.gsbPaid ? 'bg-green-500 border-green-600' : 'bg-white border-gray-300'}`}>
                 {paymentStatus.gsbPaid && <CheckCircle2 size={14} className="text-white" />}
               </div>
-              <span className={`text-[10px] font-black w-6 ${paymentStatus.gsbPaid ? 'text-red-600 line-through decoration-1' : 'text-black dark:text-white'}`}>
+              <span className={`text-[10px] font-black w-6 ${paymentStatus.gsbPaid ? 'text-red-600 line-through decoration-1' : 'text-black}`}>
                 GSB
               </span>
             </button>
           )}
 
-          {/* EK Mini - Show for Standard or Custom Fee (Special/Uni) matches */}
-          {(paymentType === PaymentType.STANDARD || paymentType === PaymentType.CUSTOM_FEE) && (
+          {/* EK Mini - Show for Standard or Custom Fee (Special/Uni) or GELISIM matches */}
+          {(paymentType === PaymentType.STANDARD || paymentType === PaymentType.CUSTOM_FEE || paymentType === PaymentType.GELISIM_LIGI) && (
             <button
               onClick={(e) => {
                 if (paymentType === PaymentType.CUSTOM_FEE && !paymentStatus.isCustomFeeSet) {
@@ -100,8 +100,8 @@ const MatchCard: React.FC<{
               <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.ekPaid ? 'bg-green-500 border-green-600' : 'bg-white border-gray-300'}`}>
                 {paymentStatus.ekPaid && <CheckCircle2 size={14} className="text-white" />}
               </div>
-              <span className={`text-[10px] font-black w-6 text-center ${paymentStatus.ekPaid ? 'text-red-600 line-through decoration-1' : 'text-black dark:text-white'}`}>
-                {paymentStatus.customFee ? `${paymentStatus.customFee}₺` : 'EK'}
+              <span className={`text-[10px] font-black w-6 text-center ${paymentStatus.ekPaid ? 'text-red-600 line-through decoration-1' : 'text-black}`}>
+                {paymentType === PaymentType.GELISIM_LIGI ? '600₺' : (paymentStatus.customFee ? `${paymentStatus.customFee}₺` : 'EK')}
               </span>
             </button>
           )}
@@ -124,10 +124,11 @@ const MatchCard: React.FC<{
 
         const isFullyPaid = (paymentType === PaymentType.STANDARD && paymentStatus.gsbPaid && paymentStatus.ekPaid) ||
           (paymentType === PaymentType.GSB_ONLY && paymentStatus.gsbPaid) ||
-          (paymentType === PaymentType.CUSTOM_FEE && paymentStatus.ekPaid);
+          (paymentType === PaymentType.CUSTOM_FEE && paymentStatus.ekPaid) ||
+          (paymentType === PaymentType.GELISIM_LIGI && paymentStatus.ekPaid);
 
         return (
-          <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
+          <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center">
             {isGreenMode ? (
               <span className="bg-yellow-300 text-black text-[9px] font-black px-1.5 py-0.5 rounded uppercase shadow-sm">
                 GÖREVLİSİN ✅
@@ -156,8 +157,8 @@ const MatchCard: React.FC<{
 
                   return (
                     <span className={`text-[10px] font-black uppercase tracking-widest border px-2 py-0.5 rounded ${isSuccess
-                        ? 'text-green-700 dark:text-green-400 border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/30'
-                        : 'text-red-700 dark:text-red-500 border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30'
+                      ? 'text-green-700 border-green-200 bg-green-50
+                      : 'text-red-700 border-red-200 bg-red-50
                       }`}>
                       {label}
                     </span>
@@ -186,7 +187,7 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
     <div className={`${variant === 'past' ? 'opacity-80' : ''} mb-6`}>
       {title && (
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-black text-black dark:text-white uppercase tracking-tight flex items-center gap-1.5">
+          <h2 className="text-sm font-black text-black uppercase tracking-tight flex items-center gap-1.5">
             {variant === 'active' ? <CheckCircle2 size={14} className="text-green-600" /> : <History size={14} className="text-gray-500" />}
             {title}
           </h2>

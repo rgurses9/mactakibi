@@ -10,12 +10,14 @@ export enum PaymentType {
     STANDARD = 'STANDARD', // Generic HAFTA matches (GSB + Ek)
     GSB_ONLY = 'GSB_ONLY', // OKUL matches (Only GSB)
     CUSTOM_FEE = 'CUSTOM_FEE', // ÖZEL LİG matches (Custom fee input)
+    GELISIM_LIGI = 'GELISIM_LIGI', // GELİŞİM LİGİ matches (600 TL)
     NONE = 'NONE' // Not eligible
 }
 
 export const PAYMENT_RATES = {
     GSB: 348.4,
-    EK: 300
+    EK: 300,
+    GELISIM: 600
 };
 
 export const getMatchId = (match: any): string => {
@@ -58,6 +60,11 @@ export const getAllPaymentStatuses = (userEmail: string): Record<string, Payment
 
 export const getPaymentType = (match: any): PaymentType => {
     const source = match.sourceFile?.toLocaleUpperCase('tr-TR') || '';
+    const category = match.category?.toLocaleUpperCase('tr-TR') || '';
+
+    if (source.includes('GELİŞİM LİGİ') || category.includes('GELİŞİM LİGİ')) {
+        return PaymentType.GELISIM_LIGI;
+    }
 
     if (source.includes('OKUL İL VE İLÇE')) {
         return PaymentType.GSB_ONLY;

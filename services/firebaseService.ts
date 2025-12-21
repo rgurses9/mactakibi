@@ -142,6 +142,11 @@ export const subscribeToAuthChanges = (callback: (user: firebase.User | null) =>
   return auth.onAuthStateChanged(callback);
 };
 
+export const updateUserBotConfig = async (uid: string, config: { phone: string, apiKey: string }) => {
+  if (!db) throw new Error("Veritabanı bağlantısı yok.");
+  await db.ref('users/' + uid + '/botConfig').set(config);
+};
+
 // --- USER MANAGEMENT (ADMIN) ---
 
 export const getAllUsers = async () => {

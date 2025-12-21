@@ -34,10 +34,10 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
     };
 
     if (eligibleCount === 0) return (
-        <div className="text-center py-10 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800">
+        <div className="text-center py-10 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
             <div className="text-3xl mb-2">📒</div>
-            <div className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-widest">Hakediş Verisi Bulunmuyor</div>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-2 px-6">
+            <div className="text-sm font-bold text-gray-800 uppercase tracking-widest">Hakediş Verisi Bulunmuyor</div>
+            <p className="text-[10px] text-gray-500 mt-2 px-6">
                 Size atanmış geçmiş bir müsabaka bulunamadığı için hesaplama yapılamıyor.
             </p>
         </div>
@@ -49,7 +49,7 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
             <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    <h3 className="text-xs font-black text-gray-800 dark:text-gray-200 uppercase tracking-tighter">Otomatik Hakediş Özeti</h3>
+                    <h3 className="text-xs font-black text-gray-800 uppercase tracking-tighter">Otomatik Hakediş Özeti</h3>
                 </div>
                 <div className="flex gap-2">
                     <span className="text-[9px] font-black bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase">
@@ -98,9 +98,9 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
                 </div>
 
                 {/* 3. KALAN ALACAK */}
-                <div className="bg-red-50 dark:bg-red-950/30 p-4 rounded-2xl border-2 border-red-100 dark:border-red-900 shadow-sm transition-colors">
-                    <div className="text-[10px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest mb-1">Kalan Alacak</div>
-                    <div className="text-2xl font-black text-red-700 dark:text-red-300 drop-shadow-sm">
+                <div className="bg-red-50 p-4 rounded-2xl border-2 border-red-100 shadow-sm transition-colors">
+                    <div className="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">Kalan Alacak</div>
+                    <div className="text-2xl font-black text-red-700 drop-shadow-sm">
                         {formatCurrency(remaining)}
                     </div>
                 </div>
@@ -120,10 +120,10 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
             {showBreakdown && (
                 <div className="max-h-[300px] overflow-y-auto pr-1 space-y-1.5 animate-in slide-in-from-top-2 duration-300 custom-scrollbar">
                     {details.map((item) => (
-                        <div key={item.id} className="bg-gray-50/50 dark:bg-gray-900/50 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 flex justify-between items-center text-[10px] transition-colors hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <div key={item.id} className="bg-gray-50/50 p-2.5 rounded-xl border border-gray-100 flex justify-between items-center text-[10px] transition-colors hover:bg-gray-100">
                             <div className="flex-1 min-w-0">
                                 <div className="text-[8px] text-gray-400 uppercase font-black mb-0.5">{item.date}</div>
-                                <div className="font-bold text-gray-900 dark:text-white truncate pr-2">
+                                <div className="font-bold text-gray-900 truncate pr-2">
                                     {item.teamA} vs {item.teamB}
                                 </div>
                             </div>
@@ -146,9 +146,9 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
                                         </div>
                                     </div>
                                 )}
-                                <div className="pl-2.5 border-l border-gray-200 dark:border-gray-800 ml-0.5">
+                                <div className="pl-2.5 border-l border-gray-200 ml-0.5">
                                     <div className="text-[7px] text-gray-400 uppercase font-black">TOPLAM</div>
-                                    <div className="text-gray-900 dark:text-white font-black">
+                                    <div className="text-gray-900 font-black">
                                         {formatCurrency(item.total)}
                                     </div>
                                 </div>

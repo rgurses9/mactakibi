@@ -71,18 +71,18 @@ const Auth: React.FC = () => {
 
   if (pendingApproval) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950 p-4 transition-colors duration-300">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 transition-colors duration-300">
+        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <Clock size={32} />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Hesap Onayı Bekleniyor</h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Hesap Onayı Bekleniyor</h2>
+          <p className="text-gray-600 mb-6">
             Hesabınız başarıyla oluşturuldu ancak henüz yönetici onayı almadı. Yöneticiniz kaydınızı onayladığında sistem erişiminize açılacaktır.
           </p>
           <button
             onClick={() => setPendingApproval(false)}
-            className="text-orange-600 dark:text-orange-400 font-semibold hover:underline"
+            className="text-orange-600 font-semibold hover:underline"
           >
             Giriş Ekranına Dön
           </button>
@@ -93,18 +93,18 @@ const Auth: React.FC = () => {
 
   if (verificationSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950 p-4 transition-colors duration-300">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 transition-colors duration-300">
+        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <Mail size={32} />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Kaydınız Alınmıştır</h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Kaydınız Alınmıştır</h2>
+          <p className="text-gray-600 mb-6">
             Kaydınız onaylanınca <strong>{email}</strong> mail adresinize bilgi verilecektir.
           </p>
           <button
             onClick={() => setVerificationSent(false)}
-            className="text-orange-600 dark:text-orange-400 font-semibold hover:underline"
+            className="text-orange-600 font-semibold hover:underline"
           >
             Giriş Ekranına Dön
           </button>
@@ -114,17 +114,17 @@ const Auth: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-blue-950 dark:to-indigo-950 p-4 transition-colors duration-300">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 transition-colors duration-300">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
 
         {/* Header Banner */}
-        <div className="bg-orange-500 dark:bg-orange-700 p-8 text-white text-center relative overflow-hidden transition-colors duration-300">
+        <div className="bg-orange-500 p-8 text-white text-center relative overflow-hidden transition-colors duration-300">
           <div className="relative z-10">
             <div className="bg-white/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
               <ShieldCheck size={28} />
             </div>
             <h1 className="text-3xl font-bold mb-2">Maç Takip Sistemi</h1>
-            <p className="text-orange-100 dark:text-orange-200 text-sm leading-relaxed">
+            <p className="text-orange-100 text-sm leading-relaxed">
               Basketbol müsabaka ve görev takip platformu
             </p>
           </div>
@@ -135,18 +135,18 @@ const Auth: React.FC = () => {
         </div>
 
         {/* Form Section */}
-        <div className="p-8 bg-white dark:bg-gray-800 transition-colors duration-300">
+        <div className="p-8 bg-white transition-colors duration-300">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
               {isLogin ? 'Tekrar Hoş Geldiniz' : 'Hesap Oluştur'}
             </h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm text-center">
+            <p className="text-gray-500 text-sm text-center">
               {isLogin ? 'Devam etmek için lütfen giriş yapın.' : 'Görevlerinize erişmek için kayıt olun.'}
             </p>
           </div>
 
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 p-3 rounded-lg text-sm flex items-center gap-2 mb-6">
+            <div className="bg-red-50 border border-red-100 text-red-600 p-3 rounded-lg text-sm flex items-center gap-2 mb-6">
               <AlertCircle size={16} />
               {error}
             </div>
@@ -157,7 +157,7 @@ const Auth: React.FC = () => {
             {!isLogin && (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Ad</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Ad</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white">
                       <User size={16} />
@@ -167,26 +167,26 @@ const Auth: React.FC = () => {
                       required
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="pl-10 w-full px-4 py-2.5 bg-red-600 dark:bg-red-700 border border-red-500 dark:border-red-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200 dark:placeholder-red-300"
+                      className="pl-10 w-full px-4 py-2.5 bg-red-600 border border-red-500 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200"
                       placeholder="Adınız"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Soyad</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Soyad</label>
                   <div className="relative">
                     <input
                       type="text"
                       required
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-red-600 dark:bg-red-700 border border-red-500 dark:border-red-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200 dark:placeholder-red-300"
+                      className="w-full px-4 py-2.5 bg-red-600 border border-red-500 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200"
                       placeholder="Soyadınız"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Kullanıcı Adı</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">Kullanıcı Adı</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white">
                       <User size={16} />
@@ -196,7 +196,7 @@ const Auth: React.FC = () => {
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="pl-10 w-full px-4 py-2.5 bg-red-600 dark:bg-red-700 border border-red-500 dark:border-red-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200 dark:placeholder-red-300"
+                      className="pl-10 w-full px-4 py-2.5 bg-red-600 border border-red-500 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200"
                       placeholder="kullaniciadi"
                     />
                   </div>
@@ -205,7 +205,7 @@ const Auth: React.FC = () => {
             )}
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">E-Posta Adresi</label>
+              <label className="block text-xs font-bold text-gray-700 mb-1">E-Posta Adresi</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white">
                   <Mail size={16} />
@@ -215,14 +215,14 @@ const Auth: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 w-full px-4 py-2.5 bg-red-600 dark:bg-red-700 border border-red-500 dark:border-red-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200 dark:placeholder-red-300"
+                  className="pl-10 w-full px-4 py-2.5 bg-red-600 border border-red-500 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200"
                   placeholder="ornek@email.com"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Şifre</label>
+              <label className="block text-xs font-bold text-gray-700 mb-1">Şifre</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white">
                   <Lock size={16} />
@@ -232,7 +232,7 @@ const Auth: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 w-full px-4 py-2.5 bg-red-600 dark:bg-red-700 border border-red-500 dark:border-red-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200 dark:placeholder-red-300"
+                  className="pl-10 w-full px-4 py-2.5 bg-red-600 border border-red-500 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200"
                   placeholder="••••••••"
                 />
               </div>
@@ -240,7 +240,7 @@ const Auth: React.FC = () => {
 
             {!isLogin && (
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Şifre Doğrula</label>
+                <label className="block text-xs font-bold text-gray-700 mb-1">Şifre Doğrula</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-white">
                     <Lock size={16} />
@@ -250,7 +250,7 @@ const Auth: React.FC = () => {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10 w-full px-4 py-2.5 bg-red-600 dark:bg-red-700 border border-red-500 dark:border-red-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200 dark:placeholder-red-300"
+                    className="pl-10 w-full px-4 py-2.5 bg-red-600 border border-red-500 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all text-white placeholder-red-200"
                     placeholder="••••••••"
                   />
                 </div>
@@ -260,7 +260,7 @@ const Auth: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-orange-500 dark:bg-orange-600 text-white font-bold py-3 rounded-lg hover:bg-orange-600 dark:hover:bg-orange-500 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-orange-200 dark:shadow-none mt-4 disabled:opacity-70"
+              className="w-full bg-orange-500 text-white font-bold py-3 rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-orange-200 mt-4 disabled:opacity-70"
             >
               {loading ? 'İşleniyor...' : (isLogin ? 'Giriş Yap' : 'Kayıt Ol')}
               {!loading && <ArrowRight size={18} />}
@@ -269,7 +269,7 @@ const Auth: React.FC = () => {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600">
               {isLogin ? "Hesabınız yok mu?" : "Zaten hesabınız var mı?"}
               <button
                 onClick={() => {
@@ -282,7 +282,7 @@ const Auth: React.FC = () => {
                   setPassword('');
                   setConfirmPassword('');
                 }}
-                className="ml-2 font-bold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors"
+                className="ml-2 font-bold text-orange-600 hover:text-orange-700 transition-colors"
               >
                 {isLogin ? "Kayıt Ol" : "Giriş Yap"}
               </button>
