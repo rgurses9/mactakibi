@@ -69,7 +69,7 @@ const FirebaseSettings: React.FC<FirebaseSettingsProps> = ({ isOpen, onClose, on
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="bg-orange-600 p-4 flex items-center justify-between text-white">

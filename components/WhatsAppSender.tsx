@@ -65,10 +65,10 @@ const WhatsAppSender: React.FC<WhatsAppSenderProps> = ({ matches, config }) => {
 
   if (!isConfigured) {
     return (
-      <div className="mt-8 bg-gray-50 dark:bg-gray-800/50 border border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-6 text-center">
+      <div className="mt-8 bg-gray-50 border border-dashed border-gray-300 rounded-2xl p-6 text-center">
         <AlertCircle size={32} className="mx-auto text-gray-400 mb-2" />
-        <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-widest">WhatsApp Yapılandırılmadı</h4>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Bildirimler için Bot Ayarlarını kullanın.</p>
+        <h4 className="text-sm font-bold text-gray-800 uppercase tracking-widest">WhatsApp Yapılandırılmadı</h4>
+        <p className="text-xs text-gray-500 mt-1">Bildirimler için Bot Ayarlarını kullanın.</p>
       </div>
     );
   }
