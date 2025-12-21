@@ -579,23 +579,38 @@ const App: React.FC = () => {
     const adminEmails = ['admin@admin.com', 'rifatgurses@gmail.com'];
     const isAdmin = user?.email ? adminEmails.includes(user.email.toLowerCase()) : false;
 
+    // Escape key listener for all modals
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setIsFirebaseOpen(false);
+                setIsBotSettingsOpen(false);
+                setIsFeeListOpen(false);
+                setIsAdminPanelOpen(false);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     if (!authInitialized) {
-        return <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-            <div className="flex flex-col items-center gap-2">
-                <RefreshCw className="animate-spin text-blue-600 dark:text-blue-400" size={32} />
-                <span className="text-gray-500 dark:text-gray-400 font-medium">Yükleniyor...</span>
+        return (
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-gray-500 font-medium animate-pulse">Sistem Hazırlanıyor...</p>
+                </div>
             </div>
-        </div>;
+        );
     }
 
-    // If user is not logged in, show Auth Screen
     if (!user) {
         return <Auth />;
     }
 
     return (
-        <div className="min-h-screen bg-white dark:bg-black font-sans pb-24 transition-colors duration-300">
-
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+            {/* Firebase Settings Component */}
             <FirebaseSettings
                 isOpen={isFirebaseOpen}
                 onClose={() => setIsFirebaseOpen(false)}
@@ -615,8 +630,14 @@ const App: React.FC = () => {
             />
 
             {isBotSettingsOpen && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+                <div
+                    className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+                    onClick={() => setIsBotSettingsOpen(false)}
+                >
+                    <div
+                        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className="bg-green-600 p-4 flex items-center justify-between text-black">
                             <h3 className="font-bold flex items-center gap-2">
                                 <Settings size={20} className="text-black" />
@@ -638,8 +659,14 @@ const App: React.FC = () => {
 
             {/* Fee List Modal */}
             {isFeeListOpen && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setIsFeeListOpen(false)}>
-                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full animate-in fade-in zoom-in-95 duration-200 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div
+                    className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+                    onClick={() => setIsFeeListOpen(false)}
+                >
+                    <div
+                        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className="bg-green-600 p-4 flex items-center justify-between text-black">
                             <h3 className="font-bold flex items-center gap-2">
                                 <span className="text-base">💰</span>

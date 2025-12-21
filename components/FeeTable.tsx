@@ -108,10 +108,10 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
 
             <button
                 onClick={() => setShowBreakdown(!showBreakdown)}
-                className="w-full py-2.5 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] font-black uppercase text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all shadow-sm"
+                className="w-full py-2.5 px-4 rounded-xl border-2 border-slate-300 flex items-center justify-between text-[11px] font-black uppercase text-black bg-slate-100 hover:bg-slate-200 transition-all shadow-sm"
             >
                 <span className="flex items-center gap-2">
-                    <HistoryIcon size={14} className="text-slate-500" />
+                    <HistoryIcon size={14} className="text-slate-600" />
                     Maç Bazlı Detayları Gör
                 </span>
                 {showBreakdown ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -174,11 +174,11 @@ const FeeTable: React.FC<FeeTableProps> = ({ eligibleCount, totalAmount, paidAmo
                 }
             `}</style>
 
-            <div className="bg-amber-50 dark:bg-amber-950/40 p-4 rounded-2xl border-2 border-amber-200 dark:border-amber-900/50 flex items-center gap-4 shadow-sm">
-                <div className="bg-amber-100 dark:bg-amber-900/50 p-2 rounded-full shrink-0">
-                    <AlertCircle size={20} className="text-amber-600 dark:text-amber-400" />
+            <div className="bg-amber-100 p-4 rounded-2xl border-2 border-amber-300 flex items-center gap-4 shadow-sm">
+                <div className="bg-amber-200 p-2 rounded-full shrink-0">
+                    <AlertCircle size={20} className="text-amber-700" />
                 </div>
-                <p className="text-[11px] text-amber-900 dark:text-amber-200 font-bold leading-relaxed">
+                <p className="text-[11px] text-black font-bold leading-relaxed">
                     Hakedişler size atanan tüm maçlar baz alınarak otomatik hesaplanır. Kartlardaki ödeme kutuları ise sadece cebinize giren parayı (Ödenen) takip etmeniz içindir.
                 </p>
             </div>

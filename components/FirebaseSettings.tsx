@@ -32,8 +32,8 @@ const FirebaseSettings: React.FC<FirebaseSettingsProps> = ({ isOpen, onClose, on
         setConfigJson(saved);
       }
     } else {
-        // Use default if nothing saved
-        setConfigJson(JSON.stringify(DEFAULT_CONFIG, null, 2));
+      // Use default if nothing saved
+      setConfigJson(JSON.stringify(DEFAULT_CONFIG, null, 2));
     }
   }, [isOpen]);
 
@@ -51,11 +51,27 @@ const FirebaseSettings: React.FC<FirebaseSettingsProps> = ({ isOpen, onClose, on
     }
   };
 
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleEsc);
+    }
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+    <div
+      className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="bg-orange-600 p-4 flex items-center justify-between text-white">
           <h3 className="font-bold flex items-center gap-2">
             <Flame size={20} className="fill-orange-400 text-white" />
@@ -65,7 +81,7 @@ const FirebaseSettings: React.FC<FirebaseSettingsProps> = ({ isOpen, onClose, on
             <X size={20} />
           </button>
         </div>
-        
+
         <div className="p-6">
           <p className="text-sm text-gray-600 mb-4">
             Gerçek zamanlı veri akışı için Firebase Projenizin yapılandırma kodunu (JSON) aşağıya yapıştırın.
@@ -75,8 +91,8 @@ const FirebaseSettings: React.FC<FirebaseSettingsProps> = ({ isOpen, onClose, on
             <textarea
               value={configJson}
               onChange={(e) => {
-                  setConfigJson(e.target.value);
-                  setError(null);
+                setConfigJson(e.target.value);
+                setError(null);
               }}
               placeholder='{ "apiKey": "...", "authDomain": "...", "databaseURL": "..." }'
               className="w-full h-48 bg-gray-50 border border-gray-300 rounded-lg p-3 text-xs font-mono focus:ring-2 focus:ring-orange-500 focus:outline-none"
@@ -90,19 +106,19 @@ const FirebaseSettings: React.FC<FirebaseSettingsProps> = ({ isOpen, onClose, on
           )}
 
           <div className="flex justify-end gap-3">
-             <button 
-               onClick={onClose}
-               className="px-4 py-2 text-gray-600 font-medium text-sm hover:bg-gray-100 rounded-lg"
-             >
-               İptal
-             </button>
-             <button 
-               onClick={handleSave}
-               className="px-4 py-2 bg-orange-600 text-white font-bold text-sm rounded-lg hover:bg-orange-700 shadow-md flex items-center gap-2"
-             >
-               <Save size={16} />
-               Kaydet & Bağlan
-             </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 font-medium text-sm hover:bg-gray-100 rounded-lg"
+            >
+              İptal
+            </button>
+            <button
+              onClick={handleSave}
+              className="px-4 py-2 bg-orange-600 text-white font-bold text-sm rounded-lg hover:bg-orange-700 shadow-md flex items-center gap-2"
+            >
+              <Save size={16} />
+              Kaydet & Bağlan
+            </button>
           </div>
         </div>
       </div>
