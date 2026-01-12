@@ -11,7 +11,7 @@ import { MatchDetails, AnalysisResult } from './types';
 import { getMatchId, getAllPaymentStatuses, savePaymentStatus, isMatchEligibleForPayment, getPaymentType, PaymentType, getPaymentRates, PaymentStatus } from './services/paymentService';
 import { autoScanDriveFolder } from './services/driveService';
 import { findMatchesInExcel, findMatchesInRawData } from './services/excelService';
-import { initFirebase, subscribeToMatches, subscribeToAuthChanges, logoutUser, updateUserBotConfig } from './services/firebaseService';
+import { initFirebase, subscribeToMatches, subscribeToAuthChanges, logoutUser, updateUserBotConfig, savePaymentStatusToFirebase, getPaymentStatusesFromFirebase } from './services/firebaseService';
 import { isPastDate, parseDate } from './utils/dateHelpers';
 import FeeTable from './components/FeeTable';
 import {
@@ -163,9 +163,25 @@ const App: React.FC = () => {
                     setAuthInitialized(true);
 
                     // Load payment statuses immediately after user is identified
-                    if (currentUser && currentUser.email) {
-                        const statuses = getAllPaymentStatuses(currentUser.email);
-                        setPaymentStatuses(statuses);
+                    if (currentUser) {
+                        // 1. Load from localStorage for speed
+                        const localStatuses = getAllPaymentStatuses(currentUser.email || 'guest');
+                        setPaymentStatuses(localStatuses);
+
+                        // 2. Load from Firebase for persistence and sync
+                        getPaymentStatusesFromFirebase(currentUser.uid).then(firebaseStatuses => {
+                            if (firebaseStatuses) {
+                                // Merge or replace? Replace is better for "last state"
+                                setPaymentStatuses(prev => {
+                                    const merged = { ...prev, ...firebaseStatuses };
+                                    // Update local storage with firebase data too
+                                    Object.keys(firebaseStatuses).forEach(id => {
+                                        savePaymentStatus(currentUser.email || 'guest', id, firebaseStatuses[id]);
+                                    });
+                                    return merged;
+                                });
+                            }
+                        });
                     }
                 });
 
@@ -353,7 +369,9 @@ const App: React.FC = () => {
                 };
             }
 
-            savePaymentStatus(user.email!, matchId, newStatus);
+            savePaymentStatus(user.email || 'guest', matchId, newStatus);
+            // Also save to Firebase for persistence
+            savePaymentStatusToFirebase(user.uid, matchId, newStatus);
             return { ...prev, [matchId]: newStatus };
         });
     };

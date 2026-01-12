@@ -147,6 +147,17 @@ export const updateUserBotConfig = async (uid: string, config: { phone: string, 
   await db.ref('users/' + uid + '/botConfig').set(config);
 };
 
+export const savePaymentStatusToFirebase = async (uid: string, matchId: string, status: any) => {
+  if (!db) return;
+  await db.ref(`users/${uid}/payments/${matchId}`).set(status);
+};
+
+export const getPaymentStatusesFromFirebase = async (uid: string): Promise<Record<string, any>> => {
+  if (!db) return {};
+  const snapshot = await db.ref(`users/${uid}/payments`).once('value');
+  return snapshot.val() || {};
+};
+
 // --- USER MANAGEMENT (ADMIN) ---
 
 export const getAllUsers = async () => {
