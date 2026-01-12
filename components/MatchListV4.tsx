@@ -44,24 +44,21 @@ const MatchCard: React.FC<{
   // MINI VERSION - COMPACT DESIGN
   return (
     <div
-      style={{
-        backgroundColor: isGreenMode ? '#ffffff' : '#f9fafb',
-        borderColor: isGreenMode ? '#e5e7eb' : '#d1d5db',
-      }}
       className={`group rounded-lg border shadow-sm overflow-hidden mb-2 p-3 transition-all duration-300 relative
-        ${isGreenMode ? 'ring-1 ring-gray-100' : ''}
+        bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-800
+        ${isGreenMode ? 'ring-1 ring-gray-100 dark:ring-slate-800' : 'bg-gray-50/50 dark:bg-slate-950/50'}
       `}
     >
       <div className="flex justify-between items-start gap-3">
         {/* Info Column */}
         <div className="flex-1 min-w-0">
-          <div className="text-[10px] font-black uppercase text-gray-500 mb-0.5 truncate">
+          <div className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 mb-0.5 truncate">
             {match.category} {match.group ? `• ${match.group}` : ''}
           </div>
-          <div className="text-sm font-black text-black leading-tight mb-1">
+          <div className="text-sm font-black text-black dark:text-white leading-tight mb-1">
             {match.teamA} vs {match.teamB}
           </div>
-          <div className="flex items-center gap-2 text-[10px] font-bold text-gray-600">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-gray-600 dark:text-gray-400">
             <span className="flex items-center gap-0.5"><MapPin size={10} />{match.hall}</span>
             <span>• {match.time}</span>
             <span>• {formatDate(match.date)}</span>
@@ -76,10 +73,10 @@ const MatchCard: React.FC<{
               onClick={() => handleToggle('gsb')}
               className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
             >
-              <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.gsbPaid ? 'bg-green-500 border-green-600' : 'bg-white border-gray-300'}`}>
+              <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.gsbPaid ? 'bg-green-500 border-green-600' : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700'}`}>
                 {paymentStatus.gsbPaid && <CheckCircle2 size={14} className="text-white" />}
               </div>
-              <span className={`text-[10px] font-black w-6 ${paymentStatus.gsbPaid ? 'text-red-600 line-through decoration-1' : 'text-black'}`}>
+              <span className={`text-[10px] font-black w-6 ${paymentStatus.gsbPaid ? 'text-red-600 dark:text-red-400 line-through decoration-1' : 'text-black dark:text-white'}`}>
                 GSB
               </span>
             </button>
@@ -97,10 +94,10 @@ const MatchCard: React.FC<{
               }}
               className="flex items-center gap-1.5 hover:opacity-80 transition-opacity"
             >
-              <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.ekPaid ? 'bg-green-500 border-green-600' : 'bg-white border-gray-300'}`}>
+              <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.ekPaid ? 'bg-green-500 border-green-600' : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700'}`}>
                 {paymentStatus.ekPaid && <CheckCircle2 size={14} className="text-white" />}
               </div>
-              <span className={`text-[10px] font-black w-6 text-center ${paymentStatus.ekPaid ? 'text-red-600 line-through decoration-1' : 'text-black'}`}>
+              <span className={`text-[10px] font-black w-6 text-center ${paymentStatus.ekPaid ? 'text-red-600 dark:text-red-400 line-through decoration-1' : 'text-black dark:text-white'}`}>
                 {paymentType === PaymentType.GELISIM_LIGI ? '600₺' : (paymentStatus.customFee ? `${paymentStatus.customFee}₺` : 'EK')}
               </span>
             </button>
@@ -128,7 +125,7 @@ const MatchCard: React.FC<{
           (paymentType === PaymentType.GELISIM_LIGI && paymentStatus.ekPaid);
 
         return (
-          <div className="mt-2 pt-2 border-t border-gray-100 flex justify-between items-center">
+          <div className="mt-2 pt-2 border-t border-gray-100 dark:border-slate-800 flex justify-between items-center">
             {isGreenMode ? (
               <span className="bg-yellow-300 text-black text-[9px] font-black px-1.5 py-0.5 rounded uppercase shadow-sm">
                 GÖREVLİSİN ✅
@@ -157,8 +154,8 @@ const MatchCard: React.FC<{
 
                   return (
                     <span className={`text-[10px] font-black uppercase tracking-widest border px-2 py-0.5 rounded ${isSuccess
-                      ? 'text-green-700 border-green-200 bg-green-50'
-                      : 'text-red-700 border-red-200 bg-red-50'
+                      ? 'text-green-700 dark:text-green-400 border-green-200 dark:border-green-900/50 bg-green-50 dark:bg-green-900/20'
+                      : 'text-red-700 dark:text-red-400 border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20'
                       }`}>
                       {label}
                     </span>
@@ -187,11 +184,11 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
     <div className={`${variant === 'past' ? 'opacity-80' : ''} mb-6`}>
       {title && (
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-black text-black uppercase tracking-tight flex items-center gap-1.5">
+          <h2 className="text-sm font-black text-black dark:text-white uppercase tracking-tight flex items-center gap-1.5">
             {variant === 'active' ? <CheckCircle2 size={14} className="text-green-600" /> : <History size={14} className="text-gray-500" />}
             {title}
           </h2>
-          <span className={`text-[10px] font-black ${variant === 'active' ? 'bg-[#ee6730] text-white' : 'bg-gray-100 text-gray-600'} px-2 py-0.5 rounded shadow-sm`}>
+          <span className={`text-[10px] font-black ${variant === 'active' ? 'bg-[#ee6730] text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-400'} px-2 py-0.5 rounded shadow-sm`}>
             {sortedMatches.length}
           </span>
         </div>

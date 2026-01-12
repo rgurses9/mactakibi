@@ -17,7 +17,7 @@ import FeeTable from './components/FeeTable';
 import {
     Search, RefreshCw, Filter, Settings, Shield, User as UserIcon, LogOut, Check, X,
     Briefcase, AlertCircle, Upload, ShieldAlert, Bot, History as HistoryIcon,
-    Folder, Calendar, Flame, ChevronDown, ChevronUp
+    Folder, Calendar, Flame, ChevronDown, ChevronUp, Moon, Sun
 } from 'lucide-react';
 import firebase from 'firebase/compat/app';
 
@@ -84,6 +84,12 @@ const App: React.FC = () => {
     // Manual Upload Mode
     const [showManualUpload, setShowManualUpload] = useState(false);
 
+    // Theme State
+    const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+        const saved = localStorage.getItem('app_theme');
+        return (saved as 'light' | 'dark') || 'light';
+    });
+
     // Accordion State
     const [activeExpanded, setActiveExpanded] = useState(true);
     const [pastExpanded, setPastExpanded] = useState(false);
@@ -136,6 +142,12 @@ const App: React.FC = () => {
             return containsName(scorer) || containsName(timer) || containsName(shotClock);
         });
     };
+
+    // Effect to apply theme to document
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('app_theme', theme);
+    }, [theme]);
 
     // Initialize Firebase Auth only (no data subscription - using Drive scanning instead)
     useEffect(() => {
@@ -706,6 +718,14 @@ const App: React.FC = () => {
                         )}
 
 
+
+                        <button
+                            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                            className="p-2 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+                            title={theme === 'light' ? 'Koyu Tema' : 'Açık Tema'}
+                        >
+                            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                        </button>
 
                         <div className="flex items-center gap-2 text-sm text-gray-700 font-bold border-l border-r border-gray-200 px-3 h-8">
                             <UserIcon size={16} className="text-blue-600" />
