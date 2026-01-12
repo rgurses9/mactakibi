@@ -127,7 +127,7 @@ const MatchCard: React.FC<{
         return (
           <div className="mt-2 pt-2 border-t border-gray-100 dark:border-slate-800 flex justify-between items-center">
             {isGreenMode ? (
-              <span className="bg-yellow-300 text-black text-[9px] font-black px-1.5 py-0.5 rounded uppercase shadow-sm">
+              <span className="bg-yellow-300 dark:bg-yellow-400 text-black dark:text-gray-950 text-[9px] font-black px-2 py-0.5 rounded uppercase shadow-sm dark:shadow-yellow-500/20 ring-1 ring-yellow-400/50 dark:ring-yellow-300">
                 GÖREVLİSİN ✅
               </span>
             ) : (
