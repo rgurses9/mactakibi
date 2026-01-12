@@ -855,12 +855,7 @@ const App: React.FC = () => {
                         {/* Aktif Müsabakalar List */}
                         {activeExpanded && activeMatches.length > 0 && (
                             <div className="animate-in slide-in-from-top-2 duration-300">
-                                {/* Bot Notification Button */}
-                                <WhatsAppSender
-                                    matches={activeMatches}
-                                    config={botConfig}
-                                    userName={user.displayName || ''}
-                                />
+
                                 <MatchList
                                     matches={activeMatches}
                                     title=""
@@ -914,6 +909,13 @@ const App: React.FC = () => {
                                 />
                             </div>
                         )}
+
+                        {/* WhatsApp Notification Button - Moved here to be below Past Matches */}
+                        <WhatsAppSender
+                            matches={activeMatches}
+                            config={botConfig}
+                            userName={user.displayName || ''}
+                        />
                     </div>
 
                     {error && (
