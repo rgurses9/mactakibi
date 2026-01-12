@@ -20,3 +20,11 @@ export interface AnalysisResult {
   matches: MatchDetails[];
   error?: string;
 }
+
+export interface BotConfig {
+  platform: 'whatsapp' | 'telegram';
+  phone: string;     // WhatsApp phone
+  whatsappApiKey: string;
+  telegramUserId: string;
+  telegramApiKey: string;
+}

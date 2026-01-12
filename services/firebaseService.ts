@@ -2,7 +2,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import 'firebase/compat/auth';
 import 'firebase/compat/analytics';
-import { MatchDetails } from '../types';
+import { MatchDetails, BotConfig } from '../types';
 
 let db: firebase.database.Database | null = null;
 let auth: firebase.auth.Auth | null = null;
@@ -142,7 +142,7 @@ export const subscribeToAuthChanges = (callback: (user: firebase.User | null) =>
   return auth.onAuthStateChanged(callback);
 };
 
-export const updateUserBotConfig = async (uid: string, config: { phone: string, apiKey: string }) => {
+export const updateUserBotConfig = async (uid: string, config: BotConfig) => {
   if (!db) throw new Error("Veritabanı bağlantısı yok.");
   await db.ref('users/' + uid + '/botConfig').set(config);
 };
