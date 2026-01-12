@@ -78,6 +78,42 @@
   --gradient-bg: linear-gradient(to bottom right, #020617, #0f172a, #171717);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    /* Primary Colors - Blue (Dark Adjusted) */
+    --color-primary-50: #1e293b;
+    --color-primary-100: #1e3a8a;
+    --color-primary-200: #1e40af;
+    --color-primary-300: #1d4ed8;
+    --color-primary-400: #2563eb;
+    --color-primary-500: #3b82f6;
+    --color-primary-600: #60a5fa;
+    --color-primary-700: #93c5fd;
+    --color-primary-800: #bfdbfe;
+    --color-primary-900: #dbeafe;
+
+    /* Surface Colors - Dark Mode */
+    --color-surface: #0f172a;
+    --color-surface-secondary: #020617;
+    --color-surface-tertiary: #1e293b;
+    --color-surface-elevated: #1e293b;
+
+    /* Content/Text Colors - Dark Mode */
+    --color-content: #f8fafc;
+    --color-content-secondary: #cbd5e1;
+    --color-content-tertiary: #94a3b8;
+    --color-content-inverse: #0f172a;
+
+    /* Border Colors - Dark Mode */
+    --color-border: #1e293b;
+    --color-border-secondary: #334155;
+
+    /* Background Gradient - Dark Mode */
+    --gradient-bg: linear-gradient(to bottom right, #020617, #0f172a, #171717);
+  }
+}
+
+
 
 /* ========================================
    BASE STYLES
@@ -158,6 +194,16 @@ body {
     radial-gradient(rgba(0, 0, 0, 0.4) 15%, transparent 16%),
     linear-gradient(45deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.1) 75%, transparent 75%, transparent);
 }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .bg-basketball-theme {
+    background-color: #9a3412;
+    background-image:
+      radial-gradient(rgba(0, 0, 0, 0.4) 15%, transparent 16%),
+      linear-gradient(45deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.1) 75%, transparent 75%, transparent);
+  }
+}
+
 
 body,
 .bg-white,
