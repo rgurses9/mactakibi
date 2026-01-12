@@ -55,7 +55,7 @@ const MatchCard: React.FC<{
           <div className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 mb-0.5 truncate">
             {match.category} {match.group ? `• ${match.group}` : ''}
           </div>
-          <div className="text-sm font-black text-black dark:text-white leading-tight mb-1">
+          <div className="text-sm font-black text-gray-950 dark:text-white leading-tight mb-1">
             {match.teamA} vs {match.teamB}
           </div>
           <div className="flex items-center gap-2 text-[10px] font-bold text-gray-600 dark:text-gray-400">
@@ -76,7 +76,7 @@ const MatchCard: React.FC<{
               <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.gsbPaid ? 'bg-green-500 border-green-600' : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700'}`}>
                 {paymentStatus.gsbPaid && <CheckCircle2 size={14} className="text-white" />}
               </div>
-              <span className={`text-[10px] font-black w-6 ${paymentStatus.gsbPaid ? 'text-red-600 dark:text-red-400 line-through decoration-1' : 'text-black dark:text-white'}`}>
+              <span className={`text-[10px] font-black w-6 ${paymentStatus.gsbPaid ? 'text-red-600 dark:text-red-400 line-through decoration-1' : 'text-black'}`}>
                 GSB
               </span>
             </button>
@@ -97,7 +97,7 @@ const MatchCard: React.FC<{
               <div className={`w-6 h-6 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${paymentStatus.ekPaid ? 'bg-green-500 border-green-600' : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-700'}`}>
                 {paymentStatus.ekPaid && <CheckCircle2 size={14} className="text-white" />}
               </div>
-              <span className={`text-[10px] font-black w-6 text-center ${paymentStatus.ekPaid ? 'text-red-600 dark:text-red-400 line-through decoration-1' : 'text-black dark:text-white'}`}>
+              <span className={`text-[10px] font-black w-6 text-center ${paymentStatus.ekPaid ? 'text-red-600 dark:text-red-400 line-through decoration-1' : 'text-black'}`}>
                 {paymentType === PaymentType.GELISIM_LIGI ? '600₺' : (paymentStatus.customFee ? `${paymentStatus.customFee}₺` : 'EK')}
               </span>
             </button>
@@ -184,7 +184,7 @@ const MatchList: React.FC<MatchListProps> = ({ matches, title = "Maç Programı"
     <div className={`${variant === 'past' ? 'opacity-80' : ''} mb-6`}>
       {title && (
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-black text-black dark:text-white uppercase tracking-tight flex items-center gap-1.5">
+          <h2 className="text-sm font-black text-black uppercase tracking-tight flex items-center gap-1.5">
             {variant === 'active' ? <CheckCircle2 size={14} className="text-green-600" /> : <History size={14} className="text-gray-500" />}
             {title}
           </h2>

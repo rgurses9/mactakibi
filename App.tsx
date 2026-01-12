@@ -730,8 +730,12 @@ const App: React.FC = () => {
                             {theme === 'system' ? <Monitor size={18} /> : theme === 'light' ? <Sun size={18} /> : <Moon size={18} />}
                         </button>
 
-                        <div className="flex items-center gap-2 text-sm text-gray-700 font-bold border-l border-r border-gray-200 px-3 h-8">
-                            <UserIcon size={16} className="text-blue-600" />
+                        <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 font-bold border-l border-r border-gray-200 dark:border-slate-800 px-3 h-8">
+                            <img
+                                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || '')}&background=3b82f6&color=fff&bold=true`}
+                                alt="User"
+                                className="w-6 h-6 rounded-full border border-blue-200 dark:border-slate-700 shadow-sm"
+                            />
                             <span className="hidden sm:inline">{user.displayName?.toLocaleUpperCase('tr-TR')}</span>
                         </div>
 
@@ -746,24 +750,23 @@ const App: React.FC = () => {
                 </div>
             </div>
 
-            {/* WELCOME HERO SECTION */}
-            <div className="bg-basketball-theme border-b-4 border-orange-800 shadow-inner py-10">
+            {/* WELCOME HERO SECTION - SMALLER VERSION */}
+            <div className="bg-basketball-theme border-b-4 border-orange-800 shadow-inner py-5">
                 <div className="max-w-5xl mx-auto px-4">
                     <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
                         <div className="relative">
-                            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-orange-600 font-black text-2xl shadow-xl ring-4 ring-white/30 transform hover:scale-110 transition-transform duration-300">
-                                {user.displayName ?
-                                    user.displayName.split(' ').map(name => name[0]).join('').toUpperCase()
-                                    : 'UR'
-                                }
-                            </div>
+                            <img
+                                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || '')}&background=fff&color=ee6730&bold=true&size=128`}
+                                alt="Profile"
+                                className="w-14 h-14 rounded-full flex items-center justify-center shadow-xl ring-4 ring-white/30 transform hover:scale-110 transition-transform duration-300 object-cover"
+                            />
                             <div className="absolute -bottom-1 -right-1 bg-green-500 w-6 h-6 rounded-full border-4 border-orange-600 flex items-center justify-center">
                                 <Check size={12} className="text-white" />
                             </div>
                         </div>
                         <div>
                             {/* Updated Welcome Message */}
-                            <h2 className="text-2xl font-black text-white uppercase tracking-tight drop-shadow-md">
+                            <h2 className="text-xl font-black text-white uppercase tracking-tight drop-shadow-md">
                                 Hoş Geldiniz, {user.displayName?.toLocaleUpperCase('tr-TR')}
                             </h2>
                             <p className="text-white/90 text-sm mt-1 font-bold drop-shadow-sm max-w-xl">

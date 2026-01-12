@@ -223,9 +223,11 @@ body,
 }
 
 .text-gray-900,
-.text-gray-800 {
+.text-gray-800,
+.text-black {
   color: var(--color-content) !important;
 }
+
 
 .text-gray-500,
 .text-gray-600 {
