@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, Lock, User, ArrowRight, ShieldCheck, AlertCircle, Clock } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, ShieldCheck, AlertCircle, Clock, Check } from 'lucide-react';
 import { loginUser, registerUser } from '../services/firebaseService';
 
 const Auth: React.FC = () => {
@@ -71,18 +71,18 @@ const Auth: React.FC = () => {
 
   if (pendingApproval) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 transition-colors duration-300">
-        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Clock size={32} />
+      <div className="min-h-screen flex items-center justify-center bg-basketball-theme p-4 transition-colors duration-300">
+        <div className="bg-white p-10 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-white/20">
+          <div className="w-20 h-20 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner ring-8 ring-orange-50">
+            <Clock size={40} className="animate-pulse" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Hesap Onayı Bekleniyor</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tight">Hesap Onayı Bekleniyor</h2>
+          <p className="text-gray-600 mb-8 font-medium leading-relaxed">
             Hesabınız başarıyla oluşturuldu ancak henüz yönetici onayı almadı. Yöneticiniz kaydınızı onayladığında sistem erişiminize açılacaktır.
           </p>
           <button
             onClick={() => setPendingApproval(false)}
-            className="text-orange-600 font-semibold hover:underline"
+            className="w-full bg-basketball-theme text-white font-black py-4 rounded-2xl hover:scale-[1.02] transition-transform shadow-lg uppercase tracking-widest text-sm"
           >
             Giriş Ekranına Dön
           </button>
@@ -93,18 +93,18 @@ const Auth: React.FC = () => {
 
   if (verificationSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 transition-colors duration-300">
-        <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Mail size={32} />
+      <div className="min-h-screen flex items-center justify-center bg-basketball-theme p-4 transition-colors duration-300">
+        <div className="bg-white p-10 rounded-3xl shadow-2xl max-w-md w-full text-center border-4 border-white/20">
+          <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner ring-8 ring-green-50">
+            <Check size={40} />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Kaydınız Alınmıştır</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-2xl font-black text-gray-900 mb-2 uppercase tracking-tight">Kaydınız Alınmıştır</h2>
+          <p className="text-gray-600 mb-8 font-medium leading-relaxed">
             Kaydınız onaylanınca <strong>{email}</strong> mail adresinize bilgi verilecektir.
           </p>
           <button
             onClick={() => setVerificationSent(false)}
-            className="text-orange-600 font-semibold hover:underline"
+            className="w-full bg-basketball-theme text-white font-black py-4 rounded-2xl hover:scale-[1.02] transition-transform shadow-lg uppercase tracking-widest text-sm"
           >
             Giriş Ekranına Dön
           </button>
@@ -114,24 +114,20 @@ const Auth: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 transition-colors duration-300">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-basketball-theme p-4 transition-colors duration-300">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border-4 border-white/20 backdrop-blur-sm">
 
         {/* Header Banner */}
-        <div className="bg-orange-500 p-8 text-white text-center relative overflow-hidden transition-colors duration-300">
+        <div className="bg-basketball-theme p-10 text-white text-center relative overflow-hidden transition-colors duration-300 border-b-4 border-orange-800">
           <div className="relative z-10">
-            <div className="bg-white/20 w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
-              <ShieldCheck size={28} />
+            <div className="bg-white/20 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/30 shadow-lg animate-bounce">
+              <span className="text-3xl">🏀</span>
             </div>
-            <h1 className="text-3xl font-bold mb-2">Maç Takip Sistemi</h1>
-            <p className="text-orange-100 text-sm leading-relaxed">
-              Basketbol müsabaka ve görev takip platformu
+            <h1 className="text-3xl font-black mb-2 uppercase tracking-tighter drop-shadow-lg">Maç Takip Sistemi</h1>
+            <p className="text-orange-100 text-xs font-bold uppercase tracking-widest opacity-80">
+              Basketbol Görev Takip Platformu
             </p>
           </div>
-
-          {/* Decorative Circles */}
-          <div className="absolute top-[-50px] left-[-50px] w-48 h-48 bg-orange-400 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-          <div className="absolute top-[-50px] right-[-50px] w-48 h-48 bg-orange-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
         </div>
 
         {/* Form Section */}

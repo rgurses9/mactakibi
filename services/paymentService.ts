@@ -14,11 +14,30 @@ export enum PaymentType {
     NONE = 'NONE' // Not eligible
 }
 
-export const PAYMENT_RATES = {
-    GSB: 348.4,
-    EK: 300,
-    GELISIM: 600
+import { parseDate } from '../utils/dateHelpers';
+
+export const getPaymentRates = (dateStr?: string) => {
+    const defaultRates = {
+        GSB: 348.4,
+        EK: 300,
+        GELISIM: 600
+    };
+
+    if (!dateStr) return defaultRates;
+
+    const matchDate = parseDate(dateStr);
+    const newRateThreshold = new Date(2026, 0, 1); // 01.01.2026
+
+    if (matchDate && matchDate >= newRateThreshold) {
+        return {
+            ...defaultRates,
+            GSB: 413.2
+        };
+    }
+
+    return defaultRates;
 };
+
 
 export const getMatchId = (match: any): string => {
     // Create a unique ID based on immutable match properties

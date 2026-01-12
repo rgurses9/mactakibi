@@ -1,6 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 /* ========================================
    THEME COLOR VARIABLES
@@ -88,4 +88,32 @@ body {
 /* Smooth theme transitions */
 .theme-transition {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-secondary);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-content-tertiary);
+}
+
+/* Basketball Theme */
+.bg-basketball-theme {
+  background-color: #ee6730;
+  background-image:
+    radial-gradient(rgba(0, 0, 0, 0.2) 15%, transparent 16%),
+    linear-gradient(45deg, rgba(0, 0, 0, 0.05) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.05) 50%, rgba(0, 0, 0, 0.05) 75%, transparent 75%, transparent);
+  background-size: 8px 8px, 40px 40px;
 }

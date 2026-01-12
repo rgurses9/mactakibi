@@ -8,7 +8,7 @@ import FileUpload from './components/FileUpload';
 import Auth from './components/Auth';
 import AdminPanel from './components/AdminPanel'; // Import Admin Panel
 import { MatchDetails, AnalysisResult } from './types';
-import { getMatchId, getAllPaymentStatuses, savePaymentStatus, isMatchEligibleForPayment, getPaymentType, PaymentType, PAYMENT_RATES, PaymentStatus } from './services/paymentService';
+import { getMatchId, getAllPaymentStatuses, savePaymentStatus, isMatchEligibleForPayment, getPaymentType, PaymentType, getPaymentRates, PaymentStatus } from './services/paymentService';
 import { autoScanDriveFolder } from './services/driveService';
 import { findMatchesInExcel, findMatchesInRawData } from './services/excelService';
 import { initFirebase, subscribeToMatches, subscribeToAuthChanges, logoutUser, updateUserBotConfig } from './services/firebaseService';
@@ -277,19 +277,21 @@ const App: React.FC = () => {
                 let mGsbOdenen = 0;
                 let mEkOdenen = 0;
 
+                const rates = getPaymentRates(match.date);
+
                 // GSB Logic
                 if (pType === PaymentType.STANDARD || pType === PaymentType.GSB_ONLY) {
-                    mGsbHakedis = PAYMENT_RATES.GSB;
-                    if (status.gsbPaid) mGsbOdenen = PAYMENT_RATES.GSB;
+                    mGsbHakedis = rates.GSB;
+                    if (status.gsbPaid) mGsbOdenen = rates.GSB;
                 }
 
                 // EK Logic
                 if (pType === PaymentType.STANDARD || pType === PaymentType.CUSTOM_FEE || pType === PaymentType.GELISIM_LIGI) {
-                    let rate = PAYMENT_RATES.EK;
+                    let rate = rates.EK;
                     if (pType === PaymentType.CUSTOM_FEE) {
                         rate = status.customFee || 0;
                     } else if (pType === PaymentType.GELISIM_LIGI) {
-                        rate = PAYMENT_RATES.GELISIM;
+                        rate = rates.GELISIM;
                     }
 
                     mEkHakedis = rate;
@@ -553,10 +555,13 @@ const App: React.FC = () => {
 
     if (!authInitialized) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-gray-500 font-medium animate-pulse">Sistem Hazırlanıyor...</p>
+            <div className="min-h-screen bg-basketball-theme flex items-center justify-center">
+                <div className="flex flex-col items-center gap-6">
+                    <div className="relative">
+                        <div className="w-20 h-20 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div className="absolute inset-0 flex items-center justify-center text-white text-2xl animate-bounce">🏀</div>
+                    </div>
+                    <p className="text-white font-black uppercase tracking-widest animate-pulse drop-shadow-md">Sistem Hazırlanıyor...</p>
                 </div>
             </div>
         );
@@ -701,24 +706,27 @@ const App: React.FC = () => {
             </div>
 
             {/* WELCOME HERO SECTION */}
-            <div className="bg-white border-b border-gray-200 transition-colors duration-300">
-                <div className="max-w-5xl mx-auto px-4 py-8">
-                    <div className="flex items-center gap-4">
+            <div className="bg-basketball-theme border-b-4 border-orange-800 shadow-inner py-10">
+                <div className="max-w-5xl mx-auto px-4">
+                    <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
                         <div className="relative">
-                            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-base shadow-md ring-4 ring-blue-50">
+                            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-orange-600 font-black text-2xl shadow-xl ring-4 ring-white/30 transform hover:scale-110 transition-transform duration-300">
                                 {user.displayName ?
                                     user.displayName.split(' ').map(name => name[0]).join('').toUpperCase()
                                     : 'UR'
                                 }
                             </div>
+                            <div className="absolute -bottom-1 -right-1 bg-green-500 w-6 h-6 rounded-full border-4 border-orange-600 flex items-center justify-center">
+                                <Check size={12} className="text-white" />
+                            </div>
                         </div>
                         <div>
                             {/* Updated Welcome Message */}
-                            <h2 className="text-lg font-bold text-gray-800">
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tight drop-shadow-md">
                                 Hoş Geldiniz, {user.displayName?.toLocaleUpperCase('tr-TR')}
                             </h2>
-                            <p className="text-gray-500 text-sm mt-0.5">
-                                Hesabınız onaylandı. Sistemde <strong>{user.displayName?.toLocaleUpperCase('tr-TR')}</strong> adına tanımlı maçlar listelenmektedir.
+                            <p className="text-white/90 text-sm mt-1 font-bold drop-shadow-sm max-w-xl">
+                                Hesabınız onaylandı. Sistemde <span className="underline decoration-white/50">{user.displayName?.toLocaleUpperCase('tr-TR')}</span> adına tanımlı maçlar listelenmektedir.
                             </p>
                         </div>
                     </div>
