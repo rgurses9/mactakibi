@@ -5,9 +5,10 @@ import { MatchDetails, BotConfig } from '../types';
 interface WhatsAppSenderProps {
     matches: MatchDetails[];
     config: BotConfig;
+    userName: string;
 }
 
-const WhatsAppSender: React.FC<WhatsAppSenderProps> = ({ matches, config }) => {
+const WhatsAppSender: React.FC<WhatsAppSenderProps> = ({ matches, config, userName }) => {
     const [sending, setSending] = useState(false);
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
@@ -24,9 +25,10 @@ const WhatsAppSender: React.FC<WhatsAppSenderProps> = ({ matches, config }) => {
         try {
             // Build message
             let message = "🚨 *GÖREV BİLGİSİ (Manuel Kontrol)*\n";
-            message += "👤 *İsim:* RIFAT GÜRSES\n";
+            message += `👤 *İsim:* ${userName?.toLocaleUpperCase('tr-TR') || 'RIFAT GÜRSES'}\n`;
             message += "⏰ *Tarih:* " + new Date().toLocaleTimeString("tr-TR") + "\n";
             message += "〰️〰️〰️〰️〰️〰️〰️〰️\n";
+
 
             matches.forEach(match => {
                 message += "\n🏀 *MAÇ/GÖREV DETAYI:*\n";

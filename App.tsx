@@ -249,11 +249,9 @@ const App: React.FC = () => {
             // Check for NEW matches in Firebase mode too
             const currentIds = new Set(matches.map(m => getMatchId(m)));
             const newMatchesDeep = myMatches.filter(m => !currentIds.has(getMatchId(m)));
+
             if (newMatchesDeep.length > 0 && matches.length > 0) {
-                let notifyMsg = `🔥 *VERİTABANINA YENİ MAÇ GELDİ!*\n\n`;
-                newMatchesDeep.forEach(m => {
-                    notifyMsg += `🏀 ${m.teamA} vs ${m.teamB}\n📅 ${m.date} | ⏰ ${m.time}\n\n`;
-                });
+                const notifyMsg = formatWhatsAppMessage(user.displayName || 'Kullanıcı', newMatchesDeep, true);
                 sendBotMessage(notifyMsg);
             }
 
@@ -268,6 +266,7 @@ const App: React.FC = () => {
 
         return () => unsubscribeData();
     }, [isFirebaseActive, user]);
+
 
     useEffect(() => {
         // Only auto scan if user is logged in
@@ -414,6 +413,35 @@ const App: React.FC = () => {
         }
     };
 
+    const formatWhatsAppMessage = (userDisplayName: string, matchesToNotify: MatchDetails[], isAutomatic: boolean = false) => {
+        let message = isAutomatic
+            ? `🚀 *YENİ GÖREV ATAMASI (Otomatik)*\n`
+            : `🚨 *GÖREV BİLGİSİ (Manuel Kontrol)*\n`;
+
+        message += `👤 *İsim:* ${userDisplayName?.toLocaleUpperCase('tr-TR')}\n`;
+        message += `⏰ *Zaman:* ${new Date().toLocaleTimeString("tr-TR")}\n`;
+        message += `〰️〰️〰️〰️〰️〰️〰️〰️\n`;
+
+        matchesToNotify.forEach(match => {
+            message += `\n🏀 *MAÇ/GÖREV DETAYI:*\n`;
+            message += `📅 Tarih: ${match.date}\n`;
+            message += `🏟️ Salon: ${match.hall}\n`;
+            message += `⏰ Saat: ${match.time}\n`;
+            message += `⚔️ Maç: ${match.teamA} 🆚 ${match.teamB}\n`;
+            message += `🏷️ Kategori: ${match.category} / ${match.group}\n`;
+            message += `📝 Sayı Grv: ${match.scorer}\n`;
+            message += `⏱️ Saat Grv: ${match.timer}\n`;
+            message += `⏳ Şut Saati: ${match.shotClock}\n`;
+            message += `------------------------\n`;
+        });
+
+        message += isAutomatic
+            ? `\n✅ _Sistem tarafından otomatik algılandı._`
+            : `\n✅ _Web uygulaması üzerinden gönderildi._`;
+
+        return message;
+    };
+
     const handleAutoScan = async (forceRefresh = false) => {
         if (isFirebaseActive) {
             return;
@@ -466,12 +494,8 @@ const App: React.FC = () => {
             const newMatchesFound = driveMatches.filter(m => !currentIds.has(getMatchId(m)));
 
             if (newMatchesFound.length > 0 && baselineMatches.length > 0) {
-                let notifyMsg = `🚀 *YENİ MÜSABAKA EKLENDİ!*\n\n`;
-                newMatchesFound.forEach(m => {
-                    notifyMsg += `🏀 ${m.teamA} vs ${m.teamB}\n📅 ${m.date} | ⏰ ${m.time}\n🏟️ ${m.hall}\n\n`;
-                });
-                notifyMsg += `_Sistem tarafından otomatik algılandı._`;
                 addLog(`📱 ${newMatchesFound.length} yeni maç için bildirim gönderiliyor...`, 'success');
+                const notifyMsg = formatWhatsAppMessage(user?.displayName || 'Kullanıcı', newMatchesFound, true);
                 sendBotMessage(notifyMsg);
             }
 
@@ -835,6 +859,7 @@ const App: React.FC = () => {
                                 <WhatsAppSender
                                     matches={activeMatches}
                                     config={botConfig}
+                                    userName={user.displayName || ''}
                                 />
                                 <MatchList
                                     matches={activeMatches}
