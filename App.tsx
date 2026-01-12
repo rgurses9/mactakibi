@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 // v4.0 - Latest Design 200px
 import MatchList from './components/MatchListV4';
-import BotMessageSender from './components/BotMessageSender';
+import WhatsAppSender from './components/WhatsAppSender';
 import ScriptGenerator from './components/ScriptGenerator';
 import FirebaseSettings from './components/FirebaseSettings';
 import FileUpload from './components/FileUpload';
@@ -63,14 +63,11 @@ const App: React.FC = () => {
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
-                // Handle migration from old format
-                if (!parsed.platform) {
+                // Handle migration back from new format
+                if (parsed.whatsappApiKey) {
                     return {
-                        platform: 'whatsapp',
                         phone: parsed.phone || '905307853007',
-                        whatsappApiKey: parsed.apiKey || '7933007',
-                        telegramUserId: '',
-                        telegramApiKey: ''
+                        apiKey: parsed.whatsappApiKey || '7933007'
                     };
                 }
                 return parsed;
@@ -78,13 +75,7 @@ const App: React.FC = () => {
                 console.error("Error parsing bot config", e);
             }
         }
-        return {
-            platform: 'whatsapp',
-            phone: '905307853007',
-            whatsappApiKey: '7933007',
-            telegramUserId: '',
-            telegramApiKey: ''
-        };
+        return { phone: '905307853007', apiKey: '7933007' };
     });
 
     // Admin Panel State
@@ -413,24 +404,13 @@ const App: React.FC = () => {
     };
 
     const sendBotMessage = async (msg: string) => {
-        if (botConfig.platform === 'whatsapp') {
-            if (!botConfig.phone || !botConfig.whatsappApiKey) return;
-            try {
-                const encoded = encodeURIComponent(msg);
-                const url = `https://api.callmebot.com/whatsapp.php?phone=${botConfig.phone}&text=${encoded}&apikey=${botConfig.whatsappApiKey}`;
-                await fetch(url, { method: 'GET', mode: 'no-cors' });
-            } catch (e) {
-                console.error("WhatsApp mesajı gönderilemedi", e);
-            }
-        } else if (botConfig.platform === 'telegram') {
-            if (!botConfig.telegramUserId || !botConfig.telegramApiKey) return;
-            try {
-                const encoded = encodeURIComponent(msg);
-                const url = `https://api.callmebot.com/text.php?user=${botConfig.telegramUserId}&text=${encoded}&apikey=${botConfig.telegramApiKey}`;
-                await fetch(url, { method: 'GET', mode: 'no-cors' });
-            } catch (e) {
-                console.error("Telegram mesajı gönderilemedi", e);
-            }
+        if (!botConfig.phone || !botConfig.apiKey) return;
+        try {
+            const encoded = encodeURIComponent(msg);
+            const url = `https://api.callmebot.com/whatsapp.php?phone=${botConfig.phone}&text=${encoded}&apikey=${botConfig.apiKey}`;
+            await fetch(url, { method: 'GET', mode: 'no-cors' });
+        } catch (e) {
+            console.error("Bot mesajı gönderilemedi", e);
         }
     };
 
@@ -852,7 +832,7 @@ const App: React.FC = () => {
                         {activeExpanded && activeMatches.length > 0 && (
                             <div className="animate-in slide-in-from-top-2 duration-300">
                                 {/* Bot Notification Button */}
-                                <BotMessageSender
+                                <WhatsAppSender
                                     matches={activeMatches}
                                     config={botConfig}
                                 />

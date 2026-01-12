@@ -22,9 +22,6 @@ export interface AnalysisResult {
 }
 
 export interface BotConfig {
-  platform: 'whatsapp' | 'telegram';
-  phone: string;     // WhatsApp phone
-  whatsappApiKey: string;
-  telegramUserId: string;
-  telegramApiKey: string;
+  phone: string;
+  apiKey: string;
 }
