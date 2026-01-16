@@ -59,7 +59,7 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ initialConfig, onSave
                     <div className="mt-2 bg-blue-50 p-2 rounded text-[10px] text-blue-800 flex items-start gap-1">
                         <HelpCircle size={12} className="shrink-0 mt-0.5" />
                         <p>
-                            API Key almak için WhatsApp üzerinden <strong>+34 644 10 52 15</strong> numarasına
+                            API Key almak için WhatsApp üzerinden <strong>+34 623 78 95 80</strong> numarasına
                             <br /><code>I allow callmebot to send me messages</code> yazıp gönderin.
                         </p>
                     </div>
