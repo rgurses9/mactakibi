@@ -403,13 +403,37 @@ const App: React.FC = () => {
     };
 
     const sendBotMessage = async (msg: string) => {
-        if (!botConfig.phone || !botConfig.apiKey) return;
+        if (!botConfig.phone || !botConfig.apiKey) {
+            console.log('Bot config eksik, mesaj gönderilmedi');
+            return;
+        }
+
         try {
             const encoded = encodeURIComponent(msg);
             const url = `https://api.callmebot.com/whatsapp.php?phone=${botConfig.phone}&text=${encoded}&apikey=${botConfig.apiKey}`;
-            await fetch(url, { method: 'GET', mode: 'no-cors' });
-        } catch (e) {
-            console.error("Bot mesajı gönderilemedi", e);
+
+            // Add timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+            console.log('🤖 Otomatik WhatsApp bildirimi gönderiliyor...', {
+                phone: botConfig.phone.substring(0, 5) + '***',
+                messageLength: msg.length
+            });
+
+            await fetch(url, {
+                method: 'GET',
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+            console.log('✅ Otomatik WhatsApp bildirimi gönderildi');
+        } catch (e: any) {
+            if (e.name === 'AbortError') {
+                console.warn('⏱️ WhatsApp bildirimi zaman aşımına uğradı (mesaj yine de gitmiş olabilir)');
+            } else {
+                console.error("❌ Bot mesajı gönderilemedi:", e.message);
+            }
         }
     };
 

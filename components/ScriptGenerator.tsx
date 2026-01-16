@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Save, Phone, Key, HelpCircle } from 'lucide-react';
 import { BotConfig } from '../types';
+import WhatsAppTester from './WhatsAppTester';
 
 interface ScriptGeneratorProps {
     initialConfig: BotConfig;
@@ -14,6 +15,9 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ initialConfig, onSave
     const handleSave = () => {
         onSave({ phone, apiKey });
     };
+
+    // Current config for testing
+    const currentConfig: BotConfig = { phone, apiKey };
 
     return (
         <div className="space-y-6">
@@ -69,6 +73,9 @@ const ScriptGenerator: React.FC<ScriptGeneratorProps> = ({ initialConfig, onSave
                 <Save size={18} />
                 Ayarları Kaydet
             </button>
+
+            {/* WhatsApp Connection Tester */}
+            <WhatsAppTester config={currentConfig} />
         </div>
     );
 };

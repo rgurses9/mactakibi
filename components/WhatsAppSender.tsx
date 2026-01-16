@@ -48,12 +48,32 @@ const WhatsAppSender: React.FC<WhatsAppSenderProps> = ({ matches, config, userNa
             const encodedMessage = encodeURIComponent(message);
             const url = `https://api.callmebot.com/whatsapp.php?phone=${config.phone}&text=${encodedMessage}&apikey=${config.apiKey}`;
 
-            await fetch(url, { method: 'GET', mode: 'no-cors' });
+            // Add timeout to the request
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
+            console.log('WhatsApp mesajı gönderiliyor...', { phone: config.phone.substring(0, 5) + '***' });
+
+            await fetch(url, {
+                method: 'GET',
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            console.log('WhatsApp mesajı başarıyla gönderildi');
             setStatus('success');
             setTimeout(() => setStatus('idle'), 5000);
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            console.error('WhatsApp gönderim hatası:', error);
+
+            // Show specific error messages
+            if (error.name === 'AbortError') {
+                alert('⏱️ İstek zaman aşımına uğradı. CallMeBot servisi yavaş yanıt veriyor olabilir. Lütfen WhatsApp\'ınızı kontrol edin, mesaj gelmiş olabilir.');
+            } else {
+                alert(`❌ Mesaj gönderilemedi: ${error.message}\n\nLütfen:\n1. Telefon numaranızın doğru olduğundan emin olun\n2. API key\'inizin geçerli olduğundan emin olun\n3. Bot Ayarları\'ndan test mesajı göndererek kontrol edin`);
+            }
+
             setStatus('error');
         } finally {
             setSending(false);
