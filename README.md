@@ -16,7 +16,7 @@ Basketbol hakem atamaları için akıllı takip ve bildirim sistemi.
 
 ### API Key Alma
 
-1. WhatsApp'tan **+34 623 78 95 80** numarasına mesaj gönderin:
+1. WhatsApp'tan **+34 644 71 81 99** numarasına mesaj gönderin:
    ```
    I allow callmebot to send me messages
    ```
@@ -27,7 +27,7 @@ Basketbol hakem atamaları için akıllı takip ve bildirim sistemi.
 ### Alternatif Numaralar
 
 Ana numara yanıt vermiyorsa:
-- `+34 644 71 81 99` - Alternatif bot
+- `+34 623 78 95 80` - Alternatif bot
 - `+34 623 78 64 49` - API key transfer
 
 Detaylı sorun giderme için: [WHATSAPP_TROUBLESHOOTING.md](./WHATSAPP_TROUBLESHOOTING.md)

@@ -8,7 +8,7 @@
 CallMeBot API key'leri zaman içinde pasif hale gelebilir veya devre dışı kalabilir.
 
 **Çözüm:**
-- WhatsApp'tan `+34 623 78 95 80` numarasına aşağıdaki mesajı gönderin:
+- WhatsApp'tan `+34 644 71 81 99` numarasına aşağıdaki mesajı gönderin:
   ```
   I allow callmebot to send me messages
   ```
@@ -81,7 +81,7 @@ Zayıf internet bağlantısı mesajların iletilememe sine neden olabilir.
 ### Tam Adımlar
 1. WhatsApp'ı açın
 2. Yeni sohbet başlatın
-3. Şu numarayı ekleyin: `+34 623 78 95 80`
+3. Şu numarayı ekleyin: `+34 644 71 81 99`
 4. Tam olarak şu mesajı gönderin (kopyala-yapıştır önerilir):
    ```
    I allow callmebot to send me messages
@@ -96,9 +96,9 @@ Zayıf internet bağlantısı mesajların iletilememe sine neden olabilir.
 
 ### Alternatif CallMeBot Numaraları
 
-Eğer ana numara (`+34 623 78 95 80`) yanıt vermiyorsa, şu alternatif numaraları deneyebilirsiniz:
+Eğer ana numara (`+34 644 71 81 99`) yanıt vermiyorsa, şu alternatif numaraları deneyebilirsiniz:
 
-- **+34 644 71 81 99** - CallMeBot alternatif bot numarası
+- **+34 623 78 95 80** - CallMeBot alternatif bot numarası
 - **+34 623 78 64 49** - API key transfer numarası (eski bot çalışmıyorsa)
 
 **Not:** Tüm numaralara aynı mesajı göndermeniz gerekir: `I allow callmebot to send me messages`

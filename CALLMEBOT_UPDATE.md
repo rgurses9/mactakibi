@@ -6,29 +6,30 @@
 
 **ESKİ NUMARA:** `+34 644 10 52 15` ❌ (Artık kullanımda değil)
 
-**YENİ NUMARA:** `+34 623 78 95 80` ✅ (Ocak 2026 itibariyle güncel)
+**SON GÜNCELLEME:** `+34 644 71 81 99` ✅ (16 Ocak 2026 - Aktif alternatif)
+
+**Önceki:** `+34 623 78 95 80` (Şimdi alternatif numara)
 
 ### Güncellenen Dosyalar
 
 1. **components/ScriptGenerator.tsx**
    - Bot Ayarları panelindeki API Key talimatları güncellendi
-   - Line 62: Yeni telefon numarası eklendi
+   - Yeni telefon numarası: +34 644 71 81 99
 
 2. **components/WhatsAppTester.tsx**
    - WhatsApp Bağlantı Testi kontrol listesindeki numara güncellendi
-   - Line 202: Sorun giderme adımları yeni numarayı gösteriyor
+   - Sorun giderme adımları yeni numarayı gösteriyor
 
 3. **WHATSAPP_TROUBLESHOOTING.md**
    - Tüm dokümantasyon yeni numaraya güncellendi
-   - 2 ayrı bölümde numara değiştirildi
-   - Alternatif numaralar eklendi
+   - Alternatif numaralar yeniden düzenlendi
 
 ## 📱 Alternatif CallMeBot Numaraları
 
 Kullanıcılar aşağıdaki numaralardan birini kullanabilir:
 
-1. **+34 623 78 95 80** (ÖNERİLEN - Ana numara)
-2. **+34 644 71 81 99** (Alternatif bot numarası)
+1. **+34 644 71 81 99** (ÖNERİLEN - Ana numara)
+2. **+34 623 78 95 80** (Alternatif bot numarası)
 3. **+34 623 78 64 49** (API key transfer için)
 
 ## 🎯 Kullanıcılar İçin Talimatlar
@@ -36,7 +37,7 @@ Kullanıcılar aşağıdaki numaralardan birini kullanabilir:
 ### API Key Yenileme Adımları
 
 1. WhatsApp'ı açın
-2. Yeni kontak ekleyin: `+34 623 78 95 80`
+2. Yeni kontak ekleyin: `+34 644 71 81 99`
 3. Şu mesajı gönderin:
    ```
    I allow callmebot to send me messages
@@ -49,8 +50,8 @@ Kullanıcılar aşağıdaki numaralardan birini kullanabilir:
 
 ### Sorun Yaşıyorsanız
 
-Eğer ana numara (`+34 623 78 95 80`) yanıt vermiyorsa:
-- Alternatif numarayı deneyin: `+34 644 71 81 99`
+Eğer ana numara (`+34 644 71 81 99`) yanıt vermiyorsa:
+- Alternatif numarayı deneyin: `+34 623 78 95 80`
 - Veya transfer numarasını kullanın: `+34 623 78 64 49`
 - Aynı mesajı gönderin: `I allow callmebot to send me messages`
 

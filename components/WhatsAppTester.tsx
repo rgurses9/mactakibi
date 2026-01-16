@@ -199,7 +199,7 @@ const WhatsAppTester: React.FC<WhatsAppTesterProps> = ({ config }) => {
                 <ul className="text-xs text-gray-600 space-y-1">
                     <li className="flex items-start gap-2">
                         <span>1.</span>
-                        <span>CallMeBot'a <strong>+34 623 78 95 80</strong> numarasından API key almayı denediniz mi?</span>
+                        <span>CallMeBot'a <strong>+34 644 71 81 99</strong> numarasından API key almayı denediniz mi?</span>
                     </li>
                     <li className="flex items-start gap-2">
                         <span>2.</span>
